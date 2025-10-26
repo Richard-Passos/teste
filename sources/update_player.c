@@ -77,4 +77,3 @@ void update_player(Player *player, wall *env_wall, int env_wall_length, float de
 
     player->hitbox = (Rectangle){.x = player->position.x, .y = player->position.y, 32, 32};
 }
-
