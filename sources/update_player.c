@@ -24,8 +24,7 @@ bool has_hit_side(wall *w, Player *player)
 }
 */
 
-void update_player(Player *player, wall *env_wall, int env_wall_length, float delta)
-{
+void update_player(Player *player, wall *env_wall, int env_wall_length, float delta) {
     if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A))
         player->position.x -= PLAYER_HOR_SPD * delta;
     if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D))
@@ -52,19 +51,19 @@ void update_player(Player *player, wall *env_wall, int env_wall_length, float de
             break;
         }
     }
-/*
-    for (int i = 0; i < +env_wall_length; i++)
-    {
-        wall *w = env_wall + i;
-        Vector2 *pos = &(player->position);
-        if (has_hit_side(env_wall ,player))
+    /*
+        for (int i = 0; i < +env_wall_length; i++)
         {
-            hit_side = true;
-            player->speed = 0.0f;
-            pos->x = w->hitbox.x;
-            break;
-        }
-    }*/
+            wall *w = env_wall + i;
+            Vector2 *pos = &(player->position);
+            if (has_hit_side(env_wall ,player))
+            {
+                hit_side = true;
+                player->speed = 0.0f;
+                pos->x = w->hitbox.x;
+                break;
+            }
+        }*/
 
     if (!hit_obstacle)
     {
@@ -77,4 +76,3 @@ void update_player(Player *player, wall *env_wall, int env_wall_length, float de
 
     player->hitbox = (Rectangle){.x = player->position.x, .y = player->position.y, 32, 32};
 }
-
