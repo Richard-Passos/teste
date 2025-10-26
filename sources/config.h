@@ -3,6 +3,8 @@
 //
 
 #ifndef MY_RAYLIB_GAME_CONFIG_H
+#define MY_RAYLIB_GAME_CONFIG_H
+
 #define NAME "Hollow"
 
 #define G 400

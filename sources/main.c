@@ -15,7 +15,6 @@ int main(void)
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, NAME);
   SetWindowIcon(LoadImage("../assets/apenas por agora.png"));
 
-
   Player player = {0};
   player.position = (Vector2){400, 280};
   player.hitbox = (Rectangle){ player.position.x, player.position.y, 32, 32};
