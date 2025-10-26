@@ -24,22 +24,22 @@ int main(void)
   wall env_wall[] = {
     {
       LoadTexture("../assets/wall.png"), // textura
-      {400, 400, 50, 50},              // retângulo (x, y, width, height)
+      {400, 400, 32, 32},              // retângulo (x, y, width, height)
       1                               // bloqueia passagem
     },
     {
       LoadTexture("../assets/wall.png"), // textura
-      {368, 400, 50, 50},
+      {368, 400, 32, 32},
       1
     },
   {
   LoadTexture("../assets/wall.png"),
-  {336, 400, 50, 50},
+  {336, 400, 32, 32},
   1
    },
   {
   LoadTexture("../assets/wall.png"),
-  {336, 368, 50, 50},
+  {336, 368, 32, 32},
    1
 }
   };
