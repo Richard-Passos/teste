@@ -25,14 +25,13 @@ endif()
 # Our Project
 
 add_executable(${PROJECT_NAME} sources/main.c
-        sources/update_player.c
         sources/player.h
         sources/config.h
-        sources/update_player.h
-        sources/update_camera_center.c
-        sources/update_camera_center.h
         sources/Chao_pula.h
         sources/parede.h
+        sources/player.c
+        sources/camera.c
+        sources/camera.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

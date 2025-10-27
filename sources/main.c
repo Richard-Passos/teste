@@ -1,8 +1,7 @@
 #include "raylib.h"
 #include "player.h"
 #include "config.h"
-#include "update_player.h"
-#include "update_camera_center.h"
+#include "camera.h"
 #include "parede.h"
 
 //------------------------------------------------------------------------------------

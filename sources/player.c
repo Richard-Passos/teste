@@ -1,3 +1,7 @@
+//
+// Created by richa on 26/10/2025.
+//
+
 #include "raylib.h"
 #include "player.h"
 #include "config.h"
