@@ -13,8 +13,6 @@ int monsters_count = 0;
 Item items[MAX_ITEMS];
 int items_count = 0;
 
-Texture2D wall_texture;
-
 void add_wall(int x, int y, Texture2D texture) {
     if (walls_count < MAX_WALLS) {
         walls[walls_count++] = (Wall){
