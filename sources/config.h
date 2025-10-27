@@ -7,9 +7,9 @@
 
 #define NAME "Hollow"
 
-#define G 400
-#define PLAYER_JUMP_SPD 350.0f
-#define PLAYER_HOR_SPD 200.0f
+#define GRAVITY 400
+#define PLAYER_JUMP_SPEED 350.0f
+#define PLAYER_HOR_SPEED 200.0f
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 450

@@ -7,5 +7,5 @@
 #include "raylib.h"
 #include "player.h"
 
-void update_camera_center(Camera2D *camera, Player *player, int width, int height);
+void update_camera_center(Camera2D *camera, Player *player, float width, float height);
 #endif //HOLLOW_CAMERA_H

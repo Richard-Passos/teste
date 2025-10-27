@@ -4,17 +4,24 @@
 
 #ifndef MY_RAYLIB_GAME_PLAYER_H
 #define MY_RAYLIB_GAME_PLAYER_H
-#include "parede.h"
+#include "map.h"
 
-typedef struct Player
-{
-    Vector2 position;
+typedef struct {
+    float x;
+    float y;
+} Speed;
+
+typedef struct {
     Rectangle hitbox;
-    float speed;
-    bool canJump;
+    Speed speed;
+    bool can_jump;
 } Player;
 
-bool has_hit_side(Rectangle rec1, Rectangle rec2);
-bool has_hit_obstacle(wall *w, Vector2 *pos, float delta, float speed);
-void update_player(Player *player, wall *env_wall, int env_wall_length, float delta);
+Rectangle get_player_rect(Player player);
+
+void update_player(
+    Player *player,
+    float delta
+);
+
 #endif //MY_RAYLIB_GAME_PLAYER_H

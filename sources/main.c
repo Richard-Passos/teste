@@ -1,71 +1,55 @@
+#include "config.h"
 #include "raylib.h"
 #include "player.h"
-#include "config.h"
 #include "camera.h"
-#include "parede.h"
+#include "map.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
-int main(void)
-{
+int main(void) {
   // Initialization
   //--------------------------------------------------------------------------------------
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, NAME);
+
   SetWindowIcon(LoadImage("../assets/apenas por agora.png"));
-
-  Player player = {0};
-  player.position = (Vector2){400, 280};
-  player.hitbox = (Rectangle){ player.position.x, player.position.y, 32, 32};
-  player.speed = 0;
-  player.canJump = false;
-
-  wall env_wall[] = {
-    {
-      LoadTexture("../assets/wall.png"), // textura
-      {400, 400, 32, 32},              // retângulo (x, y, width, height)
-      1                               // bloqueia passagem
-    },
-    {
-      LoadTexture("../assets/wall.png"), // textura
-      {368, 400, 32, 32},
-      1
-    },
-  {
-  LoadTexture("../assets/wall.png"),
-  {336, 400, 32, 32},
-  1
-   },
-  {
-  LoadTexture("../assets/wall.png"),
-  {336, 368, 32, 32},
-   1
-}
+  Textures textures = {
+    LoadTexture("../assets/wall.png"),
   };
+  //--------------------------------------------------------------------------------------
 
-  int env_wall_length = sizeof(env_wall) / sizeof(env_wall[0]);
+  // Load map
+  //--------------------------------------------------------------------------------------
+  if (!load_map("../map.txt", textures)) {
+    CloseWindow();
 
+    return 1;
+  }
+  //--------------------------------------------------------------------------------------
 
+  // Init player and camera
+  //--------------------------------------------------------------------------------------
+  Player player = {0};
+  player.hitbox = player_start;
+  player.speed = (Speed){0, 0};
+  player.can_jump = false;
 
   Camera2D camera = {0};
-  camera.target = player.position;
+  camera.target = (Vector2){player.hitbox.x, player.hitbox.y};
   camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
   camera.rotation = 0.0f;
   camera.zoom = 1.0f;
-
-  SetTargetFPS(60);
   //--------------------------------------------------------------------------------------
 
-  // Main game loop
-  while (!WindowShouldClose())
-  {
-    float delta_time = GetFrameTime();
+  SetTargetFPS(60);
 
+  // Main game loop
+  while (!WindowShouldClose()) {
+    float delta_time = GetFrameTime();
 
     // Update
     //----------------------------------------------------------------------------------
-
-    update_player(&player, env_wall, env_wall_length, delta_time);
+    update_player(&player, delta_time);
     update_camera_center(&camera, &player, SCREEN_WIDTH, SCREEN_HEIGHT);
     //----------------------------------------------------------------------------------
 
@@ -75,14 +59,8 @@ int main(void)
     ClearBackground(LIGHTGRAY);
     BeginMode2D(camera);
 
-    for (int i = 0; i < env_wall_length; i++)
-    {
-      DrawTexture(env_wall[i].texture, env_wall[i].hitbox.x, env_wall[i].hitbox.y, WHITE);
-    }
-
-    DrawRectangleRec(player.hitbox, RED);
-
-
+    draw_map();
+    DrawRectangleRec(player.hitbox, GREEN);
 
     EndMode2D();
     EndDrawing();
@@ -91,6 +69,7 @@ int main(void)
 
   // De-Initialization
   //--------------------------------------------------------------------------------------
+  UnloadTexture(textures.Wall);
   CloseWindow(); // Close window and OpenGL context
   //--------------------------------------------------------------------------------------
 
