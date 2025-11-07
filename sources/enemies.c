@@ -17,6 +17,31 @@ bool check_collision_with_wall(Monster *m, Wall *wall)
 );
 }
 
+Monster flying(Wall *walls) {
+    // Determinar se cada monstro é voador ou terrestre
+    for (int i = 0; i < monsters_count; i++) {
+        Monster *m = &monsters[i];
+        bool has_ground = false;
+
+        // Cria um retângulo logo abaixo do monstro
+        Rectangle check = {
+            m->hitbox.x,
+            m->hitbox.y + m->hitbox.height + 1,
+            m->hitbox.width,
+            2
+        };
+
+        for (int j = 0; j < walls_count; j++) {
+            if (CheckCollisionRecs(check, walls[j].hitbox)) {
+                has_ground = true;
+                break;
+            }
+        }
+
+        m->is_flying = !has_ground;
+    }
+}
+
 void update_monsters(float delta, Wall *walls, int walls_count)
 {
 

@@ -25,7 +25,6 @@ extern Rectangle player_start;
 extern Rectangle boss_start;
 
 extern Wall walls[MAX_WALLS];
-extern int walls_count;
 
 /* Usar o tipo definido em enemies.h */
 extern Monster monsters[MAX_MONSTERS];

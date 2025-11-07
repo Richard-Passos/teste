@@ -27,6 +27,9 @@ bool check_collision_with_wall(Monster *m, Wall *wall);
 extern Monster monsters[MAX_MONSTERS];
 extern int monsters_count;
 
+extern int walls_count;
+
+Monster flying(Wall *walls);
 void update_monsters(float delta, Wall *walls, int walls_count);
 void draw_monsters(void);
 
