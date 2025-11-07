@@ -32,6 +32,8 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/camera.h
         sources/map.c
         sources/map.h
+        sources/enemies.c
+        sources/enemies.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
