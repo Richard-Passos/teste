@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include "map.h"
+#include "config.h"
+#include "enemies.h"
 
 Rectangle player_start = {0};
 Rectangle boss_start = {0};
 
 Wall walls[MAX_WALLS];
 int walls_count = 0;
-
-Monster monsters[MAX_MONSTERS];
-int monsters_count = 0;
 
 Item items[MAX_ITEMS];
 int items_count = 0;
@@ -21,11 +20,17 @@ void add_wall(int x, int y, Texture2D texture) {
     }
 }
 
-void add_monster(int x, int y) {
+void add_monster(int x, int y, float z, float w) {
     if (monsters_count < MAX_MONSTERS) {
-        monsters[monsters_count++] = (Monster){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+        monsters[monsters_count++] = (Monster){
+            .speed = {z, w},
+            .hitbox = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE},
+            .direction = 1,
+            .is_flying = true
+        };
     }
 }
+
 
 void add_item(int x, int y) {
     if (items_count < MAX_ITEMS) {
@@ -57,7 +62,7 @@ int load_map(char path[], Textures textures) {
                     break;
                 case 'M':
                 case 'm':
-                    add_monster(x, y);
+                    add_monster(x, y, LAND_MONSTER_HOR_SPEED, 0.0f);
                     break;
                 case 'A':
                 case 'a':
@@ -85,8 +90,7 @@ void draw_map() {
     for (int i = 0; i < walls_count; i++)
         DrawTexture(walls[i].texture, walls[i].hitbox.x, walls[i].hitbox.y, WHITE);
 
-    for (int i = 0; i < monsters_count; i++)
-        DrawRectangleRec(monsters[i].hitbox, RED);
+    draw_monsters(); // chama aqui
 
     for (int i = 0; i < items_count; i++)
         DrawRectangleRec(items[i].hitbox, GOLD);
@@ -94,3 +98,5 @@ void draw_map() {
     DrawRectangleRec(player_start, BLUE);
     DrawRectangleRec(boss_start, PURPLE);
 }
+
+

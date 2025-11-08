@@ -1,4 +1,4 @@
-   P J P                                            PPPPPPPPPPPPPPPPPPPP                                                                              
+   P J P                                            PPPPPPPPPPPPPPPPPPPP
    P   P                                            P                  P                                                                              
    P   P                                            P                  P             PPPPPPPPPPPPPPPPPP                                               
 PPPP   PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP  PPPPPPPPPPPPPPP                PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
@@ -11,6 +11,6 @@ P           P  PPPPPPPPPPPPP                                              P     
 P           P              P                    PPP                       P                                                                          P
 P           P      M       P           M       PPPPP                M     P                                             M                      C     P
 PPPPPPPPPPPPPPPPPPPPPP  PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP  PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-                     P        P                                    P                                                  P                               
-                     P        P                                    P A           M                            M       P                               
-                     PPPPPPPPPP                                    PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP                               
+                     P        P                                    P                                                  P
+                     P        P                                    P A           M                            M       P
+                     PPPPPPPPPP                                    PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP

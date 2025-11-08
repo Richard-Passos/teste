@@ -36,6 +36,8 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/screen.h
         sources/game_state.c
         sources/game_state.h
+        sources/enemies.c
+        sources/enemies.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)
