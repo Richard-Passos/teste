@@ -19,8 +19,8 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
         set(FETCHCONTENT_QUIET NO)
         FetchContent_MakeAvailable(raylib)
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
-    endif()
-endif()
+    endif ()
+endif ()
 
 # Our Project
 
@@ -32,6 +32,10 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/camera.h
         sources/map.c
         sources/map.h
+        sources/screen.c
+        sources/screen.h
+        sources/game_state.c
+        sources/game_state.h
         sources/enemies.c
         sources/enemies.h
 )
@@ -42,11 +46,11 @@ target_link_libraries(${PROJECT_NAME} raylib)
 if (${PLATFORM} STREQUAL "Web")
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html") # Tell Emscripten to build an example.html file.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
-endif()
+endif ()
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
 if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework IOKit")
     target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
     target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
-endif()
+endif ()

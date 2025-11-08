@@ -3,6 +3,7 @@
 #include "player.h"
 #include "camera.h"
 #include "map.h"
+#include "screen.h"
 #include "enemies.h"
 
 //------------------------------------------------------------------------------------
@@ -13,6 +14,9 @@ int main(void) {
   //--------------------------------------------------------------------------------------
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, NAME);
 
+  // Disable the Escape key from closing the window
+  SetExitKey(KEY_NULL);
+
   SetWindowIcon(LoadImage("../assets/apenas por agora.png"));
   Textures textures = {
     LoadTexture("../assets/wall.png"),
@@ -22,7 +26,7 @@ int main(void) {
 
   // Load map
   //--------------------------------------------------------------------------------------
-  if (!load_map("../map.txt", textures)) {
+  if (!load_map(MAP_FILE_PATH, textures)) {
     CloseWindow();
 
     return 1;
@@ -55,22 +59,22 @@ int main(void) {
 
   // Main game loop
   while (!WindowShouldClose()) {
-    float delta_time = GetFrameTime();
+    if (handle_screens() == 0) {
+      float delta_time = GetFrameTime();
 
-    // Update
-    //----------------------------------------------------------------------------------
-    update_player(&player, delta_time);
-    update_camera_center(&camera, &player, SCREEN_WIDTH, SCREEN_HEIGHT);
-    flying(walls);
-    update_monsters(GetFrameTime(), walls, walls_count);
+      // Update
+      //----------------------------------------------------------------------------------
+      update_player(&player, delta_time);
+      update_camera_center(&camera, &player, SCREEN_WIDTH, SCREEN_HEIGHT);
+      flying(walls);
+      update_monsters(delta_time, walls, walls_count);
+      //----------------------------------------------------------------------------------
 
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-    ClearBackground(LIGHTGRAY);
-    BeginMode2D(camera);
+      // Draw
+      //----------------------------------------------------------------------------------
+      BeginDrawing();
+      ClearBackground(LIGHTGRAY);
+      BeginMode2D(camera);
 
     draw_map();
     DrawRectangleRec(player.hitbox, GREEN);
@@ -78,9 +82,15 @@ int main(void) {
       DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
     }
 
-    EndMode2D();
-    EndDrawing();
-    //----------------------------------------------------------------------------------
+      EndMode2D();
+      EndDrawing();
+      //----------------------------------------------------------------------------------
+
+      if (IsKeyPressed(KEY_ESCAPE))
+        set_screen('p');
+      else if (IsKeyPressed(KEY_TAB))
+        set_screen('i');
+    }
   }
 
   // De-Initialization
