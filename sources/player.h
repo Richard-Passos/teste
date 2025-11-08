@@ -15,9 +15,16 @@ typedef struct {
     Rectangle hitbox;
     Speed speed;
     bool can_jump;
+    bool on_ground;
+    bool is_attacking;
+    float attack_timer;
+    Rectangle attack_box;
+    bool facing_right;
+    bool monsters_hit[MAX_MONSTERS];
 } Player;
 
 Rectangle get_player_rect(Player player);
+
 
 void update_player(
     Player *player,
