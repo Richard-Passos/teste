@@ -7,7 +7,7 @@
 #include "raylib.h"
 
 typedef struct {
-    Texture2D texture;
+    Texture texture;
     Rectangle hitbox;
 } Asset;
 
@@ -26,6 +26,8 @@ void set_screen(char);
 bool is_button_pressed(Asset);
 
 void draw_asset(Asset);
+
+Asset add_asset(char [], Rectangle);
 
 extern char screen; /* m = menu | p = paused | i = inventory | s = start */;
 extern bool is_screen_loaded;
