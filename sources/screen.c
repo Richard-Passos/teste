@@ -35,29 +35,39 @@ int handle_screens() {
 }
 
 void handle_menu_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
     if (!is_screen_loaded) {
-        screen_assets[0] = (Asset){
-            LoadTexture("../assets/menu_background.png"), {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
-        };
-        screen_assets[1] = (Asset){LoadTexture("../assets/menu_logo.png"), {SCREEN_WIDTH / 2 - 319.5, 25, 639, 241}};
-        screen_assets[2] = (Asset){LoadTexture("../assets/wall.png"), {300, 250, 32, 32}};
-        screen_assets[3] = (Asset){LoadTexture("../assets/wall.png"), {300, 300, 32, 32}};
-        screen_assets[4] = (Asset){LoadTexture("../assets/wall.png"), {300, 350, 32, 32}};
-        screen_assets[5] = (Asset){LoadTexture("../assets/wall.png"), {300, 400, 32, 32}};
+        add_asset(
+            "../assets/menu_background.png",
+            (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
+        );
+        add_asset(
+            "../assets/menu_logo.png",
+            (Rectangle){SCREEN_WIDTH / 2.0 - 319.5, 25, 639, 241}
+        );
+        add_asset("../assets/wall.png", (Rectangle){300, 250, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 300, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 350, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 400, 32, 32});
 
-        screen_assets_size = 6;
         is_screen_loaded = true;
-
-        printf("Level: %d", game_state.level);
     }
 
-    Asset background = screen_assets[0];
-    Asset logo = screen_assets[1];
-    Asset play_button = screen_assets[2];
-    Asset load_button = screen_assets[3];
-    Asset help_button = screen_assets[4];
-    Asset exit_button = screen_assets[5];
+    //----------------------------------------------------------------------------------
 
+    // Init
+    //----------------------------------------------------------------------------------
+    Asset background = screen_assets[0],
+            logo = screen_assets[1],
+            play_button = screen_assets[2],
+            load_button = screen_assets[3],
+            help_button = screen_assets[4],
+            exit_button = screen_assets[5];
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLUE);
 
@@ -70,60 +80,52 @@ void handle_menu_screen() {
     draw_asset(help_button);
     draw_asset(exit_button);
     EndDrawing();
+    //----------------------------------------------------------------------------------
 
-    if (is_button_pressed(play_button)) {
+    // Actions
+    //----------------------------------------------------------------------------------
+    if
+    (is_button_pressed(play_button)) {
         save_game_state();
         set_screen('s');
-    } else if (is_button_pressed(load_button)) {
+    } else if
+    (is_button_pressed(load_button)) {
         load_game_state();
         set_screen('s');
-    } else if (is_button_pressed(help_button)) {
+    } else if
+    (is_button_pressed(help_button)) {
         set_screen('h');
-    } else if (is_button_pressed(exit_button)) {
+    } else if
+    (is_button_pressed(exit_button)) {
         CloseWindow();
     }
+
+    //----------------------------------------------------------------------------------
 }
 
 void handle_paused_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
     if (!is_screen_loaded) {
-        screen_assets[0] = (Asset)
-        {
-            LoadTexture("../assets/wall.png"),
-            {
-                300, 150, 32, 32
-            }
-        };
-        screen_assets[1] = (Asset)
-        {
-            LoadTexture("../assets/wall.png"),
-            {
-                300, 200, 32, 32
-            }
-        };
-        screen_assets[2] = (Asset)
-        {
-            LoadTexture("../assets/wall.png"),
-            {
-                300, 250, 32, 32
-            }
-        };
-        screen_assets[3] = (Asset)
-        {
-            LoadTexture("../assets/wall.png"),
-            {
-                300, 300, 32, 32
-            }
-        };
+        add_asset(("../assets/wall.png"), (Rectangle){300, 150, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 200, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 250, 32, 32});
+        add_asset("../assets/wall.png", (Rectangle){300, 300, 32, 32});
 
-        screen_assets_size = 4;
         is_screen_loaded = true;
     }
+    //----------------------------------------------------------------------------------
 
-    Asset continue_button = screen_assets[0];
-    Asset inventory_button = screen_assets[1];
-    Asset save_button = screen_assets[2];
-    Asset back_menu_button = screen_assets[3];
+    // Init
+    //----------------------------------------------------------------------------------
+    Asset continue_button = screen_assets[0],
+            inventory_button = screen_assets[1],
+            save_button = screen_assets[2],
+            back_menu_button = screen_assets[3];
+    //----------------------------------------------------------------------------------
 
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(GREEN);
 
@@ -134,43 +136,58 @@ void handle_paused_screen() {
     draw_asset(save_button);
     draw_asset(back_menu_button);
     EndDrawing();
+    //----------------------------------------------------------------------------------
 
+    // Actions
+    //----------------------------------------------------------------------------------
     if (is_button_pressed(continue_button) || IsKeyPressed(KEY_ESCAPE)) {
         set_screen('s');
     } else if (is_button_pressed(inventory_button)) {
         set_screen('i');
     } else if (is_button_pressed(save_button)) {
-        game_state.level = game_state.level == 3 ? 2 : 3;
         save_game_state();
     } else if (is_button_pressed(back_menu_button)) {
         save_game_state();
         set_screen('m');
     }
+    //----------------------------------------------------------------------------------
 }
 
 void handle_inventory_screen() {
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(RED);
 
     DrawText("INVENTORY", 16, 16, 32, WHITE);
 
     EndDrawing();
+    //----------------------------------------------------------------------------------
 
+    // Actions
+    //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
         set_screen('s');
     }
+    //----------------------------------------------------------------------------------
 }
 
 void handle_help_screen() {
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(PINK);
 
     DrawText("HELP", 16, 16, 32, WHITE);
     EndDrawing();
+    //----------------------------------------------------------------------------------
 
+    // Actions
+    //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
         set_screen('m');
     }
+    //----------------------------------------------------------------------------------
 }
 
 void set_screen(char s) {
@@ -188,4 +205,10 @@ bool is_button_pressed(Asset button) {
 
 void draw_asset(Asset button) {
     DrawTexture(button.texture, button.hitbox.x, button.hitbox.y, WHITE);
+}
+
+Asset add_asset(char texture_path[], Rectangle hitbox) {
+    screen_assets[screen_assets_size] = (Asset){LoadTexture(texture_path), hitbox};
+
+    return screen_assets[screen_assets_size++];
 }
