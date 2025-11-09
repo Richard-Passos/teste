@@ -32,6 +32,8 @@ int main(void) {
     return 1;
   }
 
+  flying(walls);
+
   //--------------------------------------------------------------------------------------
   // Determinar se cada monstro é voador ou terrestre
 
@@ -66,7 +68,6 @@ int main(void) {
       //----------------------------------------------------------------------------------
       update_player(&player, delta_time);
       update_camera_center(&camera, &player, SCREEN_WIDTH, SCREEN_HEIGHT);
-      flying(walls);
       update_monsters(delta_time, walls, walls_count);
       //----------------------------------------------------------------------------------
 

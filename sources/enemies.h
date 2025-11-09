@@ -20,6 +20,10 @@ typedef struct {
     Rectangle floor_checker;    // checar se tem chao na diagonal
     bool on_ground;
     bool is_flying;
+    int life;
+    float hurt_timer;
+    bool invulnerable;
+    float invuln_time;
 } Monster;
 
 bool check_collision_with_wall(Monster *m, Wall *wall);

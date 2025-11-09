@@ -16,11 +16,16 @@ typedef struct {
     Speed speed;
     bool can_jump;
     bool on_ground;
+    int jump_count;
     bool is_attacking;
     float attack_timer;
     Rectangle attack_box;
     bool facing_right;
     bool monsters_hit[MAX_MONSTERS];
+    int attack_dir; // 1 = cima, 0 = frente, -1 = baixo
+    float attack_cooldown;
+
+
 } Player;
 
 Rectangle get_player_rect(Player player);

@@ -22,6 +22,7 @@ Monster flying(Wall *walls) {
     for (int i = 0; i < monsters_count; i++) {
         Monster *m = &monsters[i];
         bool has_ground = false;
+        m->life = 4;
 
         // Cria um retângulo logo abaixo do monstro
         Rectangle check = {
@@ -34,6 +35,7 @@ Monster flying(Wall *walls) {
         for (int j = 0; j < walls_count; j++) {
             if (CheckCollisionRecs(check, walls[j].hitbox)) {
                 has_ground = true;
+                m->life = 5;
                 break;
             }
         }
@@ -44,6 +46,18 @@ Monster flying(Wall *walls) {
 
 void update_monsters(float delta, Wall *walls, int walls_count)
 {
+
+    for (int i = 0; i < monsters_count; i++) {
+        Monster *m = &monsters[i];
+
+        // Atualiza timers de dano
+        if (m->invulnerable) {
+            m->invuln_time -= delta;
+            if (m->invuln_time <= 0) {
+                m->invulnerable = false;
+            }
+        }
+    }
 
     for (int i = 0; i < monsters_count; i++)
     {
@@ -162,10 +176,14 @@ void update_monsters(float delta, Wall *walls, int walls_count)
 
 void draw_monsters(void) {
     for (int i = 0; i < monsters_count; i++) {
-        if (monsters[i].is_flying)
-            DrawRectangleRec(monsters[i].hitbox, ORANGE);
-        else
-            DrawRectangleRec(monsters[i].hitbox, RED);
-
+        Monster *m = &monsters[i];
+        if (m->hurt_timer > 0) {
+            m->hurt_timer -= GetFrameTime();
+            DrawRectangleRec(m->hitbox, WHITE);
+        } else if (m->is_flying) {
+            DrawRectangleRec(m->hitbox, ORANGE);
+        } else {
+            DrawRectangleRec(m->hitbox, RED);
+        }
     }
 }
