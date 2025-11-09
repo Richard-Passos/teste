@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "config.h"
 #include "raylib.h"
 #include "player.h"
@@ -44,6 +43,10 @@ int main(void) {
   player.hitbox = player_start;
   player.speed = (Speed){0, 0};
   player.can_jump = false;
+  player.is_attacking = false;
+  player.attack_timer = 0.0f;
+  player.on_ground = false;
+
 
   Camera2D camera = {0};
   camera.target = (Vector2){player.hitbox.x, player.hitbox.y};
@@ -73,8 +76,11 @@ int main(void) {
       ClearBackground(LIGHTGRAY);
       BeginMode2D(camera);
 
-      draw_map();
-      DrawRectangleRec(player.hitbox, GREEN);
+    draw_map();
+    DrawRectangleRec(player.hitbox, GREEN);
+    if (player.is_attacking) {
+      DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
+    }
 
       EndMode2D();
       EndDrawing();
