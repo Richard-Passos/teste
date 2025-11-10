@@ -59,7 +59,7 @@ void update_player(Player *player, float delta) {
     // Verifica início de queda: se não estiver no chão e velocidade > 0 (caindo)
     bool falling = (player->speed.y > 0 && !player->on_ground);
 
-    if (IsKeyPressed(KEY_SPACE)) {
+    if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z)) {
         // Pulo normal do chão
         if (player->on_ground && player->can_jump) {
             player->speed.y = -PLAYER_JUMP_SPEED;
@@ -113,7 +113,7 @@ void update_player(Player *player, float delta) {
         player->attack_cooldown -= delta;
 
     // Inicia ataque se a tecla for pressionada e o cooldown acabou
-    if (IsKeyPressed(KEY_C) && player->attack_cooldown <= 0.0f) {
+    if (IsKeyPressed(KEY_X) && player->attack_cooldown <= 0.0f) {
         // Prioridade de direção: baixo > cima > horizontal
         int dir = 0; // 0 = horizontal, 1 = cima, -1 = baixo
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
@@ -178,15 +178,20 @@ void update_player(Player *player, float delta) {
                     monsters[j].hurt_timer = 0.1f;
                     monsters[j].invulnerable = true;
                     monsters[j].invuln_time = 0.3f;
-                    printf("acertou hit! vida do monstro: %.0f\n", monsters[j].life);
 
                     // Marca que já foi atingido neste ataque
                     player->monsters_hit[j] = true;
 
-                    // Se morrer, remove
+                    // Se morrer, remove e adiciona dinheiro
                     if (monsters[j].life <= 0) {
                         monsters[j].hitbox.height = 0;
                         monsters[j].hitbox.width = 0;
+
+                        int gained = GetRandomValue(35, 45);
+                        player->money += gained;
+
+                        player->last_money_gain = gained;
+                        player->money_gain_timer = 1.5f;
                     }
 
                     // Pogo Jump
@@ -198,9 +203,15 @@ void update_player(Player *player, float delta) {
                 }
             }
         }
-
         // Termina ataque quando o timer zera
         if (player->attack_timer <= 0.0f)
             player->is_attacking = false;
+    }
+
+    // diminuir timer do dinheiro
+    if (player->money_gain_timer > 0.0f) {
+        player->money_gain_timer -= delta;
+        if (player->money_gain_timer < 0.0f)
+            player->money_gain_timer = 0.0f;
     }
 }

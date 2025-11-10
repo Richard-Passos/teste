@@ -24,6 +24,10 @@ typedef struct {
     bool monsters_hit[MAX_MONSTERS];
     int attack_dir; // 1 = cima, 0 = frente, -1 = baixo
     float attack_cooldown;
+    int money;
+    float money_gain_timer;
+    int last_money_gain;
+
 
 
 } Player;

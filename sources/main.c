@@ -5,6 +5,7 @@
 #include "map.h"
 #include "screen.h"
 #include "enemies.h"
+#include "stdio.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -48,6 +49,7 @@ int main(void) {
   player.is_attacking = false;
   player.attack_timer = 0.0f;
   player.on_ground = false;
+  player.money = 0;
 
 
   Camera2D camera = {0};
@@ -75,16 +77,42 @@ int main(void) {
       //----------------------------------------------------------------------------------
       BeginDrawing();
       ClearBackground(LIGHTGRAY);
+
+      // Tudo dentro do modo 2D se move com a câmera
       BeginMode2D(camera);
 
-    draw_map();
-    DrawRectangleRec(player.hitbox, GREEN);
-    if (player.is_attacking) {
-      DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
-    }
+      draw_map();
+      draw_monsters();
+      DrawRectangleRec(player.hitbox, GREEN);
+
+      if (player.is_attacking) {
+        DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
+      }
+
 
       EndMode2D();
+
+      // HUD de dinheiro
+      char moneyText[64];
+      sprintf(moneyText, "Moedas: %d", player.money);
+      DrawText(moneyText, 10, 10, 30, BLACK);
+
+      // Desenha o ganho
+      if (player.money_gain_timer > 0.0f) {
+        // Fazer sumir depois de um tempo
+        float alpha = player.money_gain_timer / 1.5f;
+        int transparency = (int)(255 * alpha);
+
+        Color gainColor = (Color){0, 0, 0, transparency};
+
+        char gainText[32];
+        sprintf(gainText, "+%d", player.last_money_gain);
+        DrawText(gainText, 250, 10, 30, gainColor);
+      }
+
+
       EndDrawing();
+
       //----------------------------------------------------------------------------------
 
       if (IsKeyPressed(KEY_ESCAPE))
