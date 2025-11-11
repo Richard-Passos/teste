@@ -10,7 +10,7 @@
 
 #define MAX_SCREEN_ASSETS 6
 
-char screen = 'm';
+Screen screen = menu;
 bool is_screen_loaded = false;
 
 Asset screen_assets[MAX_SCREEN_ASSETS];
@@ -19,13 +19,13 @@ int screen_assets_size = 0;
 int handle_screens() {
     bool found_screen = 1;
 
-    if (screen == 'm')
+    if (screen == menu)
         handle_menu_screen();
-    else if (screen == 'h')
+    else if (screen == help)
         handle_help_screen();
-    else if (screen == 'p')
+    else if (screen == paused)
         handle_paused_screen();
-    else if (screen == 'i')
+    else if (screen == inventory)
         handle_inventory_screen();
     else {
         found_screen = 0;
@@ -87,14 +87,14 @@ void handle_menu_screen() {
     if
     (is_button_pressed(play_button)) {
         save_game_state();
-        set_screen('s');
+        set_screen(start);
     } else if
     (is_button_pressed(load_button)) {
         load_game_state();
-        set_screen('s');
+        set_screen(start);
     } else if
     (is_button_pressed(help_button)) {
-        set_screen('h');
+        set_screen(help);
     } else if
     (is_button_pressed(exit_button)) {
         CloseWindow();
@@ -141,14 +141,14 @@ void handle_paused_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (is_button_pressed(continue_button) || IsKeyPressed(KEY_ESCAPE)) {
-        set_screen('s');
+        set_screen(start);
     } else if (is_button_pressed(inventory_button)) {
-        set_screen('i');
+        set_screen(inventory);
     } else if (is_button_pressed(save_button)) {
         save_game_state();
     } else if (is_button_pressed(back_menu_button)) {
         save_game_state();
-        set_screen('m');
+        set_screen(menu);
     }
     //----------------------------------------------------------------------------------
 }
@@ -167,7 +167,7 @@ void handle_inventory_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen('s');
+        set_screen(start);
     }
     //----------------------------------------------------------------------------------
 }
@@ -185,18 +185,54 @@ void handle_help_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen('m');
+        set_screen(menu);
     }
     //----------------------------------------------------------------------------------
 }
 
-void set_screen(char s) {
+void handle_win_screen() {
+    // Draw
+    //----------------------------------------------------------------------------------
+    BeginDrawing();
+    ClearBackground(PINK);
+
+    DrawText("WIN", 16, 16, 32, WHITE);
+    EndDrawing();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        set_screen(menu);
+    }
+    //----------------------------------------------------------------------------------
+}
+
+void handle_game_over_screen() {
+    // Draw
+    //----------------------------------------------------------------------------------
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    DrawText("GAME OVER", 16, 16, 32, WHITE);
+    EndDrawing();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KEY_ESCAPE)) {
+        set_screen(menu);
+    }
+    //----------------------------------------------------------------------------------
+}
+
+void set_screen(Screen s) {
     for (int i = 0; i < screen_assets_size; i++)
         UnloadTexture(screen_assets[i].texture);
 
     screen_assets_size = 0;
     is_screen_loaded = false;
-    screen = (char) tolower(s);
+    screen = s;
 }
 
 bool is_button_pressed(Asset button) {
