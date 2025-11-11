@@ -21,6 +21,11 @@ typedef struct {
     Rectangle hitbox;
 } Item;
 
+typedef struct {
+    Rectangle hitbox;
+    bool acquired;
+} Ability;
+
 extern Rectangle player_start;
 extern Rectangle boss_start;
 
@@ -32,6 +37,9 @@ extern int monsters_count;
 
 extern Item items[MAX_ITEMS];
 extern int items_count;
+
+extern Ability abilities[MAX_ITEMS];
+extern int abilities_count;
 
 int load_map(char path[], Textures textures);
 

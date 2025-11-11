@@ -5,7 +5,8 @@
 #include "map.h"
 #include "screen.h"
 #include "enemies.h"
-#include "stdio.h"
+#include "HUD.h"
+#include "abilities-attacks.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -50,6 +51,13 @@ int main(void) {
   player.attack_timer = 0.0f;
   player.on_ground = false;
   player.money = 0;
+  player.souls = 0;
+  player.abilitySoulProjectile.active = false;
+  player.abilitySoulProjectile.acquired = false;
+
+  if (abilities_count > 0) {
+    player.abilitySoulProjectile.hitbox = abilities[0].hitbox;
+  }
 
 
   Camera2D camera = {0};
@@ -83,34 +91,23 @@ int main(void) {
 
       draw_map();
       draw_monsters();
+      DrawAbilities();
       DrawRectangleRec(player.hitbox, GREEN);
 
       if (player.is_attacking) {
         DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
       }
 
+      if (player.abilitySoulProjectile.active) {
+        DrawRectangleRec(player.abilitySoulProjectile.hitbox, WHITE);
+      }
+
+      UpdateAbilityAcquisition(&player);
+      AbilitiesProjectile(&player, delta_time);
 
       EndMode2D();
 
-      // HUD de dinheiro
-      char moneyText[64];
-      sprintf(moneyText, "Moedas: %d", player.money);
-      DrawText(moneyText, 10, 10, 30, BLACK);
-
-      // Desenha o ganho
-      if (player.money_gain_timer > 0.0f) {
-        // Fazer sumir depois de um tempo
-        float alpha = player.money_gain_timer / 1.5f;
-        int transparency = (int)(255 * alpha);
-
-        Color gainColor = (Color){0, 0, 0, transparency};
-
-        char gainText[32];
-        sprintf(gainText, "+%d", player.last_money_gain);
-        DrawText(gainText, 250, 10, 30, gainColor);
-      }
-
-
+      DrawHUD(player);
       EndDrawing();
 
       //----------------------------------------------------------------------------------

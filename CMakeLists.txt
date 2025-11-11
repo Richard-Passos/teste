@@ -40,6 +40,10 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/enemies.h
         sources/timer.c
         sources/timer.h
+        sources/HUD.c
+        sources/HUD.h
+        sources/abilities-attacks.c
+        sources/abilitier-attacks.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

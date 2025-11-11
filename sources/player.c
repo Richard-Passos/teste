@@ -6,8 +6,8 @@
 #include "player.h"
 #include "config.h"
 #include "map.h"
-#include "stdio.h"
 #include <string.h>
+#include "abilities-attacks.h"
 
 bool has_collided(Player *player, Wall *wall) {
     return (
@@ -179,6 +179,14 @@ void update_player(Player *player, float delta) {
                     monsters[j].invulnerable = true;
                     monsters[j].invuln_time = 0.3f;
 
+                    // ganhar alma sempre que bater com limite de 100
+                    if (player->souls < 100)
+                        player->souls += 10;
+                    if (player->souls > 100)
+                        player->souls = 100;
+                    if (player->souls < 0)
+                        player->souls = 0;
+
                     // Marca que já foi atingido neste ataque
                     player->monsters_hit[j] = true;
 
@@ -207,11 +215,16 @@ void update_player(Player *player, float delta) {
         if (player->attack_timer <= 0.0f)
             player->is_attacking = false;
     }
-
     // diminuir timer do dinheiro
     if (player->money_gain_timer > 0.0f) {
         player->money_gain_timer -= delta;
         if (player->money_gain_timer < 0.0f)
             player->money_gain_timer = 0.0f;
     }
+    // ===========================================
+    // HABILIDADE (F) - Projétil de almas
+    // ===========================================
+
+    AbilitiesProjectile(player, delta);
+    UpdateAbilityAcquisition(player);
 }

@@ -12,6 +12,10 @@ int walls_count = 0;
 Item items[MAX_ITEMS];
 int items_count = 0;
 
+Ability abilities[MAX_ITEMS];
+int abilities_count = 0;
+
+
 void add_wall(int x, int y, Texture2D texture) {
     if (walls_count < MAX_WALLS) {
         walls[walls_count++] = (Wall){
@@ -38,10 +42,17 @@ void add_item(int x, int y) {
     }
 }
 
+void add_ability(int x, int y) {
+    if (abilities_count < MAX_ITEMS) {
+        abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+    }
+}
+
 int load_map(char path[], Textures textures) {
     walls_count = 0;
     monsters_count = 0;
     items_count = 0;
+    abilities_count = 0;
 
     FILE *file = fopen(path, "r");
     if (!file) return 0;
@@ -66,9 +77,11 @@ int load_map(char path[], Textures textures) {
                     break;
                 case 'A':
                 case 'a':
+                    add_item(x, y);
+                    break;
                 case 'H':
                 case 'h':
-                    add_item(x, y);
+                    add_ability(x, y);
                     break;
                 case 'P':
                 case 'p':
