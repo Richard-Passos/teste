@@ -91,6 +91,7 @@ int main(void) {
       //----------------------------------------------------------------------------------
       BeginDrawing();
       ClearBackground(LIGHTGRAY);
+      DrawHUD(player);
 
       // Tudo dentro do modo 2D se move com a câmera
       BeginMode2D(camera);
@@ -126,16 +127,16 @@ int main(void) {
       AbilitiesProjectile(&player, delta_time);
 
       EndMode2D();
-
-      DrawHUD(player);
       EndDrawing();
-
       //----------------------------------------------------------------------------------
 
+      // Actions
+      //----------------------------------------------------------------------------------
       if (IsKeyPressed(KEY_ESCAPE))
-        set_screen('p');
+        set_screen(paused);
       else if (IsKeyPressed(KEY_TAB))
-        set_screen('i');
+        set_screen(inventory);
+      //----------------------------------------------------------------------------------
     }
   }
 
