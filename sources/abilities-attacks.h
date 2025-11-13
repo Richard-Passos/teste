@@ -12,6 +12,11 @@ void AbilitiesProjectile(Player *player, float delta);
 
 void UpdateAbilityAcquisition(Player *player);
 
+bool DashAbility(Player *player, Monster *monster, int monsters_count);
+
+void HealAbility(Player *player, float delta);
+void DrawHealingEffect(Player *player);
+
 void DrawAbilities();
 
 

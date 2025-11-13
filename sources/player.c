@@ -1,6 +1,3 @@
-//
-// Created by richa on 26/10/2025.
-//
 
 #include "raylib.h"
 #include "player.h"
@@ -18,28 +15,106 @@ bool has_collided(Player *player, Wall *wall) {
     );
 }
 
-int jumps = 0;
+void PlayerMonsterCollision(Player *player, float delta) {
+
+    if (player->combat.invuln_timer > 0.0f) {
+        player->combat.invuln_timer -= delta;
+        if (player->combat.invuln_timer <= 0.0f) {
+            player->combat.invulnerable = false;
+            player->combat.invuln_timer = 0.0f;
+        }
+    }
+
+    if (player->combat.hurt_timer > 0.0f) {
+        player->combat.hurt_timer -= delta;
+        if (player->combat.hurt_timer < 0.0f) player->combat.hurt_timer = 0.0f;
+    }
+
+    // Só checamos colisões para aplicar dano caso NÃO esteja invulnerável
+    if (player->combat.invulnerable) return;
+
+    for (int i = 0; i < monsters_count; i++) {
+        // pula monstros "mortos"
+        if (monsters[i].hitbox.width == 0 || monsters[i].hitbox.height == 0) continue;
+
+        if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+            // Aplica dano
+            player->combat.life -= 1;
+            if (player->combat.life < 0) player->combat.life = 0;
+
+            // Invulnerabilidade + efeito visual
+            player->combat.invulnerable = true;
+            player->combat.invuln_timer = 1.0f;
+            player->combat.hurt_timer = 0.1f;
+
+            // Knockback: define direção/opções
+            // Se o jogador está à esquerda do monstro, empurra para a esquerda (-1)
+            float dir = (player->hitbox.x < monsters[i].hitbox.x) ? -1.0f : 1.0f;
+            player->combat.push_dir = dir;
+            player->combat.push_speed = 420.0f;  // velocidade horizontal do knockback (ajustar)
+            player->combat.push_timer = 0.18f;   // duração do empurrão em segundos (ajustar)
+
+            // Aplica pequena elevação imediata se estiver no chão para dar "pop"
+            if (player->on_ground) {
+                player->speed.y = -220.0f;
+                player->on_ground = false;
+            } else {
+                // Se já no ar, pode aplicar um impacto menor
+                player->speed.y = -120.0f;
+            }
+
+            break; // apenas um hit por frame
+        }
+    }
+}
 
 void update_player(Player *player, float delta) {
-    // Movement horizontal
-    //--------------------------------------------------------------------------------------
-    player->speed.x = 0.0f;
-
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) {
-        player->speed.x = -PLAYER_HOR_SPEED;
-        player->facing_right = false;
-    }
-    else if (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)) {
-        player->speed.x = PLAYER_HOR_SPEED;
-        player->facing_right = true;
+    // ---------------------------------------------------------
+    // 1) Atualizar timers de combate
+    // ---------------------------------------------------------
+    if (player->combat.push_timer > 0.0f) {
+        player->combat.push_timer -= delta;
+        if (player->combat.push_timer < 0.0f)
+            player->combat.push_timer = 0.0f;
     }
 
 
+    // ---------------------------------------------------------
+    // 2) Movimentação horizontal e Dash
+    // ---------------------------------------------------------
+    if (player->combat.push_timer > 0.0f) {
+        player->speed.x = player->combat.push_dir * player->combat.push_speed;
+    } else {
+        player->speed.x = 0.0f;
+
+        bool dash_hit = DashAbility(player, monsters, monsters_count);
+
+        if (dash_hit) {
+            player->speed.x = 0.0f;
+            return;
+        }
+
+        if (player->dash.recovery > 0.0f) {
+            return;
+        }
+        else {
+            if (!player->dash.active) {
+                if (IsKeyDown(KEY_LEFT)) {
+                    player->speed.x = -PLAYER_HOR_SPEED;
+                    player->facing_right = false;
+                } else if (IsKeyDown(KEY_RIGHT)) {
+                    player->speed.x = PLAYER_HOR_SPEED;
+                    player->facing_right = true;
+                }
+            }
+        }
+    }
+
+
+    // Aplica movimento horizontal
     player->hitbox.x += player->speed.x * delta;
-    //--------------------------------------------------------------------------------------
 
-    // Collision horizontal
-    //--------------------------------------------------------------------------------------
+    // Colisão horizontal com paredes
     for (int i = 0; i < walls_count; i++) {
         Wall *wall = &walls[i];
         if (has_collided(player, wall)) {
@@ -48,50 +123,45 @@ void update_player(Player *player, float delta) {
             else if (player->speed.x < 0)
                 player->hitbox.x = wall->hitbox.x + wall->hitbox.width;
             player->speed.x = 0;
+            player->combat.push_timer = 0.0f;
         }
     }
-    //--------------------------------------------------------------------------------------
 
-    // Movement vertical
-    //--------------------------------------------------------------------------------------
+    // ---------------------------------------------------------
+    // 3) Movimentação vertical (gravidade e pulo)
+    // ---------------------------------------------------------
     player->speed.y += GRAVITY * delta;
 
-    // Verifica início de queda: se não estiver no chão e velocidade > 0 (caindo)
     bool falling = (player->speed.y > 0 && !player->on_ground);
 
-    if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z)) {
-        // Pulo normal do chão
+    if ((IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z)) && player->combat.push_timer <= 0.0f) {
         if (player->on_ground && player->can_jump) {
             player->speed.y = -PLAYER_JUMP_SPEED;
-            player->jump_count = 1; // Conta como 1 pulo
+            player->jump_count = 1;
             player->can_jump = true;
         }
-        // Pulo duplo (no ar)
         else if (!player->on_ground && player->jump_count == 1) {
             player->speed.y = -PLAYER_JUMP_SPEED;
-            player->jump_count = 2; // Agora usou o segundo pulo
+            player->jump_count = 2;
         }
-        // Caso tenha caído sem pular (sem estar no chão e sem pulo anterior)
         else if (!player->on_ground && player->jump_count == 0 && falling) {
             player->speed.y = -PLAYER_JUMP_SPEED;
-            player->jump_count = 2; // Marca como se fosse o segundo pulo
+            player->jump_count = 2;
         }
     }
 
     player->hitbox.y += player->speed.y * delta;
 
-    // --- Colisão vertical ---
+    // Colisão vertical
     bool grounded_this_frame = false;
-
     for (int i = 0; i < walls_count; i++) {
         Wall *wall = &walls[i];
-
         if (has_collided(player, wall)) {
             if (player->speed.y > 0) {
                 player->hitbox.y = wall->hitbox.y - player->hitbox.height;
                 grounded_this_frame = true;
                 player->speed.y = 0;
-                player->jump_count = 0;  // Reset total de pulos ao tocar o chão
+                player->jump_count = 0;
                 player->can_jump = true;
             } else if (player->speed.y < 0) {
                 player->hitbox.y = wall->hitbox.y + wall->hitbox.height;
@@ -99,67 +169,54 @@ void update_player(Player *player, float delta) {
             }
         }
     }
-
     player->on_ground = grounded_this_frame;
 
+    // ---------------------------------------------------------
+    // 4) Colisão com monstros
+    // ---------------------------------------------------------
+    PlayerMonsterCollision(player, delta);
 
-    //--------------------------------------------------------------------------------------
 
-    // Attack in any direction //
-
-
-    // Atualiza cooldown do ataque
+    // ---------------------------------------------------------
+    // 5) Ataque
+    // ---------------------------------------------------------
     if (player->attack_cooldown > 0.0f)
         player->attack_cooldown -= delta;
 
-    // Inicia ataque se a tecla for pressionada e o cooldown acabou
-    if (IsKeyPressed(KEY_X) && player->attack_cooldown <= 0.0f) {
-        // Prioridade de direção: baixo > cima > horizontal
-        int dir = 0; // 0 = horizontal, 1 = cima, -1 = baixo
-        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-            dir = -1;
-        else if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
-            dir = 1;
+    if (IsKeyPressed(KEY_X) && player->attack_cooldown <= 0.0f && player->combat.push_timer <= 0.0f) {
+        int dir = 0;
+        if (IsKeyDown(KEY_DOWN)) dir = -1;
+        else if (IsKeyDown(KEY_UP)) dir = 1;
 
-        // Somente bloqueia ataque para baixo no chão
-        if (dir == -1 && player->on_ground) {
-            // Ignora ataque para baixo no chão
-        } else {
+        if (!(dir == -1 && player->on_ground)) {
             player->is_attacking = true;
             player->attack_timer = 0.12f;
             player->attack_dir = dir;
             memset(player->monsters_hit, 0, sizeof(player->monsters_hit));
-
-            // Reseta cooldown (impede spam)
-            player->attack_cooldown = 0.4f; // tempo mínimo entre ataques
+            player->attack_cooldown = 0.4f;
         }
     }
 
-    // Atualiza ataque enquanto ativo
     if (player->is_attacking) {
         player->attack_timer -= delta;
 
-        // Atualiza hitbox conforme direção
         if (player->attack_dir == 1) {
-            // Cima
             player->attack_box = (Rectangle){
                 player->hitbox.x + player->hitbox.width / 4.0f,
                 player->hitbox.y - WALL_SIZE * 1.5f,
                 player->hitbox.width / 2.0f,
                 WALL_SIZE * 1.5f
             };
-        }
-        else if (player->attack_dir == -1) {
-            // Baixo
+        } else if (player->attack_dir == -1) {
+            // baixo
             player->attack_box = (Rectangle){
                 player->hitbox.x + player->hitbox.width / 4.0f,
                 player->hitbox.y + player->hitbox.height,
                 player->hitbox.width / 2.0f,
                 WALL_SIZE * 1.5f
             };
-        }
-        else {
-            // Frente
+        } else {
+            // frente
             float offsetX = (player->facing_right) ? player->hitbox.width : -WALL_SIZE * 2;
             player->attack_box = (Rectangle){
                 player->hitbox.x + offsetX,
@@ -169,35 +226,28 @@ void update_player(Player *player, float delta) {
             };
         }
 
-
-        // Checagem de colisão com monstros
         for (int j = 0; j < monsters_count; j++) {
             if (!player->monsters_hit[j]) {
                 if (CheckCollisionRecs(player->attack_box, monsters[j].hitbox)) {
-                    monsters[j].life -= 1; // 1 de dano
+                    monsters[j].life -= 1;
                     monsters[j].hurt_timer = 0.1f;
                     monsters[j].invulnerable = true;
                     monsters[j].invuln_time = 0.3f;
 
-                    // ganhar alma sempre que bater com limite de 100
-                    if (player->souls < 100)
-                        player->souls += 10;
-                    if (player->souls > 100)
-                        player->souls = 100;
-                    if (player->souls < 0)
-                        player->souls = 0;
+                    if (player->souls < 100) player->souls += 10;
+                    if (player->souls > 100) player->souls = 100;
+                    if (player->souls < 0) player->souls = 0;
 
-                    // Marca que já foi atingido neste ataque
                     player->monsters_hit[j] = true;
 
-                    // Se morrer, remove e adiciona dinheiro
                     if (monsters[j].life <= 0) {
                         monsters[j].hitbox.height = 0;
                         monsters[j].hitbox.width = 0;
+                        monsters[j].hitbox.x = -1;
+                        monsters[j].hitbox.y = -1;
 
                         int gained = GetRandomValue(35, 45);
                         player->money += gained;
-
                         player->last_money_gain = gained;
                         player->money_gain_timer = 1.5f;
                     }
@@ -211,20 +261,21 @@ void update_player(Player *player, float delta) {
                 }
             }
         }
-        // Termina ataque quando o timer zera
+
         if (player->attack_timer <= 0.0f)
             player->is_attacking = false;
     }
-    // diminuir timer do dinheiro
+
+    // Timer do dinheiro
     if (player->money_gain_timer > 0.0f) {
         player->money_gain_timer -= delta;
-        if (player->money_gain_timer < 0.0f)
-            player->money_gain_timer = 0.0f;
+        if (player->money_gain_timer < 0.0f) player->money_gain_timer = 0.0f;
     }
-    // ===========================================
-    // HABILIDADE (F) - Projétil de almas
-    // ===========================================
 
+    // Projetil de almas + aquisição de habilidades
     AbilitiesProjectile(player, delta);
     UpdateAbilityAcquisition(player);
+
+    // Cura
+    HealAbility(player, delta);
 }

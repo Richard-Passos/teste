@@ -19,6 +19,33 @@ typedef struct AbilityProjectile {
 } AbilityProjectile;
 
 typedef struct {
+    bool active;
+    float timer;
+    float cooldown;
+    bool hit_confirmed;
+    float recovery;
+} DashState;
+
+typedef struct {
+    int life;
+    int max_life;
+
+    bool invulnerable;
+    float invuln_timer;
+    float hurt_timer;
+
+    float push_timer;
+    float push_dir;
+    float push_speed;
+
+    float heal_cooldown;
+    float heal_cooldown_max;
+    bool is_healing;
+    float heal_hold_time;
+    float heal_hold_needed;
+} PlayerCombat;
+
+typedef struct {
     Rectangle hitbox;
     Speed speed;
     bool can_jump;
@@ -36,6 +63,8 @@ typedef struct {
     int last_money_gain;
     int souls;
     AbilityProjectile abilitySoulProjectile;
+    DashState dash;
+    PlayerCombat combat;
 } Player;
 
 

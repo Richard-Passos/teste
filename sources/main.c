@@ -55,6 +55,12 @@ int main(void) {
   player.souls = 0;
   player.abilitySoulProjectile.active = false;
   player.abilitySoulProjectile.acquired = false;
+  player.combat.life = 5;
+  player.combat.max_life = 5;
+  player.combat.invulnerable = false;
+  player.combat.invuln_timer = 0;
+  player.combat.hurt_timer = 0;
+  player.combat.heal_hold_needed = 1.0f;
 
   if (abilities_count > 0) {
     player.abilitySoulProjectile.hitbox = abilities[0].hitbox;
@@ -88,11 +94,27 @@ int main(void) {
       ClearBackground(LIGHTGRAY);
       DrawHUD(player);
 
+      // Tudo dentro do modo 2D se move com a câmera
       BeginMode2D(camera);
+
       draw_map();
       draw_monsters();
       DrawAbilities();
-      DrawRectangleRec(player.hitbox, GREEN);
+
+      // Escolhe cor do player com base no estado de dano
+      Color color_player = GREEN;
+
+      if (player.combat.hurt_timer > 0) {
+        // Piscar branco semi-transparente
+        if (player.combat.hurt_timer>0)
+          color_player = WHITE;
+        else
+          color_player = (Color){255, 255, 255, 90};
+      }
+
+      // Desenha o player com a cor de piscada
+      DrawRectangleRec(player.hitbox, color_player);
+      DrawHealingEffect(&player);
 
       if (player.is_attacking) {
         DrawRectangleRec(player.attack_box, (Color){0, 0, 0, 120});
