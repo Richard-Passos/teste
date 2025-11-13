@@ -16,6 +16,10 @@ bool save_game_state();
 
 bool load_game_state();
 
+void set_game_state(Game_state);
+
+void reset_game_state();
+
 extern Game_state game_state;
 extern int game_state_size;
 #endif //HOLLOW_GAME_STATE_H

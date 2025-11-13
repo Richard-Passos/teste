@@ -7,6 +7,7 @@
 #include "enemies.h"
 #include "HUD.h"
 #include "abilities-attacks.h"
+#include "game_state.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point

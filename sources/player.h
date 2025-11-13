@@ -29,14 +29,13 @@ typedef struct {
     Rectangle attack_box;
     bool facing_right;
     bool monsters_hit[MAX_MONSTERS];
-    int attack_dir;     // 1 = cima, 0 = frente, -1 = baixo
+    int attack_dir; // 1 = cima, 0 = frente, -1 = baixo
     float attack_cooldown;
     int money;
     float money_gain_timer;
     int last_money_gain;
     int souls;
     AbilityProjectile abilitySoulProjectile;
-
 } Player;
 
 

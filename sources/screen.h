@@ -6,10 +6,18 @@
 #define HOLLOW_SCREEN_H
 #include "raylib.h"
 
+#define MAX_LABEL_SIZE 51
+
 typedef struct {
     Texture texture;
     Rectangle hitbox;
 } Asset;
+
+typedef struct {
+    char label[MAX_LABEL_SIZE];
+    Rectangle hitbox;
+    bool is_active;
+} Action;
 
 typedef enum {
     menu,
@@ -19,6 +27,11 @@ typedef enum {
     win,
     game_over,
     help
+} Screen_name;
+
+typedef struct {
+    Screen_name name;
+    bool is_loaded;
 } Screen;
 
 int handle_screens();
@@ -31,14 +44,13 @@ void handle_inventory_screen();
 
 void handle_help_screen();
 
-void set_screen(Screen);
+void set_screen(Screen_name);
 
 bool is_button_pressed(Asset);
 
 void draw_asset(Asset);
 
-Asset add_asset(char [], Rectangle);
+void add_asset(char [], Rectangle);
 
 extern Screen screen;
-extern bool is_screen_loaded;
 #endif //HOLLOW_SCREEN_H

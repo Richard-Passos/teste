@@ -8,24 +8,23 @@
 #include "game_state.h"
 #include "config.h"
 
-#define MAX_SCREEN_ASSETS 6
+#define MAX_SCREEN_ASSETS 2
 
-Screen screen = menu;
-bool is_screen_loaded = false;
+Screen screen = {menu, false};
 
 Asset screen_assets[MAX_SCREEN_ASSETS];
 int screen_assets_size = 0;
 
 int handle_screens() {
-    bool found_screen = 1;
+    bool found_screen = 0;
 
-    if (screen == menu)
+    if (screen.name == menu)
         handle_menu_screen();
-    else if (screen == help)
+    else if (screen.name == help)
         handle_help_screen();
-    else if (screen == paused)
+    else if (screen.name == paused)
         handle_paused_screen();
-    else if (screen == inventory)
+    else if (screen.name == inventory)
         handle_inventory_screen();
     else {
         found_screen = 0;
@@ -37,7 +36,7 @@ int handle_screens() {
 void handle_menu_screen() {
     // Load
     //----------------------------------------------------------------------------------
-    if (!is_screen_loaded) {
+    if (!screen.is_loaded) {
         add_asset(
             "../assets/menu_background.png",
             (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
@@ -51,9 +50,8 @@ void handle_menu_screen() {
         add_asset("../assets/wall.png", (Rectangle){300, 350, 32, 32});
         add_asset("../assets/wall.png", (Rectangle){300, 400, 32, 32});
 
-        is_screen_loaded = true;
+        screen.is_loaded = true;
     }
-
     //----------------------------------------------------------------------------------
 
     // Init
@@ -84,35 +82,31 @@ void handle_menu_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if
-    (is_button_pressed(play_button)) {
+    if (is_button_pressed(play_button)) {
+        reset_game_state();
         save_game_state();
         set_screen(start);
-    } else if
-    (is_button_pressed(load_button)) {
+    } else if (is_button_pressed(load_button)) {
         load_game_state();
         set_screen(start);
-    } else if
-    (is_button_pressed(help_button)) {
+    } else if (is_button_pressed(help_button)) {
         set_screen(help);
-    } else if
-    (is_button_pressed(exit_button)) {
+    } else if (is_button_pressed(exit_button)) {
         CloseWindow();
     }
-
     //----------------------------------------------------------------------------------
 }
 
 void handle_paused_screen() {
     // Load
     //----------------------------------------------------------------------------------
-    if (!is_screen_loaded) {
+    if (!screen.is_loaded) {
         add_asset(("../assets/wall.png"), (Rectangle){300, 150, 32, 32});
         add_asset("../assets/wall.png", (Rectangle){300, 200, 32, 32});
         add_asset("../assets/wall.png", (Rectangle){300, 250, 32, 32});
         add_asset("../assets/wall.png", (Rectangle){300, 300, 32, 32});
 
-        is_screen_loaded = true;
+        screen.is_loaded = true;
     }
     //----------------------------------------------------------------------------------
 
@@ -190,49 +184,13 @@ void handle_help_screen() {
     //----------------------------------------------------------------------------------
 }
 
-void handle_win_screen() {
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-    ClearBackground(PINK);
-
-    DrawText("WIN", 16, 16, 32, WHITE);
-    EndDrawing();
-    //----------------------------------------------------------------------------------
-
-    // Actions
-    //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(menu);
-    }
-    //----------------------------------------------------------------------------------
-}
-
-void handle_game_over_screen() {
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-    ClearBackground(BLACK);
-
-    DrawText("GAME OVER", 16, 16, 32, WHITE);
-    EndDrawing();
-    //----------------------------------------------------------------------------------
-
-    // Actions
-    //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(menu);
-    }
-    //----------------------------------------------------------------------------------
-}
-
-void set_screen(Screen s) {
+void set_screen(Screen_name name) {
     for (int i = 0; i < screen_assets_size; i++)
         UnloadTexture(screen_assets[i].texture);
 
     screen_assets_size = 0;
-    is_screen_loaded = false;
-    screen = s;
+    screen.is_loaded = false;
+    screen.name = name;
 }
 
 bool is_button_pressed(Asset button) {
@@ -243,8 +201,8 @@ void draw_asset(Asset button) {
     DrawTexture(button.texture, button.hitbox.x, button.hitbox.y, WHITE);
 }
 
-Asset add_asset(char texture_path[], Rectangle hitbox) {
-    screen_assets[screen_assets_size] = (Asset){LoadTexture(texture_path), hitbox};
-
-    return screen_assets[screen_assets_size++];
+void add_asset(char texture_path[], Rectangle hitbox) {
+    screen_assets[screen_assets_size++] = (Asset){LoadTexture(texture_path)};
 }
+
+
