@@ -18,6 +18,8 @@ int screen_assets_size = 0;
 int handle_screens() {
     bool found_screen = 0;
 
+    return found_screen;
+
     if (screen.name == menu)
         handle_menu_screen();
     else if (screen.name == help)
