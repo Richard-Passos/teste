@@ -103,7 +103,7 @@ void draw_map() {
     for (int i = 0; i < walls_count; i++)
         DrawTexture(walls[i].texture, walls[i].hitbox.x, walls[i].hitbox.y, WHITE);
 
-    draw_monsters(); // chama aqui
+    draw_monsters();
 
     for (int i = 0; i < items_count; i++)
         DrawRectangleRec(items[i].hitbox, GOLD);

@@ -38,7 +38,7 @@ void DrawHUD(Player *player) {
     float fillWidth = (souls / maxSouls) * barWidth;
 
     // Cor de fundo da barra
-    DrawRectangle(10, 40, 200, 20, (Color){80, 80, 80, 255});
+    DrawRectangle(10, 50, 200, 20, (Color){80, 80, 80, 255});
 
     // Cor da barra conforme a quantidade
     Color fillColor;
@@ -49,11 +49,23 @@ void DrawHUD(Player *player) {
     }
 
     // Desenha o preenchimento
-    DrawRectangle(10, 40, fillWidth, 20, fillColor);
+    DrawRectangle(10, 50, fillWidth, 20, fillColor);
 
     // Moldura
-    DrawRectangleLines(10, 40, barWidth, 20, BLACK);
+    DrawRectangleLines(10, 50, barWidth, 20, BLACK);
 
+    // ==============================
+    // Barra de Vida
+    // ==============================
+    int squareSize = 30;
+    int spacing = 5;
+    int startX = 10;
+    int startY = 10;
 
-
+    for (int i = 0; i < player->combat.max_life; i++) {
+        int x = startX + i * (squareSize + spacing);
+        Color color = (i < player->combat.life) ? WHITE : (Color){100, 100, 100, 255};
+        DrawRectangle(x, startY, squareSize, squareSize, color);
+        DrawRectangleLines(x, startY, squareSize, squareSize, BLACK);
+    }
 }
