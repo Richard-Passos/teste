@@ -5,6 +5,9 @@
 #include <ctype.h>
 #include "raylib.h"
 #include "screen.h"
+
+#include <string.h>
+
 #include "game_state.h"
 #include "config.h"
 #include "camera.h"
@@ -66,6 +69,8 @@ void handle_menu_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
+        unload_map();
+
         add_asset(
             "../assets/menu_background.png",
             (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
@@ -79,6 +84,7 @@ void handle_menu_screen() {
         add_action("Carregar Jogo", (Rectangle){center_on_screen(600), 320, 600, 60});
         add_action("Ajuda", (Rectangle){center_on_screen(600), 390, 600, 60});
         add_action("Sair", (Rectangle){center_on_screen(600), 460, 600, 60});
+
 
         screen.is_loaded = true;
     }
@@ -378,12 +384,12 @@ void handle_shop_screen() {
 }
 
 void set_screen(Screen_name name) {
-    unload_map();
-
     for (int i = 0; i < screen_assets_size; i++)
         UnloadTexture(screen_assets[i].texture);
 
-    last_screen = screen.name;
+    if (screen.name == village || screen.name == start || screen.name == shop)
+        last_screen = screen.name;
+
     screen_assets_size = 0;
     screen_actions_size = 0;
     action_active_index = -1;

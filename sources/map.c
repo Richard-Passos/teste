@@ -17,6 +17,7 @@ char map_path[100];
 
 Texture2D map_textures[99];
 int map_textures_count = 0;
+bool should_load_textues = true;
 
 Rectangle boss_start = {0};
 
@@ -30,13 +31,26 @@ int load_map(char path[]) {
     if (strcmp(path, map_path) == 0) return 1;
 
     strcpy(map_path, path);
-    //----------------------------------------------------------------------------------
 
-    add_texture("../assets/wall.png");
-    add_texture("../assets/wall.png");
+    if (should_load_textues) {
+        add_texture("../assets/wall.png");
+        add_texture("../assets/wall.png");
+
+        should_load_textues = false;
+    }
+    //----------------------------------------------------------------------------------
 
     Texture wall_texture = map_textures[0],
             bench_texture = map_textures[1];
+
+    walls_count = 0;
+    items_count = 0;
+    benchs_count = 0;
+    abilities_count = 0;
+    monsters_count = 0;
+    teleports_count = 0;
+    shop_hitbox = (Rectangle){0};
+    boss_start = (Rectangle){0};
 
     FILE *file = fopen(path, "r");
     if (!file) return 0;
@@ -107,14 +121,8 @@ void unload_map() {
         UnloadTexture(map_textures[i]);
     }
 
-    walls_count = 0;
-    items_count = 0;
-    benchs_count = 0;
-    abilities_count = 0;
-    monsters_count = 0;
-    teleports_count = 0;
-    shop_hitbox = (Rectangle){0};
-    boss_start = (Rectangle){0};
+    strcpy(map_path, "");
+    should_load_textues = true;
 }
 
 void draw_map() {
