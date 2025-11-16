@@ -50,6 +50,7 @@ void reset_game_state() {
     player.on_ground = false;
     player.money = 0;
     player.souls = 0;
+    player.max_souls = 100;
     player.abilitySoulProjectile.active = false;
     player.abilitySoulProjectile.acquired = false;
     player.combat.life = 5;
@@ -58,6 +59,7 @@ void reset_game_state() {
     player.combat.invuln_timer = 0;
     player.combat.hurt_timer = 0;
     player.combat.heal_hold_needed = 1.0f;
+    player.is_sitting = false;
 
     game_state.level = MIN_LEVEL;
     game_state.player = player;

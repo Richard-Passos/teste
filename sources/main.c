@@ -29,11 +29,6 @@ int main(void) {
   // Init player and camera
   //--------------------------------------------------------------------------------------
   Player *player = &game_state.player;
-
-  if (abilities_count > 0) {
-    player->abilitySoulProjectile.hitbox = abilities[0].hitbox;
-  }
-
   init_camera((Vector2){player->hitbox.x, player->hitbox.y});
   //--------------------------------------------------------------------------------------
 
@@ -57,10 +52,12 @@ int main(void) {
       update_player(delta_time);
       update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
       update_monsters(delta_time);
-      UpdateAbilityAcquisition(player);
       //----------------------------------------------------------------------------------
 
+      // Update
+      //----------------------------------------------------------------------------------
       draw_map();
+      //----------------------------------------------------------------------------------
 
       // Actions
       //----------------------------------------------------------------------------------

@@ -1,8 +1,8 @@
 //
 // Created by Harry on 10/11/2025.
 //
+#include <stdio.h>
 #include "abilities-attacks.h"
-
 #include "raylib.h"
 #include "player.h"
 #include "enemies.h"
@@ -14,9 +14,13 @@ Ability abilities[MAX_ABILITIES];
 int abilities_count = 0;
 
 void add_ability(int x, int y) {
-    if (abilities_count < MAX_ABILITIES) {
+    Player *player = &game_state.player;
+
+    if (abilities_count < MAX_ABILITIES)
         abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
-    }
+
+    if (abilities_count > 0)
+        player->abilitySoulProjectile.hitbox = abilities[0].hitbox;
 }
 
 void draw_abilities() {
@@ -30,14 +34,14 @@ void AbilitiesProjectile(Player *player, float delta) {
     // ===========================================
 
     if (player->abilitySoulProjectile.acquired && IsKeyPressed(KEY_F) && !player->abilitySoulProjectile.active) {
-        if (player->souls >= 33) {
-            player->souls -= 33; // gasta souls
+        if (player->souls >= player->max_souls / 3.0) {
+            player->souls -= player->max_souls / 3.0; // gasta souls
             if (player->souls < 0) player->souls = 0;
 
             player->abilitySoulProjectile.active = true;
 
-            int projWidth = 50;
-            int projHeight = 32;
+            int projWidth = TILE_SIZE * 1.25;
+            int projHeight = TILE_SIZE;
             float projSpeed = 400;
 
             if (player->facing_right) {
@@ -107,13 +111,15 @@ void AbilitiesProjectile(Player *player, float delta) {
 }
 
 
-void UpdateAbilityAcquisition(Player *player) {
+void update_ability_acquisition() {
+    Player *player = &game_state.player;
+
     if (!player->abilitySoulProjectile.acquired &&
         CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
         // Mostra um prompt para o jogador
         DrawText("Inspecionar",
                  player->abilitySoulProjectile.hitbox.x - 30,
-                 player->abilitySoulProjectile.hitbox.y - 40, 20, WHITE);
+                 player->abilitySoulProjectile.hitbox.y - 40, 32, WHITE);
 
         if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             player->abilitySoulProjectile.acquired = true;
@@ -222,7 +228,7 @@ void HealAbility(Player *player, float delta) {
     }
 }
 
-void DrawHealingEffect() {
+void draw_healing_effect() {
     Player *player = &game_state.player;
 
     if (!player->combat.is_healing) return;

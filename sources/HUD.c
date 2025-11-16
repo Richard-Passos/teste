@@ -31,7 +31,7 @@ void draw_hud() {
     // ==============================
     // Barra de Almas
     // ==============================
-    float maxSouls = 100.0f;
+    float maxSouls = player->max_souls;
     float souls = player->souls;
 
     float barWidth = 200;

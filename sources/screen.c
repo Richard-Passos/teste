@@ -9,7 +9,10 @@
 #include "config.h"
 #include "camera.h"
 #include "abilities-attacks.h"
+#include "bench.h"
 #include "map.h"
+#include "shop.h"
+#include "teleport.h"
 
 #define MAX_SCREEN_ASSETS 2
 #define MAX_SCREEN_ACTIONS 4
@@ -306,8 +309,6 @@ void handle_village_screen() {
     //--------------------------------------------------------------------------------------
     if (!load_map(VILLAGE_FILE_PATH)) {
         CloseWindow();
-
-        return 1;
     }
     //--------------------------------------------------------------------------------------
 
@@ -318,7 +319,46 @@ void handle_village_screen() {
     update_player(delta_time);
     update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
     update_monsters(delta_time);
-    UpdateAbilityAcquisition(player);
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
+    draw_map();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    handle_benchs_interaction();
+
+    if (handle_shop_interaction())
+        set_screen(shop);
+
+    if (IsKeyPressed(KEY_ESCAPE))
+        set_screen(paused);
+    else if (IsKeyPressed(KEY_TAB))
+        set_screen(inventory);
+    else if (handle_teleports_interaction())
+        set_screen(start);
+    //----------------------------------------------------------------------------------
+}
+
+void handle_shop_screen() {
+    Player *player = &game_state.player;
+
+    // Load
+    //--------------------------------------------------------------------------------------
+    if (!load_map(SHOP_FILE_PATH)) {
+        CloseWindow();
+    }
+    //--------------------------------------------------------------------------------------
+
+    // Update
+    //----------------------------------------------------------------------------------
+    float delta_time = GetFrameTime();
+
+    update_player(delta_time);
+    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
+    update_monsters(delta_time);
     //----------------------------------------------------------------------------------
 
     // Draw
@@ -332,51 +372,8 @@ void handle_village_screen() {
         set_screen(paused);
     else if (IsKeyPressed(KEY_TAB))
         set_screen(inventory);
-    else if (CheckCollisionRecs(player->hitbox, level_hitbox))
-        set_screen(start);
-    //----------------------------------------------------------------------------------
-}
-
-void handle_shop_screen() {
-    // Load
-    //----------------------------------------------------------------------------------
-    if (!screen.is_loaded) {
-        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 220, 600, 60});
-
-        screen.is_loaded = true;
-    }
-    //----------------------------------------------------------------------------------
-
-    // Init
-    //----------------------------------------------------------------------------------
-    Action restart_action = screen_actions[0],
-            back_menu_action = screen_actions[1];
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-    ClearBackground(BLACK);
-
-    DrawText("GAME OVER", 16, 16, 32, WHITE);
-
-    draw_action(&restart_action);
-    draw_action(&back_menu_action);
-    EndDrawing();
-    //----------------------------------------------------------------------------------
-
-    // Actions
-    //----------------------------------------------------------------------------------
-    if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
-        reset_game_state();
-        save_game_state();
+    else if (handle_teleports_interaction())
         set_screen(last_screen);
-    } else if (is_action_pressed(&back_menu_action)) {
-        reset_game_state();
-        save_game_state();
-        set_screen(menu);
-    }
     //----------------------------------------------------------------------------------
 }
 

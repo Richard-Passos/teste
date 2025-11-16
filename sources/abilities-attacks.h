@@ -19,13 +19,13 @@ void draw_abilities();
 
 void AbilitiesProjectile(Player *player, float delta);
 
-void UpdateAbilityAcquisition(Player *player);
+void update_ability_acquisition();
 
 bool DashAbility(Player *player);
 
 void HealAbility(Player *player, float delta);
 
-void DrawHealingEffect();
+void draw_healing_effect();
 
 extern Ability abilities[MAX_ABILITIES];
 extern int abilities_count;

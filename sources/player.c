@@ -259,9 +259,7 @@ void update_player(float delta) {
                     monsters[j].invulnerable = true;
                     monsters[j].invuln_time = 0.3f;
 
-                    if (player->souls < 100) player->souls += 10;
-                    if (player->souls > 100) player->souls = 100;
-                    if (player->souls < 0) player->souls = 0;
+                    if (player->souls <= player->max_souls - 10) player->souls += 10;
 
                     player->monsters_hit[j] = true;
 
@@ -299,7 +297,7 @@ void update_player(float delta) {
 
     // Projetil de almas + aquisição de habilidades
     AbilitiesProjectile(player, delta);
-    UpdateAbilityAcquisition(player);
+    update_ability_acquisition();
 
     // Cura
     HealAbility(player, delta);

@@ -50,8 +50,10 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/item.h
         sources/bench.c
         sources/bench.h
-        sources/level.c
-        sources/level.h
+        sources/teleport.c
+        sources/teleport.h
+        sources/shop.c
+        sources/shop.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

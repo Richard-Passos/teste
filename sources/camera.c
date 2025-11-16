@@ -7,7 +7,7 @@
 
 Camera2D camera = {0};
 
-Camera2D init_camera(Vector2 target) {
+void init_camera(Vector2 target) {
     camera.target = target;
     camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
     camera.rotation = 0.0f;

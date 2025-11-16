@@ -19,6 +19,7 @@
 
 #define MAP_FILE_PATH "../map.txt"
 #define VILLAGE_FILE_PATH "../village.txt"
+#define SHOP_FILE_PATH "../shop.txt"
 #define GAME_STATE_FILE_PATH "../game_state.bin"
 
 #endif //MY_RAYLIB_GAME_CONFIG_H

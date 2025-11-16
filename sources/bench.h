@@ -6,7 +6,7 @@
 #define HOLLOW_BENCH_H
 #include "raylib.h"
 
-#define MAX_BENCHS 128
+#define MAX_BENCHS 99
 
 typedef struct {
     Texture2D texture;
@@ -16,6 +16,8 @@ typedef struct {
 void add_bench(int, int, Texture2D);
 
 void draw_benchs();
+
+void handle_benchs_interaction();
 
 extern Bench benchs[MAX_BENCHS];
 extern int benchs_count;

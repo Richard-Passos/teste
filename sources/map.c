@@ -10,7 +10,8 @@
 #include "game_state.h"
 #include "HUD.h"
 #include "camera.h"
-#include "level.h"
+#include "teleport.h"
+#include "shop.h"
 
 char map_path[100];
 
@@ -18,13 +19,10 @@ Texture2D map_textures[99];
 int map_textures_count = 0;
 
 Rectangle boss_start = {0};
-Rectangle shop_hitbox = {0};
-Rectangle level_hitbox = {0};
 
 void add_texture(char texture_path[]) {
     map_textures[map_textures_count++] = LoadTexture(texture_path);
 }
-
 
 int load_map(char path[]) {
     // Load just once
@@ -81,11 +79,13 @@ int load_map(char path[]) {
                     break;
                 case 'S':
                 case 's':
-                    shop_hitbox = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    shop_hitbox = (Rectangle){
+                        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
+                    };
                     break;
-                case 'L':
-                case 'l':
-                    level_hitbox = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE * 3, TILE_SIZE};
+                case 'T':
+                case 't':
+                    add_teleport(x, y);
                     break;
                 default:
                     break;
@@ -112,8 +112,9 @@ void unload_map() {
     benchs_count = 0;
     abilities_count = 0;
     monsters_count = 0;
+    teleports_count = 0;
     shop_hitbox = (Rectangle){0};
-    level_hitbox = (Rectangle){0};
+    boss_start = (Rectangle){0};
 }
 
 void draw_map() {
@@ -124,21 +125,19 @@ void draw_map() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
-
-    draw_hud();
-
     // Tudo dentro do modo 2D se move com a câmera
     BeginMode2D(camera);
 
     draw_walls();
     draw_items();
     draw_benchs();
-    draw_abilities();
+    draw_teleports();
+    draw_shop();
     draw_monsters();
-    draw_player();
-    draw_level(level_hitbox);
+    draw_abilities();
 
-    DrawHealingEffect();
+    draw_player();
+    draw_healing_effect();
 
     if (player->is_attacking) {
         DrawRectangleRec(player->attack_box, GRAY);
@@ -146,10 +145,9 @@ void draw_map() {
     if (player->abilitySoulProjectile.active) {
         DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
     }
-
-    AbilitiesProjectile(player, delta_time);
-
     EndMode2D();
+    draw_hud();
+
     EndDrawing();
     //----------------------------------------------------------------------------------
 }

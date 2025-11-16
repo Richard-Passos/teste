@@ -57,9 +57,11 @@ typedef struct {
     float money_gain_timer;
     int last_money_gain;
     int souls;
+    int max_souls;
     AbilityProjectile abilitySoulProjectile;
     DashState dash;
     PlayerCombat combat;
+    bool is_sitting;
 } Player;
 
 void draw_player();

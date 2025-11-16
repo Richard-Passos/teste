@@ -17,7 +17,5 @@ void unload_map();
 void draw_map();
 
 extern Rectangle boss_start;
-extern Rectangle shop_hitbox;
-extern Rectangle level_hitbox;
 
 #endif
