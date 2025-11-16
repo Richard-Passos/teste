@@ -4,7 +4,7 @@
 #include "raylib.h"
 #include "config.h"
 
-#define WALL_SIZE 32
+#define WALL_SIZE 64
 #define MAX_MONSTERS 100
 
 typedef struct {

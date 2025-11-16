@@ -22,8 +22,8 @@ void AbilitiesProjectile(Player *player, float delta) {
 
             player->abilitySoulProjectile.active = true;
 
-            int projWidth = 50;
-            int projHeight = 32;
+            int projWidth = 3*WALL_SIZE/2;
+            int projHeight = WALL_SIZE;
             float projSpeed = 400;
 
             if (player->facing_right) {
@@ -111,66 +111,57 @@ void UpdateAbilityAcquisition(Player *player) {
     }
 }
 
-bool DashAbility(Player *player, Monster *monsters, int monsters_count) {
-    const float DASH_SPEED = 600.0f;
+bool DashAbility(Player *player, Monster *monsters, int monsters_count, float delta) {
+    const float DASH_SPEED = 1200.0f;
     const float DASH_DURATION = 0.15f;
     const float DASH_COOLDOWN = 1.0f;
 
-    float dt = GetFrameTime();
     bool dash_cancelled = false;
 
-    // Atualiza cooldown
+    // Cooldown normal
     if (player->dash.cooldown > 0.0f)
-        player->dash.cooldown -= dt;
+        player->dash.cooldown -= delta;
 
-    // Inicia o dash
+    // Inicia
     if (IsKeyPressed(KEY_C) && player->dash.cooldown <= 0.0f && !player->dash.active) {
         player->dash.active = true;
         player->dash.timer = DASH_DURATION;
         player->dash.cooldown = DASH_COOLDOWN;
-        player->dash.hit_confirmed = false; // novo campo: evita múltiplos hits
+        player->dash.hit_confirmed = false;
     }
 
-    // Se estiver em dash
     if (player->dash.active) {
-        player->dash.timer -= dt;
+
+        player->dash.timer -= delta;
 
         float dir = player->facing_right ? 1.0f : -1.0f;
-        player->speed.y = 0.0f; // ignora gravidade
         player->speed.x = dir * DASH_SPEED;
-        player->hitbox.x += player->speed.x * dt;
+        player->speed.y = 0;
 
-        // Verifica colisão apenas se ainda não cancelou
+        // colisão com monstros
         if (!player->dash.hit_confirmed) {
             for (int i = 0; i < monsters_count; i++) {
-                if (monsters[i].hitbox.width == 0 || monsters[i].hitbox.height == 0) continue;
-
                 if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+
                     player->dash.hit_confirmed = true;
                     dash_cancelled = true;
                     player->dash.active = false;
-                    player->dash.timer = 0.0f;
-                    player->speed.x = 0.0f;
-
-                    if (dir > 0)
-                        player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
-                    else
-                        player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
-
+                    player->speed.x = 0;
                     break;
                 }
             }
         }
 
-        // Encerra dash por tempo
+        // terminou o dash
         if (player->dash.timer <= 0.0f) {
             player->dash.active = false;
-            player->speed.x = 0.0f;
+            player->speed.x = 0;
         }
     }
 
     return dash_cancelled;
 }
+
 
 
 

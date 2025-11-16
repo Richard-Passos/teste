@@ -6,6 +6,12 @@
 Rectangle player_start = {0};
 Rectangle boss_start = {0};
 
+Bench benchs[MAX_BENCHS];
+int benchs_count = 0;
+
+Npc npcs[MAX_NPCS];
+int npcs_count = 0;
+
 Wall walls[MAX_WALLS];
 int walls_count = 0;
 
@@ -39,6 +45,18 @@ void add_monster(int x, int y, float z, float w) {
 void add_item(int x, int y) {
     if (items_count < MAX_ITEMS) {
         items[items_count++] = (Item){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+    }
+}
+
+void add_bench(int x, int y) {
+    if (benchs_count < MAX_ITEMS) {
+        benchs[benchs_count++] = (Bench){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+    }
+}
+
+void add_npc(int x, int y) {
+    if (npcs_count < MAX_ITEMS) {
+        npcs[npcs_count++] = (Npc){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
     }
 }
 
@@ -87,6 +105,9 @@ int load_map(char path[], Textures textures) {
                 case 'p':
                     add_wall(x, y, textures.Wall);
                     break;
+                case 'B':
+                case 'b':
+                    add_bench(x, y);
                 default:
                     break;
             }

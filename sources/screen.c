@@ -46,10 +46,10 @@ void handle_menu_screen() {
             "../assets/menu_logo.png",
             (Rectangle){SCREEN_WIDTH / 2.0 - 319.5, 25, 639, 241}
         );
-        add_asset("../assets/wall.png", (Rectangle){300, 250, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 300, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 350, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 400, 32, 32});
+        add_asset("../assets/start.png", (Rectangle){300, 250, 256, 128});
+        add_asset("../assets/continue.png", (Rectangle){300, 378, 256, 128});
+        add_asset("../assets/help.png", (Rectangle){300, 506, 256, 128});
+        add_asset("../assets/close.png", (Rectangle){300, 634, 256, 128});
 
         is_screen_loaded = true;
     }
@@ -107,10 +107,10 @@ void handle_paused_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!is_screen_loaded) {
-        add_asset(("../assets/wall.png"), (Rectangle){300, 150, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 200, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 250, 32, 32});
-        add_asset("../assets/wall.png", (Rectangle){300, 300, 32, 32});
+        add_asset(("../assets/continue.png"), (Rectangle){300, 150, 256, 128});
+        add_asset("../assets/inventory.png", (Rectangle){300, 278, 128});
+        add_asset("../assets/save.png", (Rectangle){300, 406, 256, 128});
+        add_asset("../assets/close.png", (Rectangle){300, 534, 256, 128});
 
         is_screen_loaded = true;
     }

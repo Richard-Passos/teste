@@ -9,13 +9,21 @@
 
 #define MAX_WALLS 1024
 #define MAX_ITEMS 128
-#define TILE_SIZE 32
+#define TILE_SIZE 64
+#define MAX_BENCHS 3
+#define MAX_NPCS 3
 
 typedef struct {
     Texture2D Wall;
 } Textures;
 
+typedef struct {
+    Rectangle hitbox;
+} Bench;
 
+typedef struct {
+    Rectangle hitbox;
+} Npc;
 
 typedef struct {
     Rectangle hitbox;

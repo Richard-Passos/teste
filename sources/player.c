@@ -87,25 +87,23 @@ void update_player(Player *player, float delta) {
     } else {
         player->speed.x = 0.0f;
 
-        bool dash_hit = DashAbility(player, monsters, monsters_count);
-
+        bool dash_hit = DashAbility(player, monsters, monsters_count, delta);
         if (dash_hit) {
-            player->speed.x = 0.0f;
-            return;
+            if (dash_hit) {
+                player->speed.x = 0.0f;
+                player->speed.y = 0.0f;
+                player->dash.active = false;
+                return;
+            }
         }
 
-        if (player->dash.recovery > 0.0f) {
-            return;
-        }
-        else {
-            if (!player->dash.active) {
-                if (IsKeyDown(KEY_LEFT)) {
-                    player->speed.x = -PLAYER_HOR_SPEED;
-                    player->facing_right = false;
-                } else if (IsKeyDown(KEY_RIGHT)) {
-                    player->speed.x = PLAYER_HOR_SPEED;
-                    player->facing_right = true;
-                }
+        if (!player->dash.active) {
+            if (IsKeyDown(KEY_LEFT)) {
+                player->speed.x = -PLAYER_HOR_SPEED;
+                player->facing_right = false;
+            } else if (IsKeyDown(KEY_RIGHT)) {
+                player->speed.x = PLAYER_HOR_SPEED;
+                player->facing_right = true;
             }
         }
     }
