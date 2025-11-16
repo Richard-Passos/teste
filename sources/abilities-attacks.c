@@ -1,16 +1,30 @@
 //
 // Created by Harry on 10/11/2025.
 //
+#include "abilities-attacks.h"
+
 #include "raylib.h"
 #include "player.h"
-#include "map.h"
+#include "enemies.h"
 #include "math.h"
+#include "config.h"
+#include "game_state.h"
 
+Ability abilities[MAX_ABILITIES];
+int abilities_count = 0;
 
+void add_ability(int x, int y) {
+    if (abilities_count < MAX_ABILITIES) {
+        abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+    }
+}
 
+void draw_abilities() {
+    for (int i = 0; i < abilities_count; i++)
+        DrawRectangleRec(abilities[i].hitbox, BROWN);
+}
 
 void AbilitiesProjectile(Player *player, float delta) {
-
     // ===========================================
     // HABILIDADE (F) - Projétil de almas
     // ===========================================
@@ -96,7 +110,6 @@ void AbilitiesProjectile(Player *player, float delta) {
 void UpdateAbilityAcquisition(Player *player) {
     if (!player->abilitySoulProjectile.acquired &&
         CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-
         // Mostra um prompt para o jogador
         DrawText("Inspecionar",
                  player->abilitySoulProjectile.hitbox.x - 30,
@@ -106,12 +119,11 @@ void UpdateAbilityAcquisition(Player *player) {
             player->abilitySoulProjectile.acquired = true;
             player->abilitySoulProjectile.hitbox = (Rectangle){0, 0, 0, 0};
             abilities[0].hitbox = (Rectangle){0, 0, 0, 0};
-
         }
     }
 }
 
-bool DashAbility(Player *player, Monster *monsters, int monsters_count) {
+bool DashAbility(Player *player) {
     const float DASH_SPEED = 600.0f;
     const float DASH_DURATION = 0.15f;
     const float DASH_COOLDOWN = 1.0f;
@@ -173,8 +185,6 @@ bool DashAbility(Player *player, Monster *monsters, int monsters_count) {
 }
 
 
-
-
 void HealAbility(Player *player, float delta) {
     // Atualiza cooldown
     if (player->combat.heal_cooldown > 0.0f) {
@@ -185,7 +195,6 @@ void HealAbility(Player *player, float delta) {
 
     // Pode começar a curar se tiver almas e cooldown zerado
     if (player->souls >= 33 && player->combat.heal_cooldown <= 0.0f) {
-
         // Segurando o botão A
         if (IsKeyDown(KEY_A)) {
             player->combat.is_healing = true;
@@ -202,8 +211,8 @@ void HealAbility(Player *player, float delta) {
                 player->combat.is_healing = false;
                 player->combat.heal_hold_time = 0.0f;
             }
-
-        } else { // Soltou antes de completar
+        } else {
+            // Soltou antes de completar
             player->combat.is_healing = false;
             player->combat.heal_hold_time = 0.0f;
         }
@@ -213,7 +222,9 @@ void HealAbility(Player *player, float delta) {
     }
 }
 
-void DrawHealingEffect(Player *player) {
+void DrawHealingEffect() {
+    Player *player = &game_state.player;
+
     if (!player->combat.is_healing) return;
 
     float progress = player->combat.heal_hold_time / player->combat.heal_hold_needed;
@@ -230,14 +241,8 @@ void DrawHealingEffect(Player *player) {
         float y = cy + sinf(angle) * radius;
 
         int size = 6 + 3 * progress;
-        Color c = (Color){255, 255, 255, (int)(150 + 100 * sinf(GetTime() * 5 + i))};
+        Color c = (Color){255, 255, 255, (int) (150 + 100 * sinf(GetTime() * 5 + i))};
 
         DrawRectangle(x - size / 2, y - size / 2, size, size, c);
     }
-}
-
-
-void DrawAbilities() {
-    for (int i = 0; i < abilities_count; i++)
-        DrawRectangleRec(abilities[i].hitbox, BROWN);
 }

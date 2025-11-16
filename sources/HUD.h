@@ -5,8 +5,5 @@
 #ifndef HOLLOW_HUD_H
 #define HOLLOW_HUD_H
 
-void DrawHUD(Player);
-
-
-
+void draw_hud();
 #endif //HOLLOW_HUD_H

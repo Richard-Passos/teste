@@ -2,12 +2,14 @@
 // Created by Harry on 10/11/2025.
 //
 
+#include "game_state.h"
 #include "raylib.h"
 #include "stdio.h"
 #include "player.h"
 
+void draw_hud() {
+    Player *player = &game_state.player;
 
-void DrawHUD(Player *player) {
     char moneyText[64];
     sprintf(moneyText, "Moedas: %d", player->money);
     DrawText(moneyText, 10, 750, 30, BLACK);
@@ -16,7 +18,7 @@ void DrawHUD(Player *player) {
     if (player->money_gain_timer > 0.0f) {
         // Fazer sumir depois de um tempo
         float alpha = player->money_gain_timer / 1.5f;
-        int transparency = (int)(255 * alpha);
+        int transparency = (int) (255 * alpha);
 
         Color gainColor = (Color){0, 0, 0, transparency};
 

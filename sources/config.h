@@ -15,8 +15,10 @@
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 800
+#define TILE_SIZE 32
 
 #define MAP_FILE_PATH "../map.txt"
-#define GAME_STATE_FILE_PATH "../game_state.txt"
+#define VILLAGE_FILE_PATH "../village.txt"
+#define GAME_STATE_FILE_PATH "../game_state.bin"
 
 #endif //MY_RAYLIB_GAME_CONFIG_H

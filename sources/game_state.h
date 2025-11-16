@@ -7,9 +7,11 @@
 
 #define MIN_LEVEL 1
 #define MAX_LEVEL 3
+#include "player.h"
 
 typedef struct {
     int level;
+    Player player;
 } Game_state;
 
 bool save_game_state();

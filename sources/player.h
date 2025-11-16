@@ -4,12 +4,7 @@
 
 #ifndef MY_RAYLIB_GAME_PLAYER_H
 #define MY_RAYLIB_GAME_PLAYER_H
-#include "map.h"
-
-typedef struct {
-    float x;
-    float y;
-} Speed;
+#include "enemies.h"
 
 typedef struct AbilityProjectile {
     Rectangle hitbox;
@@ -47,7 +42,7 @@ typedef struct {
 
 typedef struct {
     Rectangle hitbox;
-    Speed speed;
+    Vector2 speed;
     bool can_jump;
     bool on_ground;
     int jump_count;
@@ -67,13 +62,8 @@ typedef struct {
     PlayerCombat combat;
 } Player;
 
+void draw_player();
 
-Rectangle get_player_rect(Player player);
-
-
-void update_player(
-    Player *player,
-    float delta
-);
+void update_player(float delta);
 
 #endif //MY_RAYLIB_GAME_PLAYER_H

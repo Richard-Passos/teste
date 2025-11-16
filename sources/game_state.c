@@ -4,10 +4,10 @@
 
 #include <string.h>
 #include "raylib.h"
-#include "config.h"
 #include "game_state.h"
+#include "config.h"
 
-Game_state game_state = {MIN_LEVEL};
+Game_state game_state;
 int game_state_size = sizeof(Game_state);
 
 bool save_game_state() {
@@ -41,5 +41,24 @@ void set_game_state(Game_state gs) {
 }
 
 void reset_game_state() {
+    Player player = {0};
+    player.hitbox = (Rectangle){0, 0,TILE_SIZE, TILE_SIZE};
+    player.speed = (Vector2){0, 0};
+    player.can_jump = false;
+    player.is_attacking = false;
+    player.attack_timer = 0.0f;
+    player.on_ground = false;
+    player.money = 0;
+    player.souls = 0;
+    player.abilitySoulProjectile.active = false;
+    player.abilitySoulProjectile.acquired = false;
+    player.combat.life = 5;
+    player.combat.max_life = 5;
+    player.combat.invulnerable = false;
+    player.combat.invuln_timer = 0;
+    player.combat.hurt_timer = 0;
+    player.combat.heal_hold_needed = 1.0f;
+
     game_state.level = MIN_LEVEL;
+    game_state.player = player;
 }

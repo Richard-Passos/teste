@@ -14,9 +14,9 @@ typedef struct {
 } Asset;
 
 typedef struct {
-    char label[MAX_LABEL_SIZE];
+    char *label;
     Rectangle hitbox;
-    bool is_active;
+    int index;
 } Action;
 
 typedef enum {
@@ -26,7 +26,9 @@ typedef enum {
     start,
     win,
     game_over,
-    help
+    help,
+    village,
+    shop
 } Screen_name;
 
 typedef struct {
@@ -44,13 +46,28 @@ void handle_inventory_screen();
 
 void handle_help_screen();
 
+void handle_win_screen();
+
+void handle_game_over_screen();
+
+void handle_village_screen();
+
+void handle_shop_screen();
+
 void set_screen(Screen_name);
 
-bool is_button_pressed(Asset);
-
-void draw_asset(Asset);
+void draw_asset(Asset *);
 
 void add_asset(char [], Rectangle);
 
+void draw_action(Action *);
+
+void add_action(char [], Rectangle);
+
+bool is_action_pressed(Action *);
+
+float center_on_screen(float);
+
 extern Screen screen;
+extern Screen_name last_screen;
 #endif //HOLLOW_SCREEN_H
