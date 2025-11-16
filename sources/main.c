@@ -1,6 +1,4 @@
-#include <io.h>
 #include <stdio.h>
-
 #include "config.h"
 #include "raylib.h"
 #include "player.h"

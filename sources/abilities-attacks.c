@@ -114,20 +114,23 @@ void AbilitiesProjectile(Player *player, float delta) {
 void update_ability_acquisition() {
     Player *player = &game_state.player;
 
-    if (!player->abilitySoulProjectile.acquired &&
-        CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-        // Mostra um prompt para o jogador
-        DrawText("Inspecionar",
-                 player->abilitySoulProjectile.hitbox.x - 60,
-                 player->abilitySoulProjectile.hitbox.y - 80, TILE_SIZE, WHITE);
+    // Já pegou a habilidade? então nem verifica mais.
+    if (player->abilitySoulProjectile.acquired) return;
 
+    // Colidiu com a habilidade no mapa?
+    if (CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
+
+        // Só pega se apertar para cima
         if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             player->abilitySoulProjectile.acquired = true;
+
+            // Remove o objeto do mapa
             player->abilitySoulProjectile.hitbox = (Rectangle){0, 0, 0, 0};
             abilities[0].hitbox = (Rectangle){0, 0, 0, 0};
         }
     }
 }
+
 
 bool DashAbility(Player *player) {
     const float DASH_SPEED = 600.0f;

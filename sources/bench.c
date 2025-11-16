@@ -26,27 +26,33 @@ void draw_benchs() {
 void handle_benchs_interaction() {
     Player *player = &game_state.player;
 
+    // Se já está sentado, processa inputs para levantar
+    if (player->is_sitting) {
+        // aplica um pouco de física vertical enquanto sentado (igual ao que tinha)
+        player->speed.y -= GRAVITY * GetFrameTime();
 
-    for (int i = 0; i < benchs_count; i++)
-        if (CheckCollisionRecs(player->hitbox, benchs[i].hitbox) && !player->is_sitting) {
-            DrawText("Descansar", benchs[i].hitbox.x + 220, benchs[i].hitbox.y - 60, 32, WHITE);
+        // Qualquer input de ação cancela o descanso
+        if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT) ||
+             IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) ||
+             IsKeyPressed(KEY_A))) {
 
+            player->is_sitting = false;
+            player->hitbox.y += 32; // volta para a posição original
+             }
+
+        return; // quando sentado, não precisa checar novos bancos
+    }
+
+    // Se não está sentado, verifica se o player aperta UP enquanto está em cima de um banco
+    for (int i = 0; i < benchs_count; i++) {
+        if (CheckCollisionRecs(player->hitbox, benchs[i].hitbox)) {
             if (IsKeyPressed(KEY_UP)) {
                 player->is_sitting = true;
-                player->hitbox.y -= 32;
+                player->hitbox.y -= 32;             // posiciona sentado
                 player->combat.life = player->combat.max_life;
                 player->souls = player->max_souls;
             }
-        }
-
-    if (player->is_sitting) {
-        player->speed.y -= GRAVITY * GetFrameTime();
-
-        if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT) ||
-             IsKeyPressed(KEY_RIGHT)
-             || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) || IsKeyPressed(KEY_A))) {
-            player->is_sitting = false;
-            player->hitbox.y += 32;
+            break; // já achou um banco com o qual colidiu; não precisa checar os outros
         }
     }
 }

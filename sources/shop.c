@@ -19,8 +19,6 @@ bool handle_shop_interaction() {
     Player *player = &game_state.player;
 
     if (CheckCollisionRecs(player->hitbox, shop_hitbox)) {
-        DrawText("Entrar", shop_hitbox.x - 30, shop_hitbox.y - 50, 32, WHITE);
-
         if (IsKeyPressed(KEY_UP))
             is_ok = true;
     }

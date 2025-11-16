@@ -144,6 +144,39 @@ void draw_map() {
     draw_monsters();
     draw_abilities();
 
+    // ---- DESENHAR "INSPECIONAR" ----
+    if (!player->abilitySoulProjectile.acquired &&
+        CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
+
+        DrawText(
+            "Inspecionar",
+            player->abilitySoulProjectile.hitbox.x - 50,
+            player->abilitySoulProjectile.hitbox.y - 50,
+            30,
+            WHITE
+        );
+    }
+
+    if (!player->is_sitting) {
+        for (int i = 0; i < benchs_count; i++) {
+            if (CheckCollisionRecs(player->hitbox, benchs[i].hitbox)) {
+                DrawText("Descansar",
+                         benchs[i].hitbox.x - 50,
+                         benchs[i].hitbox.y - 50,
+                         32, WHITE);
+                break; // só desenhar para o banco que está colidindo
+            }
+        }
+    }
+
+    if (CheckCollisionRecs(player->hitbox, shop_hitbox)) {
+        DrawText("Entrar",
+                 shop_hitbox.x + 40,
+                 shop_hitbox.y - 50,
+                 32,
+                 WHITE);
+    }
+
     draw_player();
     draw_healing_effect();
 
