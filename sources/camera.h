@@ -7,5 +7,9 @@
 #include "raylib.h"
 #include "player.h"
 
-void update_camera_center(Camera2D *camera, Player *player, float width, float height);
+Camera2D init_camera(Vector2);
+
+void update_camera_center(Vector2);
+
+extern Camera2D camera;
 #endif //HOLLOW_CAMERA_H

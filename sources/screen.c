@@ -5,31 +5,62 @@
 #include <ctype.h>
 #include "raylib.h"
 #include "screen.h"
+
+#include <string.h>
+
 #include "game_state.h"
 #include "config.h"
+#include "camera.h"
+#include "abilities-attacks.h"
+#include "bench.h"
+#include "map.h"
+#include "shop.h"
+#include "teleport.h"
 
-#define MAX_SCREEN_ASSETS 6
+#define MAX_SCREEN_ASSETS 2
+#define MAX_SCREEN_ACTIONS 4
 
-Screen screen = menu;
-bool is_screen_loaded = false;
+Screen screen = {menu, false};
+Screen_name last_screen = -1;
 
 Asset screen_assets[MAX_SCREEN_ASSETS];
 int screen_assets_size = 0;
 
+Action screen_actions[MAX_SCREEN_ACTIONS];
+int screen_actions_size = 0, action_active_index = -1;
+
 int handle_screens() {
     bool found_screen = 1;
 
-    if (screen == menu)
+    // Screens
+    //----------------------------------------------------------------------------------
+    if (screen.name == menu)
         handle_menu_screen();
-    else if (screen == help)
+    else if (screen.name == help)
         handle_help_screen();
-    else if (screen == paused)
+    else if (screen.name == paused)
         handle_paused_screen();
-    else if (screen == inventory)
+    else if (screen.name == inventory)
         handle_inventory_screen();
-    else {
+    else if (screen.name == win)
+        handle_win_screen();
+    else if (screen.name == game_over)
+        handle_game_over_screen();
+    else if (screen.name == village)
+        handle_village_screen();
+    else if (screen.name == shop)
+        handle_shop_screen();
+    else
         found_screen = 0;
-    }
+    //----------------------------------------------------------------------------------
+
+    // Actions active state
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KEY_UP))
+        action_active_index = action_active_index <= 0 ? screen_actions_size - 1 : action_active_index - 1;
+    else if (IsKeyPressed(KEY_DOWN))
+        action_active_index = action_active_index >= screen_actions_size - 1 ? 0 : action_active_index + 1;
+    //----------------------------------------------------------------------------------
 
     return found_screen;
 }
@@ -37,91 +68,88 @@ int handle_screens() {
 void handle_menu_screen() {
     // Load
     //----------------------------------------------------------------------------------
-    if (!is_screen_loaded) {
+    if (!screen.is_loaded) {
+        unload_map();
+
         add_asset(
             "../assets/menu_background.png",
             (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
         );
         add_asset(
             "../assets/menu_logo.png",
-            (Rectangle){SCREEN_WIDTH / 2.0 - 319.5, 25, 639, 241}
+            (Rectangle){center_on_screen(639), 25, 639, 241}
         );
-        add_asset("../assets/start.png", (Rectangle){300, 250, 256, 128});
-        add_asset("../assets/continue.png", (Rectangle){300, 378, 256, 128});
-        add_asset("../assets/help.png", (Rectangle){300, 506, 256, 128});
-        add_asset("../assets/close.png", (Rectangle){300, 634, 256, 128});
 
-        is_screen_loaded = true;
+        add_action("Jogar", (Rectangle){center_on_screen(600), 250, 600, 60});
+        add_action("Carregar Jogo", (Rectangle){center_on_screen(600), 320, 600, 60});
+        add_action("Ajuda", (Rectangle){center_on_screen(600), 390, 600, 60});
+        add_action("Sair", (Rectangle){center_on_screen(600), 460, 600, 60});
+
+
+        screen.is_loaded = true;
     }
-
     //----------------------------------------------------------------------------------
 
     // Init
     //----------------------------------------------------------------------------------
     Asset background = screen_assets[0],
-            logo = screen_assets[1],
-            play_button = screen_assets[2],
-            load_button = screen_assets[3],
-            help_button = screen_assets[4],
-            exit_button = screen_assets[5];
+            logo = screen_assets[1];
+
+    Action play_action = screen_actions[0],
+            load_action = screen_actions[1],
+            help_action = screen_actions[2],
+            exit_action = screen_actions[3];
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
-    ClearBackground(BLUE);
+    draw_asset(&background);
+    draw_asset(&logo);
 
-    DrawText("MENU", 16, 16, 32, WHITE);
-
-    draw_asset(background);
-    draw_asset(logo);
-    draw_asset(play_button);
-    draw_asset(load_button);
-    draw_asset(help_button);
-    draw_asset(exit_button);
+    draw_action(&play_action);
+    draw_action(&load_action);
+    draw_action(&help_action);
+    draw_action(&exit_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if
-    (is_button_pressed(play_button)) {
+    if (is_action_pressed(&play_action)) {
+        reset_game_state();
         save_game_state();
-        set_screen(start);
-    } else if
-    (is_button_pressed(load_button)) {
+        set_screen(village);
+    } else if (is_action_pressed(&load_action)) {
         load_game_state();
-        set_screen(start);
-    } else if
-    (is_button_pressed(help_button)) {
+        set_screen(village);
+    } else if (is_action_pressed(&help_action)) {
         set_screen(help);
-    } else if
-    (is_button_pressed(exit_button)) {
+    } else if (is_action_pressed(&exit_action)) {
         CloseWindow();
     }
-
     //----------------------------------------------------------------------------------
 }
 
 void handle_paused_screen() {
     // Load
     //----------------------------------------------------------------------------------
-    if (!is_screen_loaded) {
-        add_asset(("../assets/continue.png"), (Rectangle){300, 150, 256, 128});
-        add_asset("../assets/inventory.png", (Rectangle){300, 278, 128});
-        add_asset("../assets/save.png", (Rectangle){300, 406, 256, 128});
-        add_asset("../assets/close.png", (Rectangle){300, 534, 256, 128});
+    if (!screen.is_loaded) {
+        add_action("Continuar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
+        add_action("Inventario", (Rectangle){center_on_screen(600), 220, 600, 60});
+        add_action("Salvar Jogo", (Rectangle){center_on_screen(600), 290, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 360, 600, 60});
 
-        is_screen_loaded = true;
+        screen.is_loaded = true;
     }
     //----------------------------------------------------------------------------------
 
     // Init
     //----------------------------------------------------------------------------------
-    Asset continue_button = screen_assets[0],
-            inventory_button = screen_assets[1],
-            save_button = screen_assets[2],
-            back_menu_button = screen_assets[3];
+    Action continue_action = screen_actions[0],
+            inventory_action = screen_actions[1],
+            save_action = screen_actions[2],
+            back_menu_action = screen_actions[3];
     //----------------------------------------------------------------------------------
 
     // Draw
@@ -131,22 +159,22 @@ void handle_paused_screen() {
 
     DrawText("PAUSED", 16, 16, 32, WHITE);
 
-    draw_asset(continue_button);
-    draw_asset(inventory_button);
-    draw_asset(save_button);
-    draw_asset(back_menu_button);
+    draw_action(&continue_action);
+    draw_action(&inventory_action);
+    draw_action(&save_action);
+    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_button_pressed(continue_button) || IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(start);
-    } else if (is_button_pressed(inventory_button)) {
+    if (is_action_pressed(&continue_action) || IsKeyPressed(KEY_ESCAPE)) {
+        set_screen(last_screen);
+    } else if (is_action_pressed(&inventory_action)) {
         set_screen(inventory);
-    } else if (is_button_pressed(save_button)) {
+    } else if (is_action_pressed(&save_action)) {
         save_game_state();
-    } else if (is_button_pressed(back_menu_button)) {
+    } else if (is_action_pressed(&back_menu_action)) {
         save_game_state();
         set_screen(menu);
     }
@@ -167,7 +195,7 @@ void handle_inventory_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(start);
+        set_screen(last_screen);
     }
     //----------------------------------------------------------------------------------
 }
@@ -191,60 +219,230 @@ void handle_help_screen() {
 }
 
 void handle_win_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
+        add_action("Carregar Jogo", (Rectangle){center_on_screen(600), 220, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 290, 600, 60});
+
+        screen.is_loaded = true;
+    }
+    //----------------------------------------------------------------------------------
+
+    // Init
+    //----------------------------------------------------------------------------------
+    Action restart_action = screen_actions[0],
+            load_action = screen_actions[1],
+            back_menu_action = screen_actions[2];
+    //----------------------------------------------------------------------------------
+
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
-    ClearBackground(PINK);
+    ClearBackground(YELLOW);
 
     DrawText("WIN", 16, 16, 32, WHITE);
+
+    draw_action(&restart_action);
+    draw_action(&load_action);
+    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
+        reset_game_state();
+        save_game_state();
+        set_screen(village);
+    } else if (is_action_pressed(&load_action)) {
+        load_game_state();
+        set_screen(village);
+    } else if (is_action_pressed(&back_menu_action)) {
         set_screen(menu);
     }
     //----------------------------------------------------------------------------------
 }
 
 void handle_game_over_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 220, 600, 60});
+
+        screen.is_loaded = true;
+    }
+    //----------------------------------------------------------------------------------
+
+    // Init
+    //----------------------------------------------------------------------------------
+    Action restart_action = screen_actions[0],
+            back_menu_action = screen_actions[1];
+    //----------------------------------------------------------------------------------
+
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLACK);
 
     DrawText("GAME OVER", 16, 16, 32, WHITE);
+
+    draw_action(&restart_action);
+    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
+        reset_game_state();
+        save_game_state();
+        set_screen(village);
+    } else if (is_action_pressed(&back_menu_action)) {
+        reset_game_state();
+        save_game_state();
         set_screen(menu);
     }
     //----------------------------------------------------------------------------------
 }
 
-void set_screen(Screen s) {
+void handle_village_screen() {
+    Player *player = &game_state.player;
+
+    // Load
+    //--------------------------------------------------------------------------------------
+    if (!load_map(VILLAGE_FILE_PATH)) {
+        CloseWindow();
+    }
+    //--------------------------------------------------------------------------------------
+
+    // Update
+    //----------------------------------------------------------------------------------
+    float delta_time = GetFrameTime();
+
+    update_player(delta_time);
+    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
+    update_monsters(delta_time);
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
+    draw_map();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    handle_benchs_interaction();
+
+    if (handle_shop_interaction())
+        set_screen(shop);
+
+    if (IsKeyPressed(KEY_ESCAPE))
+        set_screen(paused);
+    else if (IsKeyPressed(KEY_TAB))
+        set_screen(inventory);
+    else if (handle_teleports_interaction())
+        set_screen(start);
+    //----------------------------------------------------------------------------------
+}
+
+void handle_shop_screen() {
+    Player *player = &game_state.player;
+
+    // Load
+    //--------------------------------------------------------------------------------------
+    if (!load_map(SHOP_FILE_PATH)) {
+        CloseWindow();
+    }
+    //--------------------------------------------------------------------------------------
+
+    // Update
+    //----------------------------------------------------------------------------------
+    float delta_time = GetFrameTime();
+
+    update_player(delta_time);
+    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
+    update_monsters(delta_time);
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
+    draw_map();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KEY_ESCAPE))
+        set_screen(paused);
+    else if (IsKeyPressed(KEY_TAB))
+        set_screen(inventory);
+    else if (handle_teleports_interaction())
+        set_screen(last_screen);
+    //----------------------------------------------------------------------------------
+}
+
+void set_screen(Screen_name name) {
     for (int i = 0; i < screen_assets_size; i++)
         UnloadTexture(screen_assets[i].texture);
 
+    if (screen.name == village || screen.name == start || screen.name == shop)
+        last_screen = screen.name;
+
     screen_assets_size = 0;
-    is_screen_loaded = false;
-    screen = s;
+    screen_actions_size = 0;
+    action_active_index = -1;
+    screen.is_loaded = false;
+    screen.name = name;
 }
 
-bool is_button_pressed(Asset button) {
-    return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), button.hitbox);
+void draw_asset(Asset *asset) {
+    DrawTexture(asset->texture, asset->hitbox.x, asset->hitbox.y, WHITE);
 }
 
-void draw_asset(Asset button) {
-    DrawTexture(button.texture, button.hitbox.x, button.hitbox.y, WHITE);
+void add_asset(char texture_path[], Rectangle hitbox) {
+    screen_assets[screen_assets_size++] = (Asset){LoadTexture(texture_path), hitbox};
 }
 
-Asset add_asset(char texture_path[], Rectangle hitbox) {
-    screen_assets[screen_assets_size] = (Asset){LoadTexture(texture_path), hitbox};
+void draw_action(Action *action) {
+    bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action->hitbox),
+            is_active = action_active_index == action->index;
 
-    return screen_assets[screen_assets_size++];
+    // Rectangle
+    //--------------------------------------------------------------------------------------
+    DrawRectangleRec(action->hitbox, is_hovered ? RED : BLUE);
+    DrawRectangleLines(action->hitbox.x, action->hitbox.y, action->hitbox.width, action->hitbox.height, BLACK);
+    //--------------------------------------------------------------------------------------
+
+    // Text
+    //--------------------------------------------------------------------------------------
+    int font_size = 32;
+    int text_x = action->hitbox.x + action->hitbox.width * .1;
+    int text_y = action->hitbox.y + (action->hitbox.height - font_size) / 2;
+
+    DrawText(action->label, text_x, text_y, font_size, WHITE);
+
+    if (is_active) {
+        DrawText(">", action->hitbox.x - font_size, text_y, font_size, WHITE);
+        DrawText("<", action->hitbox.x + action->hitbox.width + font_size / 2, text_y, font_size, WHITE);
+    }
+    //--------------------------------------------------------------------------------------
 }
+
+void add_action(char label[], Rectangle hitbox) {
+    screen_actions[screen_actions_size] = (Action){label, hitbox, screen_actions_size++};
+}
+
+bool is_action_pressed(Action *action) {
+    bool is_pressed = (IsKeyPressed(KEY_SPACE) && action_active_index == action->index) || (
+                          IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(
+                              GetMousePosition(), action->hitbox));
+    return is_pressed;
+}
+
+float center_on_screen(float width) {
+    return SCREEN_WIDTH / 2.0 - width / 2;
+}
+
+

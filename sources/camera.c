@@ -3,10 +3,20 @@
 //
 
 #include "raylib.h"
-#include "player.h"
+#include "config.h"
 
-void update_camera_center(Camera2D *camera, Player *player, float width, float height)
-{
-    camera->offset = (Vector2){width / 2.0f, height / 2.0f};
-     camera->target = (Vector2){player->hitbox.x, player->hitbox.y};
+Camera2D camera = {0};
+
+void init_camera(Vector2 target) {
+    camera.target = target;
+    camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 }
+
+void update_camera_center(Vector2 target) {
+    camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
+    camera.target = target;
+}
+
+

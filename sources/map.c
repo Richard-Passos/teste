@@ -1,76 +1,56 @@
 #include <stdio.h>
+#include <string.h>
 #include "map.h"
 #include "config.h"
+#include "wall.h"
+#include "item.h"
+#include "abilities-attacks.h"
+#include "bench.h"
 #include "enemies.h"
+#include "game_state.h"
+#include "HUD.h"
+#include "camera.h"
+#include "teleport.h"
+#include "shop.h"
 
-Rectangle player_start = {0};
+char map_path[100];
+
+Texture2D map_textures[99];
+int map_textures_count = 0;
+bool should_load_textues = true;
+
 Rectangle boss_start = {0};
 
-Bench benchs[MAX_BENCHS];
-int benchs_count = 0;
-
-Npc npcs[MAX_NPCS];
-int npcs_count = 0;
-
-Wall walls[MAX_WALLS];
-int walls_count = 0;
-
-Item items[MAX_ITEMS];
-int items_count = 0;
-
-Ability abilities[MAX_ITEMS];
-int abilities_count = 0;
-
-
-void add_wall(int x, int y, Texture2D texture) {
-    if (walls_count < MAX_WALLS) {
-        walls[walls_count++] = (Wall){
-            texture, {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}
-        };
-    }
+void add_texture(char texture_path[]) {
+    map_textures[map_textures_count++] = LoadTexture(texture_path);
 }
 
-void add_monster(int x, int y, float z, float w) {
-    if (monsters_count < MAX_MONSTERS) {
-        monsters[monsters_count++] = (Monster){
-            .speed = {z, w},
-            .hitbox = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE},
-            .direction = 1,
-            .is_flying = true
-        };
+int load_map(char path[]) {
+    // Load just once
+    //----------------------------------------------------------------------------------
+    if (strcmp(path, map_path) == 0) return 1;
+
+    strcpy(map_path, path);
+
+    if (should_load_textues) {
+        add_texture("../assets/wall.png");
+        add_texture("../assets/wall.png");
+
+        should_load_textues = false;
     }
-}
+    //----------------------------------------------------------------------------------
 
+    Texture wall_texture = map_textures[0],
+            bench_texture = map_textures[1];
 
-void add_item(int x, int y) {
-    if (items_count < MAX_ITEMS) {
-        items[items_count++] = (Item){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
-    }
-}
-
-void add_bench(int x, int y) {
-    if (benchs_count < MAX_ITEMS) {
-        benchs[benchs_count++] = (Bench){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
-    }
-}
-
-void add_npc(int x, int y) {
-    if (npcs_count < MAX_ITEMS) {
-        npcs[npcs_count++] = (Npc){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
-    }
-}
-
-void add_ability(int x, int y) {
-    if (abilities_count < MAX_ITEMS) {
-        abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
-    }
-}
-
-int load_map(char path[], Textures textures) {
     walls_count = 0;
-    monsters_count = 0;
     items_count = 0;
+    benchs_count = 0;
     abilities_count = 0;
+    monsters_count = 0;
+    teleports_count = 0;
+    shop_hitbox = (Rectangle){0};
+    boss_start = (Rectangle){0};
 
     FILE *file = fopen(path, "r");
     if (!file) return 0;
@@ -83,7 +63,9 @@ int load_map(char path[], Textures textures) {
             switch (line[x]) {
                 case 'J':
                 case 'j':
-                    player_start = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    game_state.player.hitbox = (Rectangle){
+                        x * TILE_SIZE, y * TILE_SIZE, game_state.player.hitbox.width, game_state.player.hitbox.height
+                    };
                     break;
                 case 'C':
                 case 'c':
@@ -103,11 +85,22 @@ int load_map(char path[], Textures textures) {
                     break;
                 case 'P':
                 case 'p':
-                    add_wall(x, y, textures.Wall);
+                    add_wall(x, y, wall_texture);
                     break;
                 case 'B':
                 case 'b':
-                    add_bench(x, y);
+                    add_bench(x, y, bench_texture);
+                    break;
+                case 'S':
+                case 's':
+                    shop_hitbox = (Rectangle){
+                        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
+                    };
+                    break;
+                case 'T':
+                case 't':
+                    add_teleport(x, y);
+                    break;
                 default:
                     break;
             }
@@ -117,20 +110,54 @@ int load_map(char path[], Textures textures) {
     }
 
     fclose(file);
+
+    flying(); // Set each enemy as flying or grounded
+
     return 1;
 }
 
+void unload_map() {
+    for (int i = 0; i < map_textures_count; i++) {
+        UnloadTexture(map_textures[i]);
+    }
+
+    strcpy(map_path, "");
+    should_load_textues = true;
+}
+
 void draw_map() {
-    for (int i = 0; i < walls_count; i++)
-        DrawTexture(walls[i].texture, walls[i].hitbox.x, walls[i].hitbox.y, WHITE);
+    Player *player = &game_state.player;
+    float delta_time = GetFrameTime();
 
+    // Draw
+    //----------------------------------------------------------------------------------
+    BeginDrawing();
+    ClearBackground(LIGHTGRAY);
+    // Tudo dentro do modo 2D se move com a câmera
+    BeginMode2D(camera);
+
+    draw_walls();
+    draw_items();
+    draw_benchs();
+    draw_teleports();
+    draw_shop();
     draw_monsters();
+    draw_abilities();
 
-    for (int i = 0; i < items_count; i++)
-        DrawRectangleRec(items[i].hitbox, GOLD);
+    draw_player();
+    draw_healing_effect();
 
-    DrawRectangleRec(player_start, BLUE);
-    DrawRectangleRec(boss_start, PURPLE);
+    if (player->is_attacking) {
+        DrawRectangleRec(player->attack_box, GRAY);
+    }
+    if (player->abilitySoulProjectile.active) {
+        DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
+    }
+    EndMode2D();
+    draw_hud();
+
+    EndDrawing();
+    //----------------------------------------------------------------------------------
 }
 
 

@@ -4,20 +4,29 @@
 
 #ifndef HOLLOW_ABILITIES_ATTACKS_H
 #define HOLLOW_ABILITIES_ATTACKS_H
-
 #include "player.h"
 
+#define MAX_ABILITIES 99
+
+typedef struct {
+    Rectangle hitbox;
+    bool acquired;
+} Ability;
+
+void add_ability(int, int);
+
+void draw_abilities();
 
 void AbilitiesProjectile(Player *player, float delta);
 
-void UpdateAbilityAcquisition(Player *player);
+void update_ability_acquisition();
 
-bool DashAbility(Player *player, Monster *monsters, int monsters_count, float delta);
+bool DashAbility(Player *player);
 
 void HealAbility(Player *player, float delta);
-void DrawHealingEffect(Player *player);
 
-void DrawAbilities();
+void draw_healing_effect();
 
-
+extern Ability abilities[MAX_ABILITIES];
+extern int abilities_count;
 #endif //HOLLOW_ABILITIES_ATTACKS_H

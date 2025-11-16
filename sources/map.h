@@ -2,55 +2,20 @@
 #define MAP_LOADER_H
 
 #include "raylib.h"
-#include "enemies.h"
+#include "player.h"
 
 #define MAX_MAP_ROWS 512
 #define MAX_MAP_COLS 512
 
-#define MAX_WALLS 1024
-#define MAX_ITEMS 128
-#define TILE_SIZE 64
-#define MAX_BENCHS 3
-#define MAX_NPCS 3
+void add_texture(char texture_path[]);
 
-typedef struct {
-    Texture2D Wall;
-} Textures;
+/* Returns 0 when not loaded, 1 when loaded for the first time, 2 when already loaded */
+int load_map(char path[]);
 
-typedef struct {
-    Rectangle hitbox;
-} Bench;
-
-typedef struct {
-    Rectangle hitbox;
-} Npc;
-
-typedef struct {
-    Rectangle hitbox;
-} Item;
-
-typedef struct {
-    Rectangle hitbox;
-    bool acquired;
-} Ability;
-
-extern Rectangle player_start;
-extern Rectangle boss_start;
-
-extern Wall walls[MAX_WALLS];
-
-/* Usar o tipo definido em enemies.h */
-extern Monster monsters[MAX_MONSTERS];
-extern int monsters_count;
-
-extern Item items[MAX_ITEMS];
-extern int items_count;
-
-extern Ability abilities[MAX_ITEMS];
-extern int abilities_count;
-
-int load_map(char path[], Textures textures);
+void unload_map();
 
 void draw_map();
+
+extern Rectangle boss_start;
 
 #endif
