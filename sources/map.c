@@ -18,7 +18,7 @@ char map_path[100];
 
 Texture2D map_textures[99];
 int map_textures_count = 0;
-bool should_load_textues = true;
+bool should_load_textures = true;
 
 Rectangle boss_start = { -1, -1, 0, 0 };  // <<< IMPORTANTE
 
@@ -27,17 +27,17 @@ void add_texture(char texture_path[]) {
 }
 
 int load_map(char path[]) {
-
-    // Evita recarregar o mesmo mapa
+    // Load just once
+    //----------------------------------------------------------------------------------
     if (strcmp(path, map_path) == 0) return 1;
 
     strcpy(map_path, path);
 
-    if (should_load_textues) {
+    if (should_load_textures) {
         add_texture("../assets/wall.png");
         add_texture("../assets/wall.png");
 
-        should_load_textues = false;
+        should_load_textures = false;
     }
 
     Texture wall_texture = map_textures[0],
@@ -45,7 +45,7 @@ int load_map(char path[]) {
 
     walls_count = 0;
     items_count = 0;
-    benchs_count = 0;
+    benches_count = 0;
     abilities_count = 0;
     monsters_count = 0;
     teleports_count = 0;
@@ -146,7 +146,7 @@ void unload_map() {
     }
 
     strcpy(map_path, "");
-    should_load_textues = true;
+    should_load_textures = true;
 }
 
 void draw_map() {
@@ -160,7 +160,7 @@ void draw_map() {
 
     draw_walls();
     draw_items();
-    draw_benchs();
+    draw_benches();
     draw_teleports();
     draw_shop();
     draw_monsters();
@@ -177,11 +177,11 @@ void draw_map() {
     }
 
     if (!player->is_sitting) {
-        for (int i = 0; i < benchs_count; i++) {
-            if (CheckCollisionRecs(player->hitbox, benchs[i].hitbox)) {
+        for (int i = 0; i < benches_count; i++) {
+            if (CheckCollisionRecs(player->hitbox, benches[i].hitbox)) {
                 DrawText("Descansar",
-                         benchs[i].hitbox.x - 50,
-                         benchs[i].hitbox.y - 50,
+                         benches[i].hitbox.x - 50,
+                         benches[i].hitbox.y - 50,
                          32, WHITE);
                 break;
             }
@@ -192,7 +192,8 @@ void draw_map() {
         DrawText("Entrar",
                  shop_hitbox.x + 40,
                  shop_hitbox.y - 50,
-                 32, WHITE);
+                 32,
+                 WHITE);
     }
 
     draw_player();
