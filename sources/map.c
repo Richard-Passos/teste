@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "teleport.h"
 #include "shop.h"
+#include "boss.h"
 
 char map_path[100];
 
@@ -19,15 +20,15 @@ Texture2D map_textures[99];
 int map_textures_count = 0;
 bool should_load_textues = true;
 
-Rectangle boss_start = {0};
+Rectangle boss_start = { -1, -1, 0, 0 };  // <<< IMPORTANTE
 
 void add_texture(char texture_path[]) {
     map_textures[map_textures_count++] = LoadTexture(texture_path);
 }
 
 int load_map(char path[]) {
-    // Load just once
-    //----------------------------------------------------------------------------------
+
+    // Evita recarregar o mesmo mapa
     if (strcmp(path, map_path) == 0) return 1;
 
     strcpy(map_path, path);
@@ -38,7 +39,6 @@ int load_map(char path[]) {
 
         should_load_textues = false;
     }
-    //----------------------------------------------------------------------------------
 
     Texture wall_texture = map_textures[0],
             bench_texture = map_textures[1];
@@ -50,7 +50,11 @@ int load_map(char path[]) {
     monsters_count = 0;
     teleports_count = 0;
     shop_hitbox = (Rectangle){0};
-    boss_start = (Rectangle){0};
+
+    // <<< ESSENCIAL: marca como *inexistente*
+    boss_start = (Rectangle){ -1, -1, 0, 0 };
+    boss.active = false;          // <<< Boss começa desligado sempre
+    boss.life = boss.max_life;
 
     FILE *file = fopen(path, "r");
     if (!file) return 0;
@@ -64,12 +68,21 @@ int load_map(char path[]) {
                 case 'J':
                 case 'j':
                     game_state.player.hitbox = (Rectangle){
-                        x * TILE_SIZE, y * TILE_SIZE, game_state.player.hitbox.width, game_state.player.hitbox.height
+                        x * TILE_SIZE,
+                        y * TILE_SIZE,
+                        game_state.player.hitbox.width,
+                        game_state.player.hitbox.height
                     };
                     break;
                 case 'C':
                 case 'c':
-                    boss_start = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    // <<< SALVA A POSIÇÃO, MAS NÃO SPAWNA AQUI
+                    boss_start = (Rectangle){
+                        x * TILE_SIZE,
+                        y * TILE_SIZE,
+                        TILE_SIZE,
+                        TILE_SIZE * 2
+                    };
                     break;
                 case 'M':
                 case 'm':
@@ -94,7 +107,10 @@ int load_map(char path[]) {
                 case 'S':
                 case 's':
                     shop_hitbox = (Rectangle){
-                        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
+                        x * TILE_SIZE,
+                        y * TILE_SIZE - TILE_SIZE * 2,
+                        TILE_SIZE * 3,
+                        TILE_SIZE * 3
                     };
                     break;
                 case 'T':
@@ -105,13 +121,21 @@ int load_map(char path[]) {
                     break;
             }
         }
-
         y++;
     }
 
     fclose(file);
 
-    flying(); // Set each enemy as flying or grounded
+    // ==========================================================
+    //     SOMENTE SPAWNAR SE REALMENTE HOUVER UM CHEFE NO MAPA
+    // ==========================================================
+    if (boss_start.x != -1 && boss_start.y != -1) {
+        spawn_boss(boss_start);
+    } else {
+        boss.active = false;     // Garantia
+    }
+
+    flying(); // monstros voadores ou terrestres
 
     return 1;
 }
@@ -129,11 +153,9 @@ void draw_map() {
     Player *player = &game_state.player;
     float delta_time = GetFrameTime();
 
-    // Draw
-    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
-    // Tudo dentro do modo 2D se move com a câmera
+
     BeginMode2D(camera);
 
     draw_walls();
@@ -144,17 +166,14 @@ void draw_map() {
     draw_monsters();
     draw_abilities();
 
-    // ---- DESENHAR "INSPECIONAR" ----
+    // HUD de inspecionar habilidade
     if (!player->abilitySoulProjectile.acquired &&
         CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
 
-        DrawText(
-            "Inspecionar",
-            player->abilitySoulProjectile.hitbox.x - 50,
-            player->abilitySoulProjectile.hitbox.y - 50,
-            30,
-            WHITE
-        );
+        DrawText("Inspecionar",
+                 player->abilitySoulProjectile.hitbox.x - 50,
+                 player->abilitySoulProjectile.hitbox.y - 50,
+                 30, WHITE);
     }
 
     if (!player->is_sitting) {
@@ -164,7 +183,7 @@ void draw_map() {
                          benchs[i].hitbox.x - 50,
                          benchs[i].hitbox.y - 50,
                          32, WHITE);
-                break; // só desenhar para o banco que está colidindo
+                break;
             }
         }
     }
@@ -173,24 +192,24 @@ void draw_map() {
         DrawText("Entrar",
                  shop_hitbox.x + 40,
                  shop_hitbox.y - 50,
-                 32,
-                 WHITE);
+                 32, WHITE);
     }
 
     draw_player();
+
+    if (boss.active)
+        draw_boss();
+
     draw_healing_effect();
 
-    if (player->is_attacking) {
+    if (player->is_attacking)
         DrawRectangleRec(player->attack_box, GRAY);
-    }
-    if (player->abilitySoulProjectile.active) {
+
+    if (player->abilitySoulProjectile.active)
         DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
-    }
+
     EndMode2D();
     draw_hud();
 
     EndDrawing();
-    //----------------------------------------------------------------------------------
 }
-
-

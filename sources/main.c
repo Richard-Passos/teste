@@ -9,6 +9,7 @@
 #include "HUD.h"
 #include "abilities-attacks.h"
 #include "game_state.h"
+#include "boss.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -50,6 +51,7 @@ int main(void) {
       update_player(delta_time);
       update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
       update_monsters(delta_time);
+      update_boss(&game_state.player, delta_time, walls, walls_count);
       //----------------------------------------------------------------------------------
 
       // Update

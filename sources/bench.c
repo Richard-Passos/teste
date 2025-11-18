@@ -26,33 +26,81 @@ void draw_benchs() {
 void handle_benchs_interaction() {
     Player *player = &game_state.player;
 
-    // Se já está sentado, processa inputs para levantar
+    // ------------------------------------------
+    // SE ESTÁ SENTADO
+    // ------------------------------------------
     if (player->is_sitting) {
-        // aplica um pouco de física vertical enquanto sentado (igual ao que tinha)
-        player->speed.y -= GRAVITY * GetFrameTime();
 
-        // Qualquer input de ação cancela o descanso
-        if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT) ||
-             IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) ||
-             IsKeyPressed(KEY_A))) {
-
+        if (IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) ||
+            IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) ||
+            IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) ||
+            IsKeyPressed(KEY_A))
+        {
             player->is_sitting = false;
-            player->hitbox.y += 32; // volta para a posição original
-             }
 
-        return; // quando sentado, não precisa checar novos bancos
+            // Mantém posição X salva
+            player->hitbox.x = player->sit_x;
+
+            // --- DESCE PARA O CHÃO MAIS PRÓXIMO ---
+            // Simula o player caindo até encontrar um wall abaixo
+            for (int i = 0; i < walls_count; i++) {
+                Wall *w = &walls[i];
+
+                // O chão é um wall com Y maior que o jogador
+                if (w->hitbox.y >= player->hitbox.y + player->hitbox.height) {
+
+                    // Checa sobreposição horizontal
+                    bool overlap =
+                        player->hitbox.x + player->hitbox.width > w->hitbox.x &&
+                        player->hitbox.x < w->hitbox.x + w->hitbox.width;
+
+                    if (overlap) {
+                        // Coloca o player exatamente no topo do chão
+                        player->hitbox.y = w->hitbox.y - player->hitbox.height;
+                        player->speed.y = 0;
+                        player->on_ground = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return;
     }
 
-    // Se não está sentado, verifica se o player aperta UP enquanto está em cima de um banco
+
+    // ------------------------------------------
+    // NÃO ESTÁ SENTADO → DETECTA COLISÃO
+    // ------------------------------------------
     for (int i = 0; i < benchs_count; i++) {
+
         if (CheckCollisionRecs(player->hitbox, benchs[i].hitbox)) {
+
             if (IsKeyPressed(KEY_UP)) {
+
                 player->is_sitting = true;
-                player->hitbox.y -= 32;             // posiciona sentado
+
+                // Cura e almas
                 player->combat.life = player->combat.max_life;
                 player->souls = player->max_souls;
+
+                // CENTRO DO BANCO
+                float center_x = benchs[i].hitbox.x +
+                    (benchs[i].hitbox.width - player->hitbox.width) / 2;
+
+                // CORREÇÃO DO Y (usa TILE_SIZE!)
+                float sit_y = benchs[i].hitbox.y - player->hitbox.height + TILE_SIZE/2;
+
+                // Aplica
+                player->hitbox.x = center_x;
+                player->hitbox.y = sit_y;
+
+                // Salva
+                player->sit_x = center_x;
+                player->sit_y = sit_y;
             }
-            break; // já achou um banco com o qual colidiu; não precisa checar os outros
+
+            return;
         }
     }
 }

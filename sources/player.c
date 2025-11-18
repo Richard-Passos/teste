@@ -6,6 +6,7 @@
 #include "enemies.h"
 #include "abilities-attacks.h"
 #include "game_state.h"
+#include "boss.h"
 
 void draw_player() {
     Player *player = &game_state.player;
@@ -43,7 +44,6 @@ bool has_collided(Player *player, Wall *wall) {
 }
 
 void PlayerMonsterCollision(Player *player, float delta) {
-
     if (player->combat.invuln_timer > 0.0f) {
         player->combat.invuln_timer -= delta;
         if (player->combat.invuln_timer <= 0.0f) {
@@ -93,11 +93,51 @@ void PlayerMonsterCollision(Player *player, float delta) {
             break; // apenas um hit por frame
         }
     }
+
+    // ---------------------------------------------
+    // Colisão do BOSS com o jogador (dano ao player)
+    // ---------------------------------------------
+    if (boss.active && boss.hitbox.width > 0 && boss.hitbox.height > 0) {
+
+        if (!player->combat.invulnerable) {
+
+            if (CheckCollisionRecs(player->hitbox, boss.hitbox)) {
+
+                // Dano
+                player->combat.life -= 1;
+                if (player->combat.life < 0) player->combat.life = 0;
+
+                // Invulnerabilidade + efeito visual
+                player->combat.invulnerable = true;
+                player->combat.invuln_timer = 1.0f;
+                player->combat.hurt_timer = 0.1f;
+
+                // Knockback igual ao dos monstros
+                float dir = (player->hitbox.x < boss.hitbox.x) ? -1.0f : 1.0f;
+                player->combat.push_dir = dir;
+                player->combat.push_speed = 420.0f;
+                player->combat.push_timer = 0.18f;
+
+                // Pop no jogador
+                if (player->on_ground) {
+                    player->speed.y = -220.0f;
+                    player->on_ground = false;
+                } else {
+                    player->speed.y = -120.0f;
+                }
+            }
+        }
+    }
 }
 
 void update_player(float delta) {
     Player *player = &game_state.player;
 
+    if (player->is_sitting) {
+        player->speed.y = 0;
+        player->speed.x = 0;
+        return;
+    }
     // ---------------------------------------------------------
     // 1) Atualizar timers de combate
     // ---------------------------------------------------------
@@ -224,6 +264,7 @@ void update_player(float delta) {
             player->attack_timer = 0.12f;
             player->attack_dir = dir;
             memset(player->monsters_hit, 0, sizeof(player->monsters_hit));
+            player->boss_hit = false;
             player->attack_cooldown = 0.4f;
         }
     }
@@ -293,6 +334,45 @@ void update_player(float delta) {
 
         if (player->attack_timer <= 0.0f)
             player->is_attacking = false;
+    }
+
+
+    if (boss.active && player->is_attacking) {
+
+        // Se ainda não atingiu o boss neste ataque
+        if (!player->boss_hit) {
+
+            if (CheckCollisionRecs(player->attack_box, boss.hitbox)) {
+
+                boss.life -= 1;
+                boss.hurt_timer = 0.1f;
+                boss.invulnerable = true;
+                boss.invuln_time = 0.3f;
+
+                // Ganho de almas como no monstro
+                if (player->souls <= player->max_souls - 10)
+                    player->souls += 10;
+
+                player->boss_hit = true;
+
+                // Morte do boss
+                if (boss.life <= 0) {
+                    boss.active = false;
+
+                    int gained = GetRandomValue(150, 200);
+                    player->money += gained;
+                    player->last_money_gain = gained;
+                    player->money_gain_timer = 2.0f;
+                }
+
+                // Pogo Jump — igual o monstro
+                if (player->attack_dir == -1 && player->speed.y > 0) {
+                    player->speed.y = -PLAYER_JUMP_SPEED * 0.7f;
+                    player->jump_count = 1;
+                    player->on_ground = false;
+                }
+            }
+        }
     }
 
     // Timer do dinheiro

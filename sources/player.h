@@ -62,6 +62,10 @@ typedef struct {
     DashState dash;
     PlayerCombat combat;
     bool is_sitting;
+    float sit_x;
+    float sit_y;
+    bool boss_hit;
+
 } Player;
 
 void draw_player();
