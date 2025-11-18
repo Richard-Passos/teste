@@ -334,7 +334,7 @@ void handle_village_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    handle_benchs_interaction();
+    handle_benches_interaction();
 
     if (handle_shop_interaction())
         set_screen(shop);
