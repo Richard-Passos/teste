@@ -9,6 +9,7 @@
 #include "config.h"
 #include "camera.h"
 #include "bench.h"
+#include "item.h"
 #include "map.h"
 #include "shop.h"
 #include "teleport.h"
@@ -46,6 +47,8 @@ int handle_screens() {
         handle_village_screen();
     else if (screen.name == SCREEN_SHOP)
         handle_shop_screen();
+    else if (screen.name == SCREEN_SHOP_NPC)
+        handle_shop_npc_screen();
     else
         found_screen = 0;
     //----------------------------------------------------------------------------------
@@ -233,7 +236,6 @@ void handle_help_screen() {
     //----------------------------------------------------------------------------------
 }
 
-
 void handle_win_screen() {
     // Load
     //----------------------------------------------------------------------------------
@@ -401,8 +403,51 @@ void handle_shop_screen() {
             player->hitbox.height
         };
         player->should_keep_pos = true;
+
         set_screen(last_screen);
+    } else if (handle_shop_npc_interaction())
+        set_screen(SCREEN_SHOP_NPC);
+    //----------------------------------------------------------------------------------
+}
+
+void handle_shop_npc_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        add_asset(
+            "../assets/menu_background.png",
+            (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
+        );
+
+        for (int i = 0; i < game_state.items_count; i++)
+            if (game_state.items[i].is_buyable && !game_state.items[i].is_acquired) {
+                add_action(game_state.items[i].label, game_state.items[i].hitbox);
+            }
+
+        screen.is_loaded = true;
     }
+    //----------------------------------------------------------------------------------
+
+    // Init
+    //----------------------------------------------------------------------------------
+    Asset background = screen_assets[0];
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
+    BeginDrawing();
+    draw_asset(&background);
+
+    for (int i = 0; i < screen_actions_size; i++)
+        draw_action(&screen_actions[i]);
+
+    EndDrawing();
+    //----------------------------------------------------------------------------------
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KEY_ESCAPE))
+        set_screen(last_screen);
     //----------------------------------------------------------------------------------
 }
 

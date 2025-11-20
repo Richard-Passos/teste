@@ -30,7 +30,8 @@ typedef enum {
     SCREEN_GAME_OVER,
     SCREEN_HELP,
     SCREEN_VILLAGE,
-    SCREEN_SHOP
+    SCREEN_SHOP,
+    SCREEN_SHOP_NPC
 } Screen_name;
 
 typedef struct {
@@ -55,6 +56,8 @@ void handle_game_over_screen();
 void handle_village_screen();
 
 void handle_shop_screen();
+
+void handle_shop_npc_screen();
 
 void set_screen(Screen_name);
 

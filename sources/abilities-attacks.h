@@ -4,30 +4,34 @@
 
 #ifndef HOLLOW_ABILITIES_ATTACKS_H
 #define HOLLOW_ABILITIES_ATTACKS_H
-#include "player.h"
-
-#define MAX_ABILITIES 1
+#define MAX_ABILITIES 99
+#include "raylib.h"
 
 typedef struct {
+    char texture_path[100];
+    bool acquired;
+    bool is_active;
     Texture2D texture;
     Rectangle hitbox;
-    bool acquired;
+    Vector2 speed;
+    float lifetime;
 } Ability;
 
-void add_ability(int, int, Texture2D);
+void add_ability(int, int);
 
 void draw_abilities();
 
-void AbilitiesProjectile(Player *player, float delta);
+void unload_abilities();
+
+Ability *get_available_ability();
+
+void AbilitiesProjectile(float);
 
 void update_ability_acquisition();
 
-bool DashAbility(Player *player, float delta);
+bool DashAbility(float);
 
-void HealAbility(Player *player, float delta);
+void HealAbility(float);
 
 void draw_healing_effect();
-
-extern Ability abilities[MAX_ABILITIES];
-extern int abilities_count;
 #endif //HOLLOW_ABILITIES_ATTACKS_H

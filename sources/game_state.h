@@ -8,10 +8,16 @@
 #define MIN_LEVEL 1
 #define MAX_LEVEL 3
 #include "player.h"
+#include "abilities-attacks.h"
+#include "item.h"
 
 typedef struct {
     int level;
     Player player;
+    Ability abilities[MAX_ABILITIES];
+    int abilities_count;
+    Item items[MAX_ITEMS];
+    int items_count;
 } Game_state;
 
 bool save_game_state();
