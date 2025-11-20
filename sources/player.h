@@ -64,11 +64,12 @@ typedef struct {
     PlayerCombat combat;
     bool ignore_next_monster_hit;
     bool is_sitting;
-    float sit_x;
-    float sit_y;
     bool boss_hit;
 
+    bool should_keep_pos;
 } Player;
+
+void add_player(int, int);
 
 void draw_player();
 

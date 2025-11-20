@@ -7,9 +7,9 @@
 
 #define NAME "Hollow"
 
-#define GRAVITY 400
-#define PLAYER_JUMP_SPEED 350.0f
-#define PLAYER_HOR_SPEED 300.0f
+#define GRAVITY 700
+#define PLAYER_JUMP_SPEED 500.0f
+#define PLAYER_HOR_SPEED 600.0f
 
 #define LAND_MONSTER_HOR_SPEED 150.0f
 

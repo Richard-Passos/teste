@@ -20,13 +20,11 @@ Texture2D map_textures[99];
 int map_textures_count = 0;
 bool should_load_textures = true;
 
-Rectangle boss_start = { -1, -1, 0, 0 };
-
 void add_texture(char texture_path[]) {
     map_textures[map_textures_count++] = LoadTexture(texture_path);
 }
 
-int load_map(char path[]) {
+bool load_map(char path[]) {
     // Load just once
     //----------------------------------------------------------------------------------
     if (strcmp(path, map_path) == 0) return 1;
@@ -39,24 +37,31 @@ int load_map(char path[]) {
 
         should_load_textures = false;
     }
+    //----------------------------------------------------------------------------------
 
-    Texture wall_texture = map_textures[0],
-            bench_texture = map_textures[1];
-
+    // Textures
+    //----------------------------------------------------------------------------------
     walls_count = 0;
     items_count = 0;
     benches_count = 0;
     abilities_count = 0;
     monsters_count = 0;
     teleports_count = 0;
-    shop_hitbox = (Rectangle){0};
-
-    boss_start = (Rectangle){ -1, -1, 0, 0 };
-    boss.active = false;
+    shop.should_draw = false;
+    // <<< ESSENCIAL: marca como *inexistente*
+    boss.hitbox = (Rectangle){-1, -1, 0, 0};
+    boss.active = false; // <<< Boss começa desligado sempre
     boss.life = boss.max_life;
+    //----------------------------------------------------------------------------------
+
+    // Textures
+    //----------------------------------------------------------------------------------
+    Texture wall_texture = map_textures[0],
+            bench_texture = map_textures[1];
+    //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
-    if (!file) return 0;
+    if (!file) return false;
 
     char line[MAX_MAP_COLS];
     int y = 0;
@@ -66,21 +71,11 @@ int load_map(char path[]) {
             switch (line[x]) {
                 case 'J':
                 case 'j':
-                    game_state.player.hitbox = (Rectangle){
-                        x * TILE_SIZE,
-                        y * TILE_SIZE,
-                        game_state.player.hitbox.width,
-                        game_state.player.hitbox.height
-                    };
+                    add_player(x, y);
                     break;
                 case 'C':
                 case 'c':
-                    boss_start = (Rectangle){
-                        x * TILE_SIZE,
-                        y * TILE_SIZE,
-                        TILE_SIZE,
-                        TILE_SIZE * 2
-                    };
+                    add_boss(x, y);
                     break;
                 case 'M':
                 case 'm':
@@ -108,12 +103,7 @@ int load_map(char path[]) {
                     break;
                 case 'S':
                 case 's':
-                    shop_hitbox = (Rectangle){
-                        x * TILE_SIZE,
-                        y * TILE_SIZE - TILE_SIZE * 2,
-                        TILE_SIZE * 3,
-                        TILE_SIZE * 3
-                    };
+                    add_shop(x, y);
                     break;
                 case 'T':
                 case 't':
@@ -123,20 +113,24 @@ int load_map(char path[]) {
                     break;
             }
         }
+
         y++;
     }
 
     fclose(file);
 
-    if (boss_start.x != -1 && boss_start.y != -1) {
-        spawn_boss(boss_start);
+    // ==========================================================
+    //     SOMENTE SPAWNAR SE REALMENTE HOUVER UM CHEFE NO MAPA
+    // ==========================================================
+    if (boss.hitbox.x != -1 && boss.hitbox.y != -1) {
+        spawn_boss();
     } else {
-        boss.active = false;
+        boss.active = false; // Garantia
     }
 
     flying(); // monstros voadores ou terrestres
 
-    return 1;
+    return true;
 }
 
 void unload_map() {
@@ -152,10 +146,11 @@ void draw_map() {
     Player *player = &game_state.player;
     float delta_time = GetFrameTime();
 
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
-
-    BeginMode2D(camera);
+    BeginMode2D(camera); // Tudo dentro do modo 2D se move com a câmera
 
     draw_walls();
     draw_items();
@@ -163,57 +158,20 @@ void draw_map() {
     draw_teleports();
     draw_shop();
     draw_monsters();
-
-
-    if (!player->abilitySoulProjectile.acquired)
-        draw_abilities();
-
-
-    // HUD de inspecionar habilidade
-    if (!player->abilitySoulProjectile.acquired &&
-        CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-
-        DrawText("Inspecionar",
-                 player->abilitySoulProjectile.hitbox.x - 50,
-                 player->abilitySoulProjectile.hitbox.y - 50,
-                 30, WHITE);
-    }
-
-    if (!player->is_sitting) {
-        for (int i = 0; i < benches_count; i++) {
-            if (CheckCollisionRecs(player->hitbox, benches[i].hitbox)) {
-                DrawText("Descansar",
-                         benches[i].hitbox.x - 50,
-                         benches[i].hitbox.y - 50,
-                         32, WHITE);
-                break;
-            }
-        }
-    }
-
-    if (CheckCollisionRecs(player->hitbox, shop_hitbox)) {
-        DrawText("Entrar",
-                 shop_hitbox.x + 40,
-                 shop_hitbox.y - 50,
-                 32,
-                 WHITE);
-    }
-
     draw_boss();
-
+    draw_abilities();
     draw_player();
-
-
     draw_healing_effect();
 
+    // Actions
+    //----------------------------------------------------------------------------------
     if (player->is_attacking)
         DrawRectangleRec(player->attack_box, GRAY);
-
     if (player->abilitySoulProjectile.active)
         DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
-
+    //----------------------------------------------------------------------------------
     EndMode2D();
     draw_hud();
-
     EndDrawing();
+    //----------------------------------------------------------------------------------
 }

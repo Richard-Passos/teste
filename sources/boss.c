@@ -9,14 +9,34 @@
 
 Boss boss = {0};
 
-void spawn_boss(Rectangle start) {
+void add_boss(int x, int y) {
     boss.hitbox = (Rectangle){
-        start.x,
-        start.y - 64,
-        TILE_SIZE * 2,
-        TILE_SIZE * 2
+        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE, TILE_SIZE * 2, TILE_SIZE * 2
     };
+}
 
+// --------------------------------
+// DRAW
+// --------------------------------
+
+void draw_boss() {
+    if (!boss.active) return;
+
+    Color color = PURPLE;
+    if (boss.hurt_timer > 0) color = WHITE;
+
+    DrawRectangleRec(boss.hitbox, color);
+
+    // barra de vida
+    DrawRectangle(boss.hitbox.x,
+                  boss.hitbox.y - 20,
+                  (boss.life * boss.hitbox.width) / boss.max_life,
+                  10,
+                  BLACK);
+}
+
+
+void spawn_boss() {
     boss.velocity = (Vector2){0};
 
     boss.max_life = 25;
@@ -182,9 +202,10 @@ void boss_jump(float delta, Wall *walls, int wall_count) {
 // --------------------------------
 
 void boss_idle(Player *player, float delta) {
+    // Engaja quando o player se aproxima
     float dx = player->hitbox.x - boss.hitbox.x;
     float dy = player->hitbox.y - boss.hitbox.y;
-    float d = sqrtf(dx*dx + dy*dy);
+    float d = sqrtf(dx * dx + dy * dy);
 
     if (d < 400) boss.engaged = true;
     if (!boss.engaged) return;
@@ -280,25 +301,4 @@ void update_boss(Player *player, float delta, Wall *walls, int wall_count) {
         boss.hurt_timer -= delta;
         if (boss.hurt_timer < 0) boss.hurt_timer = 0;
     }
-}
-
-// --------------------------------
-// DRAW
-// --------------------------------
-
-void draw_boss() {
-    if (!boss.active) return;
-
-    Color color = PURPLE;
-    if (boss.hurt_timer > 0) color = WHITE;
-
-    DrawRectangleRec(boss.hitbox, color);
-
-    DrawRectangle(
-        boss.hitbox.x,
-        boss.hitbox.y - 20,
-        (boss.life * boss.hitbox.width) / boss.max_life,
-        10,
-        BLACK
-    );
 }

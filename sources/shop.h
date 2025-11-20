@@ -6,9 +6,16 @@
 #define HOLLOW_SHOP_H
 #include "raylib.h"
 
+typedef struct {
+    Rectangle hitbox;
+    bool should_draw;
+} Shop;
+
+void add_shop(int, int);
+
 void draw_shop();
 
 bool handle_shop_interaction();
 
-extern Rectangle shop_hitbox;
+extern Shop shop;
 #endif //HOLLOW_SHOP_H

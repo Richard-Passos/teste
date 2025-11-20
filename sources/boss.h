@@ -42,8 +42,12 @@ typedef struct {
 
 extern Boss boss;
 
-void spawn_boss(Rectangle start);
+void add_boss(int, int);
+
+void spawn_boss();
+
 void update_boss(Player *player, float delta, Wall *walls, int wall_count);
+
 void draw_boss();
 
 #endif

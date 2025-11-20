@@ -2,16 +2,12 @@
 // Created by richa on 05/11/2025.
 //
 #include <stdio.h>
-#include <ctype.h>
+#include <string.h>
 #include "raylib.h"
 #include "screen.h"
-
-#include <string.h>
-
 #include "game_state.h"
 #include "config.h"
 #include "camera.h"
-#include "abilities-attacks.h"
 #include "bench.h"
 #include "map.h"
 #include "shop.h"
@@ -20,7 +16,7 @@
 #define MAX_SCREEN_ASSETS 2
 #define MAX_SCREEN_ACTIONS 4
 
-Screen screen = {menu, false};
+Screen screen = {SCREEN_MENU, false};
 Screen_name last_screen = -1;
 
 Asset screen_assets[MAX_SCREEN_ASSETS];
@@ -34,21 +30,21 @@ int handle_screens() {
 
     // Screens
     //----------------------------------------------------------------------------------
-    if (screen.name == menu)
+    if (screen.name == SCREEN_MENU)
         handle_menu_screen();
-    else if (screen.name == help)
+    else if (screen.name == SCREEN_HELP)
         handle_help_screen();
-    else if (screen.name == paused)
+    else if (screen.name == SCREEN_PAUSED)
         handle_paused_screen();
-    else if (screen.name == inventory)
+    else if (screen.name == SCREEN_INVENTORY)
         handle_inventory_screen();
-    else if (screen.name == win)
+    else if (screen.name == SCREEN_WIN)
         handle_win_screen();
-    else if (screen.name == game_over)
+    else if (screen.name == SCREEN_GAME_OVER)
         handle_game_over_screen();
-    else if (screen.name == village)
+    else if (screen.name == SCREEN_VILLAGE)
         handle_village_screen();
-    else if (screen.name == shop)
+    else if (screen.name == SCREEN_SHOP)
         handle_shop_screen();
     else
         found_screen = 0;
@@ -119,12 +115,12 @@ void handle_menu_screen() {
     if (is_action_pressed(&play_action)) {
         reset_game_state();
         save_game_state();
-        set_screen(village);
+        set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&load_action)) {
         load_game_state();
-        set_screen(village);
+        set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&help_action)) {
-        set_screen(help);
+        set_screen(SCREEN_HELP);
     } else if (is_action_pressed(&exit_action)) {
         CloseWindow();
     }
@@ -171,12 +167,12 @@ void handle_paused_screen() {
     if (is_action_pressed(&continue_action) || IsKeyPressed(KEY_ESCAPE)) {
         set_screen(last_screen);
     } else if (is_action_pressed(&inventory_action)) {
-        set_screen(inventory);
+        set_screen(SCREEN_INVENTORY);
     } else if (is_action_pressed(&save_action)) {
         save_game_state();
     } else if (is_action_pressed(&back_menu_action)) {
         save_game_state();
-        set_screen(menu);
+        set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
 }
@@ -251,7 +247,7 @@ void handle_help_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(menu);
+        set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
 }
@@ -295,12 +291,12 @@ void handle_win_screen() {
     if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
         reset_game_state();
         save_game_state();
-        set_screen(village);
+        set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&load_action)) {
         load_game_state();
-        set_screen(village);
+        set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&back_menu_action)) {
-        set_screen(menu);
+        set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
 }
@@ -339,11 +335,11 @@ void handle_game_over_screen() {
     if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
         reset_game_state();
         save_game_state();
-        set_screen(village);
+        set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&back_menu_action)) {
         reset_game_state();
         save_game_state();
-        set_screen(menu);
+        set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
 }
@@ -377,14 +373,14 @@ void handle_village_screen() {
     handle_benches_interaction();
 
     if (handle_shop_interaction())
-        set_screen(shop);
+        set_screen(SCREEN_SHOP);
 
     if (IsKeyPressed(KEY_ESCAPE))
-        set_screen(paused);
+        set_screen(SCREEN_PAUSED);
     else if (IsKeyPressed(KEY_TAB))
-        set_screen(inventory);
+        set_screen(SCREEN_INVENTORY);
     else if (handle_teleports_interaction())
-        set_screen(start);
+        set_screen(SCREEN_START);
     //----------------------------------------------------------------------------------
 }
 
@@ -415,11 +411,18 @@ void handle_shop_screen() {
     // Actions
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_ESCAPE))
-        set_screen(paused);
+        set_screen(SCREEN_PAUSED);
     else if (IsKeyPressed(KEY_TAB))
-        set_screen(inventory);
-    else if (handle_teleports_interaction())
+        set_screen(SCREEN_INVENTORY);
+    else if (handle_teleports_interaction()) {
+        player->hitbox = (Rectangle){
+            shop.hitbox.x + shop.hitbox.width / 2 - player->hitbox.width / 2, shop.hitbox.y + shop.hitbox.height,
+            player->hitbox.width,
+            player->hitbox.height
+        };
+        player->should_keep_pos = true;
         set_screen(last_screen);
+    }
     //----------------------------------------------------------------------------------
 }
 
@@ -427,7 +430,7 @@ void set_screen(Screen_name name) {
     for (int i = 0; i < screen_assets_size; i++)
         UnloadTexture(screen_assets[i].texture);
 
-    if (screen.name == village || screen.name == start || screen.name == shop)
+    if (screen.name == SCREEN_VILLAGE || screen.name == SCREEN_START || screen.name == SCREEN_SHOP)
         last_screen = screen.name;
 
     screen_assets_size = 0;

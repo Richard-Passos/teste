@@ -118,10 +118,10 @@ void update_monsters(float delta) {
         // Atualiza floor_checker (depois de mover e colidir)
         // posiciona na diagonal direita (ajuste offsets conforme sprite/tile)
 
-        m->floor_checker.width = WALL_SIZE;
-        m->floor_checker.height = WALL_SIZE;
-        m->floor_checker.x = m->hitbox.x + m->direction * WALL_SIZE; // ligeiramente à direita
-        m->floor_checker.y = m->hitbox.y + WALL_SIZE; // ligeiramente abaixo dos pés
+        m->floor_checker.width = TILE_SIZE;
+        m->floor_checker.height = TILE_SIZE;
+        m->floor_checker.x = m->hitbox.x + m->direction * TILE_SIZE; // ligeiramente à direita
+        m->floor_checker.y = m->hitbox.y + TILE_SIZE; // ligeiramente abaixo dos pés
 
         // Verifica chão à frente MAS só se estiver no chão
         if (m->on_ground) {

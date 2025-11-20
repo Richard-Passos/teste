@@ -2,23 +2,38 @@
 // Created by richa on 16/11/2025.
 //
 
-#include "shop.h"
 #include "raylib.h"
+#include "config.h"
+#include "shop.h"
 #include "game_state.h"
-#include "player.h"
 
-Rectangle shop_hitbox = {0};
+Shop shop = {0};
+
+void add_shop(int x, int y) {
+    shop.hitbox = (Rectangle){
+        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
+    };
+    shop.should_draw = true;
+}
 
 void draw_shop() {
-    DrawRectangle(shop_hitbox.x, shop_hitbox.y, shop_hitbox.width, shop_hitbox.height, ORANGE);
+    if (!shop.should_draw) return;
+
+    DrawRectangle(shop.hitbox.x, shop.hitbox.y, shop.hitbox.width, shop.hitbox.height, ORANGE);
+
+    if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
+        DrawText("Entrar",
+                 shop.hitbox.x + 40,
+                 shop.hitbox.y - 50,
+                 32,
+                 WHITE);
+    }
 }
 
 bool handle_shop_interaction() {
     bool is_ok = false;
 
-    Player *player = &game_state.player;
-
-    if (CheckCollisionRecs(player->hitbox, shop_hitbox)) {
+    if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
         if (IsKeyPressed(KEY_UP))
             is_ok = true;
     }

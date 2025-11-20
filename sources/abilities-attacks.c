@@ -25,8 +25,23 @@ void add_ability(int x, int y) {
 }
 
 void draw_abilities() {
-    for (int i = 0; i < abilities_count; i++)
+    bool is_colliding = false;
+
+    for (int i = 0; i < abilities_count; i++) {
         DrawRectangleRec(abilities[i].hitbox, BROWN);
+
+        if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox)) {
+            DrawText(
+                "Inspecionar",
+                abilities[i].hitbox.x - 50,
+                abilities[i].hitbox.y - 50,
+                30,
+                WHITE
+            );
+
+            is_colliding = true;
+        }
+    }
 }
 
 void AbilitiesProjectile(Player *player, float delta) {
@@ -44,7 +59,7 @@ void AbilitiesProjectile(Player *player, float delta) {
 
             int projWidth = TILE_SIZE * 1.25;
             int projHeight = TILE_SIZE;
-            float projSpeed = 400;
+            float projSpeed = PLAYER_HOR_SPEED * 1.5;
 
             if (player->facing_right) {
                 player->abilitySoulProjectile.hitbox = (Rectangle){
@@ -147,7 +162,6 @@ void update_ability_acquisition() {
 
     // Colidiu com a habilidade no mapa?
     if (CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-
         // Só pega se apertar para cima
         if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             player->abilitySoulProjectile.acquired = true;
@@ -246,7 +260,6 @@ bool DashAbility(Player *player, float delta) {
 
 
 void HealAbility(Player *player, float delta) {
-
     bool is_player_stopped = (player->speed.x == 0.0f);
 
     // Atualiza cooldown
@@ -260,7 +273,6 @@ void HealAbility(Player *player, float delta) {
     if (player->souls >= 33 &&
         player->combat.heal_cooldown <= 0.0f &&
         is_player_stopped) {
-
         if (IsKeyDown(KEY_A)) {
             player->combat.is_healing = true;
             player->combat.heal_hold_time += delta;
@@ -280,13 +292,11 @@ void HealAbility(Player *player, float delta) {
             player->combat.is_healing = false;
             player->combat.heal_hold_time = 0.0f;
         }
-
-        } else {
-            player->combat.is_healing = false;
-            player->combat.heal_hold_time = 0.0f;
-        }
+    } else {
+        player->combat.is_healing = false;
+        player->combat.heal_hold_time = 0.0f;
+    }
 }
-
 
 
 void draw_healing_effect() {

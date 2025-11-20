@@ -7,6 +7,22 @@
 #include "abilities-attacks.h"
 #include "game_state.h"
 #include "boss.h"
+#include "shop.h"
+
+void add_player(int x, int y) {
+    Player *player = &game_state.player;
+
+    // Reset player pos when necessary
+    //----------------------------------------------------------------------------------
+    if (player->should_keep_pos)
+        player->should_keep_pos = false;
+    else
+        player->hitbox = (Rectangle){
+            x * TILE_SIZE, y * TILE_SIZE, player->hitbox.width,
+            player->hitbox.height
+        };
+    //----------------------------------------------------------------------------------
+}
 
 void draw_player() {
     Player *player = &game_state.player;
@@ -44,6 +60,7 @@ bool has_collided(Player *player, Wall *wall) {
 }
 
 void PlayerMonsterCollision(Player *player, float delta) {
+
     if (player->combat.invuln_timer > 0.0f) {
         player->combat.invuln_timer -= delta;
         if (player->combat.invuln_timer <= 0.0f) {
@@ -138,11 +155,6 @@ void PlayerMonsterCollision(Player *player, float delta) {
 void update_player(float delta) {
     Player *player = &game_state.player;
 
-    if (player->is_sitting) {
-        player->speed.y = 0;
-        player->speed.x = 0;
-        return;
-    }
     // ---------------------------------------------------------
     // 1) Atualizar timers de combate
     // ---------------------------------------------------------
@@ -170,8 +182,8 @@ void update_player(float delta) {
 
 
         if (player->combat.is_healing) {
-            player->speed.x = 0.0f;   // Travar movimentação
-            goto apply_horizontal;    // Pular para aplicar movimento
+            player->speed.x = 0.0f; // Travar movimentação
+            goto apply_horizontal; // Pular para aplicar movimento
         }
 
         if (player->dash.recovery > 0.0f) {
@@ -189,7 +201,7 @@ void update_player(float delta) {
         }
     }
 
-    apply_horizontal:
+apply_horizontal:
     player->hitbox.x += player->speed.x * delta;
 
     // Colisão horizontal com paredes
@@ -208,7 +220,7 @@ void update_player(float delta) {
     // ---------------------------------------------------------
     // 3) Movimentação vertical (gravidade e pulo)
     // ---------------------------------------------------------
-    player->speed.y += GRAVITY * delta;
+    player->speed.y += player->is_sitting ? 0 : GRAVITY * delta;
 
     bool falling = (player->speed.y > 0 && !player->on_ground);
 
@@ -280,9 +292,9 @@ void update_player(float delta) {
         if (player->attack_dir == 1) {
             player->attack_box = (Rectangle){
                 player->hitbox.x + player->hitbox.width / 4.0f,
-                player->hitbox.y - WALL_SIZE * 1.5f,
+                player->hitbox.y - TILE_SIZE * 1.5f,
                 player->hitbox.width / 2.0f,
-                WALL_SIZE * 1.5f
+                TILE_SIZE * 1.5f
             };
         } else if (player->attack_dir == -1) {
             // baixo
@@ -290,15 +302,15 @@ void update_player(float delta) {
                 player->hitbox.x + player->hitbox.width / 4.0f,
                 player->hitbox.y + player->hitbox.height,
                 player->hitbox.width / 2.0f,
-                WALL_SIZE * 1.5f
+                TILE_SIZE * 1.5f
             };
         } else {
             // frente
-            float offsetX = (player->facing_right) ? player->hitbox.width : -WALL_SIZE * 2;
+            float offsetX = (player->facing_right) ? player->hitbox.width : -TILE_SIZE * 2;
             player->attack_box = (Rectangle){
                 player->hitbox.x + offsetX,
                 player->hitbox.y + player->hitbox.height / 4.0f,
-                WALL_SIZE * 2,
+                TILE_SIZE * 2,
                 player->hitbox.height / 2.0f
             };
         }
