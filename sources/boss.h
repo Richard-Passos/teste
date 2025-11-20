@@ -35,6 +35,8 @@ typedef struct {
     float jump_velocity;
     float target_x;
     float target_y;
+    bool just_landed;
+    float landing_delay;
 
 } Boss;
 

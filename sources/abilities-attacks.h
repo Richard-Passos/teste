@@ -21,7 +21,7 @@ void AbilitiesProjectile(Player *player, float delta);
 
 void update_ability_acquisition();
 
-bool DashAbility(Player *player);
+bool DashAbility(Player *player, float delta);
 
 void HealAbility(Player *player, float delta);
 

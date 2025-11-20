@@ -201,12 +201,50 @@ void handle_inventory_screen() {
 }
 
 void handle_help_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        unload_map();
+
+        Texture2D tex = LoadTexture("../assets/help.png");
+
+        float Width = tex.width * 0.5f;
+        float Height = tex.height * 0.5f;
+
+        // Centraliza na tela
+        float posX = (SCREEN_WIDTH - Width) / 2;
+        float posY = (SCREEN_HEIGHT - Height) / 2;
+
+        // Armazena a textura e o local onde desenhar
+        screen_assets[screen_assets_size++] = (Asset){
+            .texture = tex,
+            .hitbox = (Rectangle){posX, posY, Width, Height}
+        };
+
+        screen.is_loaded = true;
+    }
+    //----------------------------------------------------------------------------------
+
+    // Init
+    Asset bg_help = screen_assets[0];
+
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
-    ClearBackground(PINK);
+    ClearBackground(BLACK);
+
+    // Desenha ajustando o tamanho
+    DrawTexturePro(
+        bg_help.texture,
+        (Rectangle){0, 0, bg_help.texture.width, bg_help.texture.height},
+        bg_help.hitbox,
+        (Vector2){0,0},
+        0.0f,
+        WHITE
+    );
 
     DrawText("HELP", 16, 16, 32, WHITE);
+
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -217,6 +255,8 @@ void handle_help_screen() {
     }
     //----------------------------------------------------------------------------------
 }
+
+
 
 void handle_win_screen() {
     // Load

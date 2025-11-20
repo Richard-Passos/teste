@@ -20,7 +20,7 @@ Texture2D map_textures[99];
 int map_textures_count = 0;
 bool should_load_textures = true;
 
-Rectangle boss_start = { -1, -1, 0, 0 };  // <<< IMPORTANTE
+Rectangle boss_start = { -1, -1, 0, 0 };
 
 void add_texture(char texture_path[]) {
     map_textures[map_textures_count++] = LoadTexture(texture_path);
@@ -51,9 +51,8 @@ int load_map(char path[]) {
     teleports_count = 0;
     shop_hitbox = (Rectangle){0};
 
-    // <<< ESSENCIAL: marca como *inexistente*
     boss_start = (Rectangle){ -1, -1, 0, 0 };
-    boss.active = false;          // <<< Boss começa desligado sempre
+    boss.active = false;
     boss.life = boss.max_life;
 
     FILE *file = fopen(path, "r");
@@ -76,7 +75,6 @@ int load_map(char path[]) {
                     break;
                 case 'C':
                 case 'c':
-                    // <<< SALVA A POSIÇÃO, MAS NÃO SPAWNA AQUI
                     boss_start = (Rectangle){
                         x * TILE_SIZE,
                         y * TILE_SIZE,
@@ -94,7 +92,11 @@ int load_map(char path[]) {
                     break;
                 case 'H':
                 case 'h':
-                    add_ability(x, y);
+                    if (abilities_count == 0) {
+                        add_ability(x, y);
+                    }
+                    break;
+
                     break;
                 case 'P':
                 case 'p':
@@ -126,13 +128,10 @@ int load_map(char path[]) {
 
     fclose(file);
 
-    // ==========================================================
-    //     SOMENTE SPAWNAR SE REALMENTE HOUVER UM CHEFE NO MAPA
-    // ==========================================================
     if (boss_start.x != -1 && boss_start.y != -1) {
         spawn_boss(boss_start);
     } else {
-        boss.active = false;     // Garantia
+        boss.active = false;
     }
 
     flying(); // monstros voadores ou terrestres
@@ -164,7 +163,11 @@ void draw_map() {
     draw_teleports();
     draw_shop();
     draw_monsters();
-    draw_abilities();
+
+
+    if (!player->abilitySoulProjectile.acquired)
+        draw_abilities();
+
 
     // HUD de inspecionar habilidade
     if (!player->abilitySoulProjectile.acquired &&
@@ -196,10 +199,10 @@ void draw_map() {
                  WHITE);
     }
 
+    draw_boss();
+
     draw_player();
 
-    if (boss.active)
-        draw_boss();
 
     draw_healing_effect();
 

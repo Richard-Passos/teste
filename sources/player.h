@@ -11,6 +11,7 @@ typedef struct AbilityProjectile {
     Vector2 speed;
     bool active;
     bool acquired;
+    float lifetime;
 } AbilityProjectile;
 
 typedef struct {
@@ -61,6 +62,7 @@ typedef struct {
     AbilityProjectile abilitySoulProjectile;
     DashState dash;
     PlayerCombat combat;
+    bool ignore_next_monster_hit;
     bool is_sitting;
     float sit_x;
     float sit_y;

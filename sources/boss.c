@@ -30,6 +30,8 @@ void spawn_boss(Rectangle start) {
 
     boss.is_jumping = false;
     boss.jump_velocity = 0;
+
+    boss.just_landed = false;
 }
 
 // ------------------------------
@@ -38,19 +40,19 @@ void spawn_boss(Rectangle start) {
 
 void start_chase_attack() {
     boss.state = BOSS_CHASE_ATTACK;
-    boss.state_timer = 2.0f;      // dura 2 segundos
+    boss.state_timer = 2.0f;
 }
 
 void boss_chase(Player *player, float delta) {
-    float dx = player->hitbox.x - boss.hitbox.x;
-    float dy = player->hitbox.y - boss.hitbox.y;
-    float d = sqrtf(dx * dx + dy * dy);
 
-    if (d > 0) {
-        float speed = 250;
-        boss.velocity.x = (dx / d) * speed;
-        boss.velocity.y = (dy / d) * speed;
-    }
+    float speed = 225;
+
+    if (player->hitbox.x < boss.hitbox.x)
+        boss.velocity.x = -speed;
+    else if (player->hitbox.x > boss.hitbox.x)
+        boss.velocity.x = speed;
+
+    boss.velocity.y = 0;
 
     boss.state_timer -= delta;
     if (boss.state_timer <= 0) {
@@ -59,15 +61,14 @@ void boss_chase(Player *player, float delta) {
     }
 }
 
-
 // =======================================================
 // NOVO SISTEMA DE PULO
 // =======================================================
 
 bool boss_has_ground(Wall *walls, int wall_count) {
     Rectangle feet = boss.hitbox;
-    feet.y += feet.height + 1; // 1 pixel abaixo dos pés
-    feet.height = 2;
+    feet.y += feet.height;
+    feet.height = 1;
 
     for (int i = 0; i < wall_count; i++) {
         if (CheckCollisionRecs(feet, walls[i].hitbox)) {
@@ -80,95 +81,107 @@ bool boss_has_ground(Wall *walls, int wall_count) {
 void start_jump_attack(Player *player) {
     boss.state = BOSS_JUMP_ATTACK;
 
+    // TARGET
+    float dx = (player->hitbox.x + player->hitbox.width/2) - (boss.hitbox.x + boss.hitbox.width/2);
+    float dy = (player->hitbox.y) - boss.hitbox.y;
+
+    float jump_time = 0.9f; // tempo total da parábola
+
+    // VELOCIDADE HORIZONTAL → parabólica real
+    boss.velocity.x = dx / jump_time;
+
+    float base_vel = (dy - 0.5f * GRAVITY * jump_time * jump_time) / jump_time;
+
+    float jump_boost = 1.5f; //
+    boss.jump_velocity = base_vel * jump_boost;
+
+    // RESET
+    boss.state_timer = jump_time;
     boss.is_jumping = true;
-    boss.jump_velocity = -BOSS_JUMP_SPEED;   // sobe
 
-    // posição onde o player estava quando o ataque começou
-    boss.target_x = player->hitbox.x;
-    boss.target_y = player->hitbox.y;
-
-    // velocidade horizontal em direção ao alvo
-    float dx = boss.target_x - boss.hitbox.x;
-    boss.velocity.x = (dx > 0) ? 250 : -250;
-
-    // tempo que vai ficar lá em cima
-    boss.state_timer = BOSS_JUMP_HOLD_TIME;
+    boss.just_landed = false;
+    boss.landing_delay = 0.0f;
 }
 
-void boss_jump(Player *player, float delta, Wall *walls, int wall_count) {
-    // =======================================================
-    // 1. SUBIDA ATÉ O TETO
-    // =======================================================
-    if (boss.is_jumping) {
-        boss.hitbox.y += boss.jump_velocity * delta;
 
-        // gravidade invertida durante subida
-        boss.jump_velocity += 2000 * delta;
+void boss_jump(float delta, Wall *walls, int wall_count) {
 
-        // bateu no teto (pico)
-        if (boss.hitbox.y <= BOSS_JUMP_PEAK_Y) {
-            boss.hitbox.y = BOSS_JUMP_PEAK_Y;
-            boss.jump_velocity = 0;
-            boss.is_jumping = false;   // fim da subida
-        }
+    // ----- MOVIMENTO HORIZONTAL PARABÓLICO -----
+    float dx = boss.velocity.x * delta;
+    float step_x = (dx > 0) ? 1 : -1;
 
-        // movimento horizontal durante o pulo também
-        boss.hitbox.x += boss.velocity.x * delta;
+    for (float x = 0; x < fabsf(dx); x += 1) {
+        boss.hitbox.x += step_x;
 
-        return;
-    }
-
-    // =======================================================
-    // 2. SEGURANDO NO TOPO
-    // =======================================================
-    if (boss.state_timer > 0) {
-        boss.state_timer -= delta;
-        return;
-    }
-
-    // ========================
-    // 3. QUEDA DIRECIONADA
-    // ========================
-
-    boss.jump_velocity += 3000 * delta;
-
-    // movimento vertical
-    float dy = boss.jump_velocity * delta;
-
-    // aplica dy passo-a-passo para garantir colisão perfeita
-    float step = (dy > 0) ? 1 : -1;
-    for (float i = 0; i < fabsf(dy); i += 1.0f) {
-        boss.hitbox.y += step;
-
-        if (boss_has_ground(walls, wall_count)) {
-            // recua 1 pixel até ficar imediatamente acima do chão
-            boss.hitbox.y -= step;
-
-            // boss aterrissou
-            boss.jump_velocity = 0;
-
-            // dano no jogador
-            if (CheckCollisionRecs(boss.hitbox, player->hitbox)) {
-                player->speed.x = (player->hitbox.x < boss.hitbox.x) ? -500 : 500;
-                player->speed.y = -250;
+        for (int w = 0; w < wall_count; w++) {
+            if (CheckCollisionRecs(boss.hitbox, walls[w].hitbox)) {
+                boss.hitbox.x -= step_x;
+                boss.velocity.x = 0; // bateu na parede → para
+                x = fabsf(dx);
+                break;
             }
-
-            boss.state = BOSS_IDLE;
-            boss.velocity = (Vector2){0};
-            boss.state_timer = 1.5f;
-
-            return;
         }
     }
+
+    // ----- MOVIMENTO VERTICAL PARABÓLICO -----
+    boss.jump_velocity += GRAVITY * delta;
+    float dy = boss.jump_velocity * delta;
+    float step_y = (dy > 0) ? 1 : -1;
+
+    for (float y = 0; y < fabsf(dy); y += 1.0f) {
+
+        Rectangle next = boss.hitbox;
+        next.y += step_y;
+
+        // COLISÃO COM O CHÃO
+        if (step_y > 0) {
+            for (int w = 0; w < wall_count; w++) {
+                if (CheckCollisionRecs(next, walls[w].hitbox)) {
+
+                    // ENCOSTOU NO CHÃO
+                    boss.hitbox.y = walls[w].hitbox.y - boss.hitbox.height;
+
+                    boss.state = BOSS_IDLE;
+
+                    boss.velocity.x = 0;
+                    boss.jump_velocity = 0;
+
+                    boss.just_landed = true;
+                    boss.landing_delay = 0.3f; // boss não anda nos próximos 300ms
+
+                    boss.state_timer = 1.2f; // tempo até escolher outro ataque
+
+                    return;
+                }
+            }
+        }
+
+        // COLISÃO COM O TETO
+        if (step_y < 0) {
+            for (int w = 0; w < wall_count; w++) {
+                if (CheckCollisionRecs(next, walls[w].hitbox)) {
+
+                    // bateu no teto → gruda logo abaixo dele
+                    boss.hitbox.y = walls[w].hitbox.y + walls[w].hitbox.height;
+
+                    boss.jump_velocity = 0; // corta subida
+
+                    return; // para de subir
+                }
+            }
+        }
+
+
+        boss.hitbox.y += step_y;
+    }
 }
+
 
 // --------------------------------
 // MÁQUINA DE ESTADOS
 // --------------------------------
 
 void boss_idle(Player *player, float delta) {
-
-    // Engaja quando o player se aproxima
     float dx = player->hitbox.x - boss.hitbox.x;
     float dy = player->hitbox.y - boss.hitbox.y;
     float d = sqrtf(dx*dx + dy*dy);
@@ -179,7 +192,6 @@ void boss_idle(Player *player, float delta) {
     boss.state_timer -= delta;
     if (boss.state_timer > 0) return;
 
-    // escolhe ataque random
     int attack = GetRandomValue(1, 2);
 
     if (attack == 1) start_chase_attack();
@@ -193,7 +205,17 @@ void boss_idle(Player *player, float delta) {
 // --------------------------------
 
 void update_boss(Player *player, float delta, Wall *walls, int wall_count) {
-    if (!boss.active) return;
+    if (!boss.active)
+        return;
+
+    if (boss.just_landed) {
+        boss.landing_delay -= delta;
+        if (boss.landing_delay > 0) {
+            return; // impede boss de se mover ou escolher ataque
+        }
+        boss.just_landed = false;
+    }
+
 
     switch (boss.state) {
         case BOSS_IDLE:
@@ -205,18 +227,39 @@ void update_boss(Player *player, float delta, Wall *walls, int wall_count) {
             break;
 
         case BOSS_JUMP_ATTACK:
-            boss_jump(player, delta, walls, wall_count);
-            // EVITA MOVER DUAS VEZES
+            boss_jump(delta, walls, wall_count);
             break;
     }
 
-    // NÃO mover automaticamente durante o pulo!
+    // Se acabou de pousar do pulo: NÃO MOVIMENTAR NESSE FRAME
+    if (boss.just_landed) {
+        boss.just_landed = false;
+        return;
+    }
+
+    // Movimento automático APENAS se não estiver pulando
     if (boss.state != BOSS_JUMP_ATTACK) {
-        boss.hitbox.x += boss.velocity.x * delta;
+
+        float dx = boss.velocity.x * delta;
+        float step = (dx > 0) ? 1 : -1;
+
+        for (float x = 0; x < fabsf(dx); x += 1.0f) {
+            boss.hitbox.x += step;
+
+            for (int w = 0; w < wall_count; w++) {
+                if (CheckCollisionRecs(boss.hitbox, walls[w].hitbox)) {
+                    boss.hitbox.x -= step;
+                    boss.velocity.x = 0;
+                    x = fabsf(dx);
+                    break;
+                }
+            }
+        }
+
         boss.hitbox.y += boss.velocity.y * delta;
     }
 
-    // colisão geral
+    // COLISÃO GERAL
     for (int i = 0; i < wall_count; i++) {
         if (CheckCollisionRecs(boss.hitbox, walls[i].hitbox)) {
             boss.hitbox.x -= boss.velocity.x * delta;
@@ -225,7 +268,6 @@ void update_boss(Player *player, float delta, Wall *walls, int wall_count) {
         }
     }
 
-    // invulnerabilidade
     if (boss.invulnerable) {
         boss.invuln_time -= delta;
         if (boss.invuln_time <= 0) {
@@ -240,7 +282,6 @@ void update_boss(Player *player, float delta, Wall *walls, int wall_count) {
     }
 }
 
-
 // --------------------------------
 // DRAW
 // --------------------------------
@@ -253,10 +294,11 @@ void draw_boss() {
 
     DrawRectangleRec(boss.hitbox, color);
 
-    // barra de vida
-    DrawRectangle(boss.hitbox.x,
-                  boss.hitbox.y - 20,
-                  (boss.life * boss.hitbox.width) / boss.max_life,
-                  10,
-                  BLACK);
+    DrawRectangle(
+        boss.hitbox.x,
+        boss.hitbox.y - 20,
+        (boss.life * boss.hitbox.width) / boss.max_life,
+        10,
+        BLACK
+    );
 }

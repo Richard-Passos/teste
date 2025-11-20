@@ -61,6 +61,11 @@ void PlayerMonsterCollision(Player *player, float delta) {
     if (player->combat.invulnerable) return;
 
     for (int i = 0; i < monsters_count; i++) {
+        if (player->ignore_next_monster_hit) {
+            player->ignore_next_monster_hit = false;
+            return; // ignora colisão só neste frame
+        }
+
         // pula monstros "mortos"
         if (monsters[i].hitbox.width == 0 || monsters[i].hitbox.height == 0) continue;
 
@@ -156,7 +161,7 @@ void update_player(float delta) {
     } else {
         player->speed.x = 0.0f;
 
-        bool dash_hit = DashAbility(player);
+        bool dash_hit = DashAbility(player, delta);
 
         if (dash_hit) {
             player->speed.x = 0.0f;
@@ -307,6 +312,7 @@ void update_player(float delta) {
                     monsters[j].invuln_time = 0.3f;
 
                     if (player->souls <= player->max_souls - 10) player->souls += 10;
+                    if (player->souls >= player->max_souls) player->souls = 100;
 
                     player->monsters_hit[j] = true;
 
@@ -350,8 +356,8 @@ void update_player(float delta) {
                 boss.invuln_time = 0.3f;
 
                 // Ganho de almas como no monstro
-                if (player->souls <= player->max_souls - 10)
-                    player->souls += 10;
+                if (player->souls <= player->max_souls) player->souls += 10;
+                if (player->souls >= player->max_souls) player->souls = 100;
 
                 player->boss_hit = true;
 
