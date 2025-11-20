@@ -7,11 +7,12 @@
 #include "raylib.h"
 
 typedef struct {
+    Texture2D texture;
     Rectangle hitbox;
     bool should_draw;
 } Shop;
 
-void add_shop(int, int);
+void add_shop(int, int, Texture2D);
 
 void draw_shop();
 

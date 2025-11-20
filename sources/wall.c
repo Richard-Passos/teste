@@ -18,5 +18,12 @@ void add_wall(int x, int y, Texture2D texture) {
 
 void draw_walls() {
     for (int i = 0; i < walls_count; i++)
-        DrawTexture(walls[i].texture, walls[i].hitbox.x, walls[i].hitbox.y, WHITE);
+        DrawTexturePro(
+            walls[i].texture,
+            (Rectangle){0, 0, walls[i].texture.width, walls[i].texture.height},
+            walls[i].hitbox,
+            (Vector2){0, 0},
+            0.0f,
+            BROWN
+        );
 }

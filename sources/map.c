@@ -34,6 +34,9 @@ bool load_map(char path[]) {
     if (should_load_textures) {
         add_texture("../assets/wall.png");
         add_texture("../assets/bench.png");
+        add_texture("../assets/charm.png");
+        add_texture("../assets/ability.png");
+        add_texture("../assets/shop.png");
 
         should_load_textures = false;
     }
@@ -58,7 +61,10 @@ bool load_map(char path[]) {
     // Textures
     //----------------------------------------------------------------------------------
     Texture wall_texture = map_textures[0],
-            bench_texture = map_textures[1];
+            bench_texture = map_textures[1],
+            charm_texture = map_textures[2],
+            ability_texture = map_textures[3],
+            shop_texture = map_textures[4];
     //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
@@ -84,15 +90,11 @@ bool load_map(char path[]) {
                     break;
                 case 'A':
                 case 'a':
-                    add_item(x, y);
+                    add_item(x, y, charm_texture);
                     break;
                 case 'H':
                 case 'h':
-                    if (abilities_count == 0) {
-                        add_ability(x, y);
-                    }
-                    break;
-
+                    add_ability(x, y, ability_texture);
                     break;
                 case 'P':
                 case 'p':
@@ -104,7 +106,7 @@ bool load_map(char path[]) {
                     break;
                 case 'S':
                 case 's':
-                    add_shop(x, y);
+                    add_shop(x, y, shop_texture);
                     break;
                 case 'T':
                 case 't':

@@ -6,14 +6,15 @@
 #define HOLLOW_ABILITIES_ATTACKS_H
 #include "player.h"
 
-#define MAX_ABILITIES 99
+#define MAX_ABILITIES 1
 
 typedef struct {
+    Texture2D texture;
     Rectangle hitbox;
     bool acquired;
 } Ability;
 
-void add_ability(int, int);
+void add_ability(int, int, Texture2D);
 
 void draw_abilities();
 

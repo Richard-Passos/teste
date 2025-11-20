@@ -9,7 +9,8 @@
 
 Shop shop = {0};
 
-void add_shop(int x, int y) {
+void add_shop(int x, int y, Texture2D texture) {
+    shop.texture = texture;
     shop.hitbox = (Rectangle){
         x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
     };
@@ -19,7 +20,14 @@ void add_shop(int x, int y) {
 void draw_shop() {
     if (!shop.should_draw) return;
 
-    DrawRectangle(shop.hitbox.x, shop.hitbox.y, shop.hitbox.width, shop.hitbox.height, ORANGE);
+    DrawTexturePro(
+        shop.texture,
+        (Rectangle){0, 0, shop.texture.width, shop.texture.height},
+        shop.hitbox,
+        (Vector2){0, 0},
+        0.0f,
+        ORANGE
+    );
 
     if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
         DrawText("Entrar",

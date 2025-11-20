@@ -73,13 +73,13 @@ void handle_menu_screen() {
         );
         add_asset(
             "../assets/menu_logo.png",
-            (Rectangle){center_on_screen(639), 25, 639, 241}
+            (Rectangle){center_on_screen(639, AXIS_X), 25, 639, 241}
         );
 
-        add_action("Jogar", (Rectangle){center_on_screen(600), 250, 600, 60});
-        add_action("Carregar Jogo", (Rectangle){center_on_screen(600), 320, 600, 60});
-        add_action("Ajuda", (Rectangle){center_on_screen(600), 390, 600, 60});
-        add_action("Sair", (Rectangle){center_on_screen(600), 460, 600, 60});
+        add_action("Jogar", (Rectangle){center_on_screen(600, AXIS_X), 250, 600, 60});
+        add_action("Carregar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 320, 600, 60});
+        add_action("Ajuda", (Rectangle){center_on_screen(600, AXIS_X), 390, 600, 60});
+        add_action("Sair", (Rectangle){center_on_screen(600, AXIS_X), 460, 600, 60});
 
 
         screen.is_loaded = true;
@@ -131,10 +131,10 @@ void handle_paused_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Continuar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
-        add_action("Inventario", (Rectangle){center_on_screen(600), 220, 600, 60});
-        add_action("Salvar Jogo", (Rectangle){center_on_screen(600), 290, 600, 60});
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 360, 600, 60});
+        add_action("Continuar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60});
+        add_action("Inventario", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60});
+        add_action("Salvar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 290, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 360, 600, 60});
 
         screen.is_loaded = true;
     }
@@ -200,47 +200,28 @@ void handle_help_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        unload_map();
-
-        Texture2D tex = LoadTexture("../assets/help.png");
-
-        float Width = tex.width * 0.5f;
-        float Height = tex.height * 0.5f;
-
-        // Centraliza na tela
-        float posX = (SCREEN_WIDTH - Width) / 2;
-        float posY = (SCREEN_HEIGHT - Height) / 2;
-
-        // Armazena a textura e o local onde desenhar
-        screen_assets[screen_assets_size++] = (Asset){
-            .texture = tex,
-            .hitbox = (Rectangle){posX, posY, Width, Height}
-        };
+        add_asset(
+            "../assets/help.png",
+            (Rectangle){center_on_screen(960, AXIS_X), center_on_screen(540, AXIS_Y), 960, 540}
+        );
 
         screen.is_loaded = true;
     }
     //----------------------------------------------------------------------------------
 
     // Init
+    //----------------------------------------------------------------------------------
     Asset bg_help = screen_assets[0];
+    //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLACK);
 
-    // Desenha ajustando o tamanho
-    DrawTexturePro(
-        bg_help.texture,
-        (Rectangle){0, 0, bg_help.texture.width, bg_help.texture.height},
-        bg_help.hitbox,
-        (Vector2){0,0},
-        0.0f,
-        WHITE
-    );
+    draw_asset(&bg_help);
 
     DrawText("HELP", 16, 16, 32, WHITE);
-
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -253,14 +234,13 @@ void handle_help_screen() {
 }
 
 
-
 void handle_win_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
-        add_action("Carregar Jogo", (Rectangle){center_on_screen(600), 220, 600, 60});
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 290, 600, 60});
+        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60});
+        add_action("Carregar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 290, 600, 60});
 
         screen.is_loaded = true;
     }
@@ -305,8 +285,8 @@ void handle_game_over_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600), 150, 600, 60});
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600), 220, 600, 60});
+        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60});
+        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60});
 
         screen.is_loaded = true;
     }
@@ -441,7 +421,14 @@ void set_screen(Screen_name name) {
 }
 
 void draw_asset(Asset *asset) {
-    DrawTexture(asset->texture, asset->hitbox.x, asset->hitbox.y, WHITE);
+    DrawTexturePro(
+        asset->texture,
+        (Rectangle){0, 0, asset->texture.width, asset->texture.height},
+        asset->hitbox,
+        (Vector2){0, 0},
+        0.0f,
+        WHITE
+    );
 }
 
 void add_asset(char texture_path[], Rectangle hitbox) {
@@ -484,8 +471,8 @@ bool is_action_pressed(Action *action) {
     return is_pressed;
 }
 
-float center_on_screen(float width) {
-    return SCREEN_WIDTH / 2.0 - width / 2;
+float center_on_screen(float size, Axis axis) {
+    return (axis == AXIS_X ? SCREEN_WIDTH : SCREEN_HEIGHT) / 2.0f - size / 2.0f;
 }
 
 

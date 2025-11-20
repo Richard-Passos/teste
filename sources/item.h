@@ -9,10 +9,11 @@
 #define MAX_ITEMS 128
 
 typedef struct {
+    Texture2D texture;
     Rectangle hitbox;
 } Item;
 
-void add_item(int, int);
+void add_item(int, int, Texture2D);
 
 void draw_items();
 

@@ -14,11 +14,11 @@
 Ability abilities[MAX_ABILITIES];
 int abilities_count = 0;
 
-void add_ability(int x, int y) {
+void add_ability(int x, int y, Texture2D texture) {
     Player *player = &game_state.player;
 
     if (abilities_count < MAX_ABILITIES)
-        abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+        abilities[abilities_count++] = (Ability){texture, {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
 
     if (abilities_count > 0)
         player->abilitySoulProjectile.hitbox = abilities[0].hitbox;
@@ -28,7 +28,14 @@ void draw_abilities() {
     bool is_colliding = false;
 
     for (int i = 0; i < abilities_count; i++) {
-        DrawRectangleRec(abilities[i].hitbox, BROWN);
+        DrawTexturePro(
+            abilities[i].texture,
+            (Rectangle){0, 0, abilities[i].texture.width, abilities[i].texture.height},
+            abilities[i].hitbox,
+            (Vector2){0, 0},
+            0.0f,
+            BLUE
+        );
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox)) {
             DrawText(
@@ -83,7 +90,6 @@ void AbilitiesProjectile(Player *player, float delta) {
 
     // Atualiza o projétil se estiver ativo
     if (player->abilitySoulProjectile.active) {
-
         // Desativa depois de 3s
         player->abilitySoulProjectile.lifetime -= delta;
         if (player->abilitySoulProjectile.lifetime <= 0) {
@@ -130,7 +136,6 @@ void AbilitiesProjectile(Player *player, float delta) {
 
         if (boss.active && player->abilitySoulProjectile.active &&
             CheckCollisionRecs(player->abilitySoulProjectile.hitbox, boss.hitbox)) {
-
             if (!boss.invulnerable) {
                 boss.life -= 3;
 
@@ -145,7 +150,7 @@ void AbilitiesProjectile(Player *player, float delta) {
 
             player->abilitySoulProjectile.active = false;
             return;
-            }
+        }
 
 
         if (hitSomething)
@@ -195,7 +200,6 @@ bool DashAbility(Player *player, float delta) {
 
     // Se estiver em dash
     if (player->dash.active) {
-
         player->dash.timer -= delta;
 
         float dir = player->facing_right ? 1.0f : -1.0f;
@@ -221,31 +225,31 @@ bool DashAbility(Player *player, float delta) {
             }
         }
 
-        dash_after_movement:
+    dash_after_movement:
 
-            // Colisão com monstros
-            if (!player->dash.hit_confirmed) {
-                for (int i = 0; i < monsters_count; i++) {
-                    if (monsters[i].hitbox.width == 0) continue;
+        // Colisão com monstros
+        if (!player->dash.hit_confirmed) {
+            for (int i = 0; i < monsters_count; i++) {
+                if (monsters[i].hitbox.width == 0) continue;
 
-                    if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
-                        player->dash.hit_confirmed = true;
-                        player->dash.active = false;
-                        player->dash.timer = 0.0f;
-                        player->speed.x = 0;
+                if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+                    player->dash.hit_confirmed = true;
+                    player->dash.active = false;
+                    player->dash.timer = 0.0f;
+                    player->speed.x = 0;
 
-                        // PREVINE KNOCKBACK IMEDIATO
-                        player->ignore_next_monster_hit = true;
+                    // PREVINE KNOCKBACK IMEDIATO
+                    player->ignore_next_monster_hit = true;
 
-                        if (dir > 0)
-                            player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
-                        else
-                            player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
+                    if (dir > 0)
+                        player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
+                    else
+                        player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
 
-                        break;
-                    }
+                    break;
                 }
             }
+        }
 
         // Acabou o tempo do dash
         if (player->dash.timer <= 0.0f) {
