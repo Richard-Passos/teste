@@ -41,6 +41,16 @@ void set_game_state(Game_state gs) {
 }
 
 void reset_game_state() {
+    game_state.abilities[0] = (Ability){"../assets/ability.png",false, false};
+    game_state.abilities_count = 1;
+
+    game_state.items[0] = (Item){"Charm 1", "../assets/ability.png",false, false, false};
+    game_state.items[1] = (Item){"Charm 2", "../assets/ability.png", true, false, false};
+    game_state.items[2] = (Item){"Charm 3", "../assets/ability.png", false, false, false};
+    game_state.items[3] = (Item){"Charm 4", "../assets/ability.png", false, false, false};
+    game_state.items[4] = (Item){"Charm 5", "../assets/ability.png", true, false, false};
+    game_state.items_count = 5;
+
     Player player = {0};
     player.hitbox = (Rectangle){0, 0,TILE_SIZE, TILE_SIZE};
     player.speed = (Vector2){0, 0};
@@ -51,8 +61,7 @@ void reset_game_state() {
     player.money = 0;
     player.souls = 0;
     player.max_souls = 100;
-    player.abilitySoulProjectile.active = false;
-    player.abilitySoulProjectile.acquired = false;
+    player.abilitySoulProjectile = &game_state.abilities[0];
     player.combat.life = 5;
     player.combat.max_life = 5;
     player.combat.invulnerable = false;

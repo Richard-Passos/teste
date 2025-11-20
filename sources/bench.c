@@ -21,7 +21,14 @@ void draw_benches() {
     bool is_colliding = game_state.player.is_sitting;
 
     for (int i = 0; i < benches_count; i++) {
-        DrawTexture(benches[i].texture, benches[i].hitbox.x, benches[i].hitbox.y, WHITE);
+        DrawTexturePro(
+            benches[i].texture,
+            (Rectangle){0, 0, benches[i].texture.width, benches[i].texture.height},
+            benches[i].hitbox,
+            (Vector2){0, 0},
+            0.0f,
+            GRAY
+        );
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, benches[i].hitbox)) {
             DrawText("Descansar",

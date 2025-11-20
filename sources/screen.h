@@ -8,6 +8,8 @@
 
 #define MAX_LABEL_SIZE 51
 
+typedef enum { AXIS_X, AXIS_Y } Axis;
+
 typedef struct {
     Texture texture;
     Rectangle hitbox;
@@ -28,7 +30,8 @@ typedef enum {
     SCREEN_GAME_OVER,
     SCREEN_HELP,
     SCREEN_VILLAGE,
-    SCREEN_SHOP
+    SCREEN_SHOP,
+    SCREEN_SHOP_NPC
 } Screen_name;
 
 typedef struct {
@@ -54,6 +57,8 @@ void handle_village_screen();
 
 void handle_shop_screen();
 
+void handle_shop_npc_screen();
+
 void set_screen(Screen_name);
 
 void draw_asset(Asset *);
@@ -66,7 +71,7 @@ void add_action(char [], Rectangle);
 
 bool is_action_pressed(Action *);
 
-float center_on_screen(float);
+float center_on_screen(float, Axis);
 
 extern Screen screen;
 extern Screen_name last_screen;

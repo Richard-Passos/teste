@@ -7,7 +7,6 @@
 #include "abilities-attacks.h"
 #include "game_state.h"
 #include "boss.h"
-#include "shop.h"
 
 void add_player(int x, int y) {
     Player *player = &game_state.player;
@@ -45,8 +44,8 @@ void draw_player() {
         DrawRectangleRec(player->attack_box, (Color){0, 0, 0, 120});
     }
 
-    if (player->abilitySoulProjectile.active) {
-        DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
+    if (player->abilitySoulProjectile->acquired && player->abilitySoulProjectile->is_active) {
+        DrawRectangleRec(player->abilitySoulProjectile->hitbox, WHITE);
     }
 }
 
@@ -59,7 +58,8 @@ bool has_collided(Player *player, Wall *wall) {
     );
 }
 
-void PlayerMonsterCollision(Player *player, float delta) {
+void PlayerMonsterCollision(float delta) {
+    Player *player = &game_state.player;
 
     if (player->combat.invuln_timer > 0.0f) {
         player->combat.invuln_timer -= delta;
@@ -120,11 +120,8 @@ void PlayerMonsterCollision(Player *player, float delta) {
     // Colisão do BOSS com o jogador (dano ao player)
     // ---------------------------------------------
     if (boss.active && boss.hitbox.width > 0 && boss.hitbox.height > 0) {
-
         if (!player->combat.invulnerable) {
-
             if (CheckCollisionRecs(player->hitbox, boss.hitbox)) {
-
                 // Dano
                 player->combat.life -= 1;
                 if (player->combat.life < 0) player->combat.life = 0;
@@ -173,7 +170,7 @@ void update_player(float delta) {
     } else {
         player->speed.x = 0.0f;
 
-        bool dash_hit = DashAbility(player, delta);
+        bool dash_hit = DashAbility(delta);
 
         if (dash_hit) {
             player->speed.x = 0.0f;
@@ -262,7 +259,7 @@ apply_horizontal:
     // ---------------------------------------------------------
     // 4) Colisão com monstros
     // ---------------------------------------------------------
-    PlayerMonsterCollision(player, delta);
+    PlayerMonsterCollision(delta);
 
 
     // ---------------------------------------------------------
@@ -356,12 +353,9 @@ apply_horizontal:
 
 
     if (boss.active && player->is_attacking) {
-
         // Se ainda não atingiu o boss neste ataque
         if (!player->boss_hit) {
-
             if (CheckCollisionRecs(player->attack_box, boss.hitbox)) {
-
                 boss.life -= 1;
                 boss.hurt_timer = 0.1f;
                 boss.invulnerable = true;
@@ -400,9 +394,9 @@ apply_horizontal:
     }
 
     // Projetil de almas + aquisição de habilidades
-    AbilitiesProjectile(player, delta);
+    AbilitiesProjectile(delta);
     update_ability_acquisition();
 
     // Cura
-    HealAbility(player, delta);
+    HealAbility(delta);
 }

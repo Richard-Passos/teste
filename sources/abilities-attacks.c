@@ -4,31 +4,39 @@
 #include <stdio.h>
 #include "abilities-attacks.h"
 #include "raylib.h"
-#include "player.h"
 #include "enemies.h"
 #include "math.h"
 #include "config.h"
 #include "game_state.h"
 #include "boss.h"
 
-Ability abilities[MAX_ABILITIES];
-int abilities_count = 0;
-
 void add_ability(int x, int y) {
-    Player *player = &game_state.player;
+    Ability *ability = get_available_ability();
 
-    if (abilities_count < MAX_ABILITIES)
-        abilities[abilities_count++] = (Ability){{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE}};
+    if (!ability) return;
 
-    if (abilities_count > 0)
-        player->abilitySoulProjectile.hitbox = abilities[0].hitbox;
+    ability->texture = LoadTexture(ability->texture_path);
+    ability->hitbox = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+    ability->is_active = true;
 }
 
 void draw_abilities() {
+    Ability *abilities = game_state.abilities;
+    int *abilities_count = &game_state.abilities_count;
+
     bool is_colliding = false;
 
-    for (int i = 0; i < abilities_count; i++) {
-        DrawRectangleRec(abilities[i].hitbox, BROWN);
+    for (int i = 0; i < *abilities_count; i++) {
+        if (abilities[i].acquired || !abilities[i].is_active) continue;
+
+        DrawTexturePro(
+            abilities[i].texture,
+            (Rectangle){0, 0, abilities[i].texture.width, abilities[i].texture.height},
+            abilities[i].hitbox,
+            (Vector2){0, 0},
+            0.0f,
+            BLUE
+        );
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox)) {
             DrawText(
@@ -44,60 +52,85 @@ void draw_abilities() {
     }
 }
 
-void AbilitiesProjectile(Player *player, float delta) {
+void unload_abilities() {
+    Ability *abilities = game_state.abilities;
+    int *abilities_count = &game_state.abilities_count;
+
+    for (int i = 0; i < *abilities_count; i++)
+        if (abilities[i].is_active) {
+            UnloadTexture(abilities[i].texture);
+            abilities[i].is_active = false;
+        }
+}
+
+Ability *get_available_ability() {
+    Ability *abilities = game_state.abilities;
+    int *abilities_count = &game_state.abilities_count;
+
+    for (int i = 0; i < *abilities_count; i++)
+        if (!abilities[i].is_active && !abilities[i].acquired)
+            return &abilities[i];
+
+    return NULL;
+}
+
+void AbilitiesProjectile(float delta) {
+    Player *player = &game_state.player;
+
+    if (!player->abilitySoulProjectile->acquired) return;
+
     // ===========================================
     // HABILIDADE (F) - Projétil de almas
     // ===========================================
 
-    if (player->abilitySoulProjectile.acquired && IsKeyPressed(KEY_F) && !player->abilitySoulProjectile.active) {
+    if (!player->abilitySoulProjectile->is_active && IsKeyPressed(KEY_F)) {
         if (player->souls >= player->max_souls / 3.0) {
             player->souls -= player->max_souls / 3.0; // gasta souls
             if (player->souls < 0) player->souls = 0;
 
-            player->abilitySoulProjectile.active = true;
-            player->abilitySoulProjectile.lifetime = 3.0f;
+            player->abilitySoulProjectile->is_active = true;
+            player->abilitySoulProjectile->lifetime = 3.0f;
 
             int projWidth = TILE_SIZE * 1.25;
             int projHeight = TILE_SIZE;
             float projSpeed = PLAYER_HOR_SPEED * 1.5;
 
             if (player->facing_right) {
-                player->abilitySoulProjectile.hitbox = (Rectangle){
+                player->abilitySoulProjectile->hitbox = (Rectangle){
                     player->hitbox.x + player->hitbox.width,
                     player->hitbox.y + player->hitbox.height / 2 - projHeight / 2,
                     projWidth,
                     projHeight
                 };
-                player->abilitySoulProjectile.speed = (Vector2){projSpeed, 0};
+                player->abilitySoulProjectile->speed = (Vector2){projSpeed, 0};
             } else {
-                player->abilitySoulProjectile.hitbox = (Rectangle){
+                player->abilitySoulProjectile->hitbox = (Rectangle){
                     player->hitbox.x - projWidth,
                     player->hitbox.y + player->hitbox.height / 2 - projHeight / 2,
                     projWidth,
                     projHeight
                 };
-                player->abilitySoulProjectile.speed = (Vector2){-projSpeed, 0};
+                player->abilitySoulProjectile->speed = (Vector2){-projSpeed, 0};
             }
         }
     }
 
     // Atualiza o projétil se estiver ativo
-    if (player->abilitySoulProjectile.active) {
-
+    if (player->abilitySoulProjectile->is_active) {
         // Desativa depois de 3s
-        player->abilitySoulProjectile.lifetime -= delta;
-        if (player->abilitySoulProjectile.lifetime <= 0) {
-            player->abilitySoulProjectile.active = false;
+        player->abilitySoulProjectile->lifetime -= delta;
+        if (player->abilitySoulProjectile->lifetime <= 0) {
+            player->abilitySoulProjectile->is_active = false;
             return;
         }
 
-        player->abilitySoulProjectile.hitbox.x += player->abilitySoulProjectile.speed.x * delta;
+        player->abilitySoulProjectile->hitbox.x += player->abilitySoulProjectile->speed.x * delta;
 
         bool hitSomething = false;
 
         // Checa colisão com parede
         for (int i = 0; i < walls_count; i++) {
-            if (CheckCollisionRecs(player->abilitySoulProjectile.hitbox, walls[i].hitbox)) {
+            if (CheckCollisionRecs(player->abilitySoulProjectile->hitbox, walls[i].hitbox)) {
                 hitSomething = true;
                 break;
             }
@@ -105,7 +138,7 @@ void AbilitiesProjectile(Player *player, float delta) {
 
         // Checa colisão com monstros
         for (int j = 0; j < monsters_count; j++) {
-            if (CheckCollisionRecs(player->abilitySoulProjectile.hitbox, monsters[j].hitbox)) {
+            if (CheckCollisionRecs(player->abilitySoulProjectile->hitbox, monsters[j].hitbox)) {
                 monsters[j].life -= 3; // 3 de dano fixo
                 monsters[j].hurt_timer = 0.1f;
                 monsters[j].invulnerable = true;
@@ -128,9 +161,8 @@ void AbilitiesProjectile(Player *player, float delta) {
         }
 
 
-        if (boss.active && player->abilitySoulProjectile.active &&
-            CheckCollisionRecs(player->abilitySoulProjectile.hitbox, boss.hitbox)) {
-
+        if (boss.active && player->abilitySoulProjectile->is_active &&
+            CheckCollisionRecs(player->abilitySoulProjectile->hitbox, boss.hitbox)) {
             if (!boss.invulnerable) {
                 boss.life -= 3;
 
@@ -143,41 +175,34 @@ void AbilitiesProjectile(Player *player, float delta) {
                 }
             }
 
-            player->abilitySoulProjectile.active = false;
+            player->abilitySoulProjectile->is_active = false;
             return;
-            }
+        }
 
 
         if (hitSomething)
-            player->abilitySoulProjectile.active = false;
+            player->abilitySoulProjectile->is_active = false;
     }
 }
-
 
 void update_ability_acquisition() {
-    Player *player = &game_state.player;
+    Ability *abilities = game_state.abilities;
+    int *abilities_count = &game_state.abilities_count;
 
-    // Já pegou a habilidade? então nem verifica mais.
-    if (player->abilitySoulProjectile.acquired) return;
+    for (int i = 0; i < *abilities_count; i++) {
+        if (abilities[i].acquired) continue;
 
-    // Colidiu com a habilidade no mapa?
-    if (CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-        // Só pega se apertar para cima
-        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
-            player->abilitySoulProjectile.acquired = true;
-
-            // Remove o objeto do mapa
-            player->abilitySoulProjectile.hitbox = (Rectangle){0, 0, 0, 0};
-            abilities[0].hitbox = (Rectangle){0, 0, 0, 0};
-        }
+        if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP))
+            abilities[i].acquired = true;
     }
 }
 
-
-bool DashAbility(Player *player, float delta) {
+bool DashAbility(float delta) {
     const float DASH_SPEED = 600.0f;
     const float DASH_DURATION = 0.15f;
     const float DASH_COOLDOWN = 1.0f;
+
+    Player *player = &game_state.player;
 
     bool dash_cancelled = false;
 
@@ -195,7 +220,6 @@ bool DashAbility(Player *player, float delta) {
 
     // Se estiver em dash
     if (player->dash.active) {
-
         player->dash.timer -= delta;
 
         float dir = player->facing_right ? 1.0f : -1.0f;
@@ -221,31 +245,31 @@ bool DashAbility(Player *player, float delta) {
             }
         }
 
-        dash_after_movement:
+    dash_after_movement:
 
-            // Colisão com monstros
-            if (!player->dash.hit_confirmed) {
-                for (int i = 0; i < monsters_count; i++) {
-                    if (monsters[i].hitbox.width == 0) continue;
+        // Colisão com monstros
+        if (!player->dash.hit_confirmed) {
+            for (int i = 0; i < monsters_count; i++) {
+                if (monsters[i].hitbox.width == 0) continue;
 
-                    if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
-                        player->dash.hit_confirmed = true;
-                        player->dash.active = false;
-                        player->dash.timer = 0.0f;
-                        player->speed.x = 0;
+                if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+                    player->dash.hit_confirmed = true;
+                    player->dash.active = false;
+                    player->dash.timer = 0.0f;
+                    player->speed.x = 0;
 
-                        // PREVINE KNOCKBACK IMEDIATO
-                        player->ignore_next_monster_hit = true;
+                    // PREVINE KNOCKBACK IMEDIATO
+                    player->ignore_next_monster_hit = true;
 
-                        if (dir > 0)
-                            player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
-                        else
-                            player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
+                    if (dir > 0)
+                        player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
+                    else
+                        player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
 
-                        break;
-                    }
+                    break;
                 }
             }
+        }
 
         // Acabou o tempo do dash
         if (player->dash.timer <= 0.0f) {
@@ -259,7 +283,9 @@ bool DashAbility(Player *player, float delta) {
 }
 
 
-void HealAbility(Player *player, float delta) {
+void HealAbility(float delta) {
+    Player *player = &game_state.player;
+
     bool is_player_stopped = (player->speed.x == 0.0f);
 
     // Atualiza cooldown

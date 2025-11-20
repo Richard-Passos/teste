@@ -5,14 +5,7 @@
 #ifndef MY_RAYLIB_GAME_PLAYER_H
 #define MY_RAYLIB_GAME_PLAYER_H
 #include "enemies.h"
-
-typedef struct AbilityProjectile {
-    Rectangle hitbox;
-    Vector2 speed;
-    bool active;
-    bool acquired;
-    float lifetime;
-} AbilityProjectile;
+#include "abilities-attacks.h"
 
 typedef struct {
     bool active;
@@ -59,7 +52,7 @@ typedef struct {
     int last_money_gain;
     int souls;
     int max_souls;
-    AbilityProjectile abilitySoulProjectile;
+    Ability *abilitySoulProjectile;
     DashState dash;
     PlayerCombat combat;
     bool ignore_next_monster_hit;
@@ -73,6 +66,6 @@ void add_player(int, int);
 
 void draw_player();
 
-void update_player(float delta);
+void update_player(float);
 
 #endif //MY_RAYLIB_GAME_PLAYER_H

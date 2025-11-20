@@ -34,21 +34,23 @@ bool load_map(char path[]) {
     if (should_load_textures) {
         add_texture("../assets/wall.png");
         add_texture("../assets/bench.png");
+        add_texture("../assets/shop.png");
+        add_texture("../assets/npc.png");
 
         should_load_textures = false;
     }
     //----------------------------------------------------------------------------------
 
-    // Textures
+    // Reset
     //----------------------------------------------------------------------------------
     walls_count = 0;
-    items_count = 0;
     benches_count = 0;
-    abilities_count = 0;
     monsters_count = 0;
     teleports_count = 0;
-    shop.should_draw = false;
-
+    shop.is_active = false;
+    shop_npc.is_active = false;
+    unload_items();
+    unload_abilities();
 
     boss.hitbox = (Rectangle){-1, -1, 0, 0};
     boss.active = false; // <<< Boss começa desligado sempre
@@ -58,7 +60,9 @@ bool load_map(char path[]) {
     // Textures
     //----------------------------------------------------------------------------------
     Texture wall_texture = map_textures[0],
-            bench_texture = map_textures[1];
+            bench_texture = map_textures[1],
+            shop_texture = map_textures[2],
+            npc_texture = map_textures[3];
     //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
@@ -88,11 +92,7 @@ bool load_map(char path[]) {
                     break;
                 case 'H':
                 case 'h':
-                    if (abilities_count == 0) {
-                        add_ability(x, y);
-                    }
-                    break;
-
+                    add_ability(x, y);
                     break;
                 case 'P':
                 case 'p':
@@ -102,13 +102,17 @@ bool load_map(char path[]) {
                 case 'b':
                     add_bench(x, y, bench_texture);
                     break;
-                case 'S':
-                case 's':
-                    add_shop(x, y);
-                    break;
                 case 'T':
                 case 't':
                     add_teleport(x, y);
+                    break;
+                case 'S':
+                case 's':
+                    add_shop(x, y, shop_texture);
+                    break;
+                case 'N':
+                case 'n':
+                    add_shop_npc(x, y, npc_texture);
                     break;
                 default:
                     break;
@@ -145,7 +149,6 @@ void unload_map() {
 
 void draw_map() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     // Draw
     //----------------------------------------------------------------------------------
@@ -163,14 +166,6 @@ void draw_map() {
     draw_abilities();
     draw_player();
     draw_healing_effect();
-
-    // Actions
-    //----------------------------------------------------------------------------------
-    if (player->is_attacking)
-        DrawRectangleRec(player->attack_box, GRAY);
-    if (player->abilitySoulProjectile.active)
-        DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
-    //----------------------------------------------------------------------------------
     EndMode2D();
     draw_hud();
     EndDrawing();
