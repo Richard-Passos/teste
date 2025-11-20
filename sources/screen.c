@@ -2,16 +2,12 @@
 // Created by richa on 05/11/2025.
 //
 #include <stdio.h>
-#include <ctype.h>
+#include <string.h>
 #include "raylib.h"
 #include "screen.h"
-
-#include <string.h>
-
 #include "game_state.h"
 #include "config.h"
 #include "camera.h"
-#include "abilities-attacks.h"
 #include "bench.h"
 #include "map.h"
 #include "shop.h"
@@ -378,8 +374,15 @@ void handle_shop_screen() {
         set_screen(paused);
     else if (IsKeyPressed(KEY_TAB))
         set_screen(inventory);
-    else if (handle_teleports_interaction())
+    else if (handle_teleports_interaction()) {
+        player->hitbox = (Rectangle){
+            SHOP.hitbox.x + SHOP.hitbox.width / 2 - player->hitbox.width / 2, SHOP.hitbox.y + SHOP.hitbox.height,
+            player->hitbox.width,
+            player->hitbox.height
+        };
+        player->should_keep_pos = true;
         set_screen(last_screen);
+    }
     //----------------------------------------------------------------------------------
 }
 

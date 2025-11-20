@@ -18,20 +18,28 @@ void add_bench(int x, int y, Texture2D texture) {
 }
 
 void draw_benches() {
-    for (int i = 0; i < benches_count; i++)
-        DrawTexture(benches[i].texture, benches[i].hitbox.x, benches[i].hitbox.y, WHITE);
-}
+    bool is_colliding = game_state.player.is_sitting;
 
+    for (int i = 0; i < benches_count; i++) {
+        DrawTexture(benches[i].texture, benches[i].hitbox.x, benches[i].hitbox.y, WHITE);
+
+        if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, benches[i].hitbox)) {
+            DrawText("Descansar",
+                     benches[i].hitbox.x - 50,
+                     benches[i].hitbox.y - 50,
+                     32, WHITE);
+
+            is_colliding = true;
+        }
+    }
+}
 
 void handle_benches_interaction() {
     Player *player = &game_state.player;
 
-    // Se já está sentado, processa inputs para levantar
+    // Stop sitting
+    //----------------------------------------------------------------------------------
     if (player->is_sitting) {
-        // aplica um pouco de física vertical enquanto sentado (igual ao que tinha)
-        player->speed.y -= GRAVITY * GetFrameTime();
-        player->hitbox.y -= TILE_SIZE;
-
         // Qualquer input de ação cancela o descanso
         if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT) ||
              IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) ||
@@ -41,16 +49,21 @@ void handle_benches_interaction() {
 
         return; // quando sentado, não precisa checar novos bancos
     }
+    //----------------------------------------------------------------------------------
 
-    // Se não está sentado, verifica se o player aperta UP enquanto está em cima de um banco
+    // Sit
+    //----------------------------------------------------------------------------------
     for (int i = 0; i < benches_count; i++) {
-        if (CheckCollisionRecs(player->hitbox, benches[i].hitbox)) {
-            if (IsKeyPressed(KEY_UP)) {
-                player->is_sitting = true;
-                player->combat.life = player->combat.max_life;
-                player->souls = player->max_souls;
-            }
+        if (CheckCollisionRecs(player->hitbox, benches[i].hitbox) && IsKeyPressed(KEY_UP)) {
+            player->is_sitting = true;
+            player->speed.y = 0;
+            player->hitbox.y = benches[i].hitbox.y - benches[i].hitbox.height / 2;
+            player->hitbox.x = benches[i].hitbox.x;
+            player->combat.life = player->combat.max_life;
+            player->souls = player->max_souls;
+
             break; // já achou um banco com o qual colidiu; não precisa checar os outros
         }
     }
+    //----------------------------------------------------------------------------------
 }

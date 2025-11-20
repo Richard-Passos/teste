@@ -38,8 +38,6 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/game_state.h
         sources/enemies.c
         sources/enemies.h
-        sources/timer.c
-        sources/timer.h
         sources/HUD.c
         sources/HUD.h
         sources/abilities-attacks.c

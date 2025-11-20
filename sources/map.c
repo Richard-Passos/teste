@@ -40,17 +40,23 @@ int load_map(char path[]) {
     }
     //----------------------------------------------------------------------------------
 
-    Texture wall_texture = map_textures[0],
-            bench_texture = map_textures[1];
-
+    // Reset
+    //----------------------------------------------------------------------------------
     walls_count = 0;
     items_count = 0;
     benches_count = 0;
     abilities_count = 0;
     monsters_count = 0;
     teleports_count = 0;
-    shop_hitbox = (Rectangle){0};
+    SHOP.should_draw = false;
     boss_start = (Rectangle){0};
+    //----------------------------------------------------------------------------------
+
+    // Textures
+    //----------------------------------------------------------------------------------
+    Texture wall_texture = map_textures[0],
+            bench_texture = map_textures[1];
+    //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
     if (!file) return 0;
@@ -63,9 +69,7 @@ int load_map(char path[]) {
             switch (line[x]) {
                 case 'J':
                 case 'j':
-                    game_state.player.hitbox = (Rectangle){
-                        x * TILE_SIZE, y * TILE_SIZE, game_state.player.hitbox.width, game_state.player.hitbox.height
-                    };
+                    add_player(x, y);
                     break;
                 case 'C':
                 case 'c':
@@ -93,9 +97,7 @@ int load_map(char path[]) {
                     break;
                 case 'S':
                 case 's':
-                    shop_hitbox = (Rectangle){
-                        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
-                    };
+                    add_shop(x, y);
                     break;
                 case 'T':
                 case 't':
@@ -133,8 +135,7 @@ void draw_map() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
-    // Tudo dentro do modo 2D se move com a câmera
-    BeginMode2D(camera);
+    BeginMode2D(camera); // Tudo dentro do modo 2D se move com a câmera
 
     draw_walls();
     draw_items();
@@ -143,51 +144,18 @@ void draw_map() {
     draw_shop();
     draw_monsters();
     draw_abilities();
-
-    // ---- DESENHAR "INSPECIONAR" ----
-    if (!player->abilitySoulProjectile.acquired &&
-        CheckCollisionRecs(player->hitbox, player->abilitySoulProjectile.hitbox)) {
-        DrawText(
-            "Inspecionar",
-            player->abilitySoulProjectile.hitbox.x - 50,
-            player->abilitySoulProjectile.hitbox.y - 50,
-            30,
-            WHITE
-        );
-    }
-
-    if (!player->is_sitting) {
-        for (int i = 0; i < benches_count; i++) {
-            if (CheckCollisionRecs(player->hitbox, benches[i].hitbox)) {
-                DrawText("Descansar",
-                         benches[i].hitbox.x - 50,
-                         benches[i].hitbox.y - 50,
-                         32, WHITE);
-                break; // só desenhar para o banco que está colidindo
-            }
-        }
-    }
-
-    if (CheckCollisionRecs(player->hitbox, shop_hitbox)) {
-        DrawText("Entrar",
-                 shop_hitbox.x + 40,
-                 shop_hitbox.y - 50,
-                 32,
-                 WHITE);
-    }
-
     draw_player();
     draw_healing_effect();
 
-    if (player->is_attacking) {
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (player->is_attacking)
         DrawRectangleRec(player->attack_box, GRAY);
-    }
-    if (player->abilitySoulProjectile.active) {
+    if (player->abilitySoulProjectile.active)
         DrawRectangleRec(player->abilitySoulProjectile.hitbox, WHITE);
-    }
+    //----------------------------------------------------------------------------------
     EndMode2D();
     draw_hud();
-
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
