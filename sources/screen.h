@@ -20,15 +20,15 @@ typedef struct {
 } Action;
 
 typedef enum {
-    menu,
-    paused,
-    inventory,
-    start,
-    win,
-    game_over,
-    help,
-    village,
-    shop
+    SCREEN_MENU,
+    SCREEN_PAUSED,
+    SCREEN_INVENTORY,
+    SCREEN_START,
+    SCREEN_WIN,
+    SCREEN_GAME_OVER,
+    SCREEN_HELP,
+    SCREEN_VILLAGE,
+    SCREEN_SHOP
 } Screen_name;
 
 typedef struct {

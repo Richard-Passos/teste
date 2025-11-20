@@ -22,4 +22,9 @@
 #define SHOP_FILE_PATH "../shop.txt"
 #define GAME_STATE_FILE_PATH "../game_state.bin"
 
+#define BOSS_JUMP_PEAK_Y 50    // altura mínima (teto do mapa)
+#define BOSS_JUMP_HOLD_TIME 2.0f   // tempo parado no ar
+#define BOSS_JUMP_SPEED 900
+#define BOSS_JUMP_FALL_SPEED 1400
+
 #endif //MY_RAYLIB_GAME_CONFIG_H

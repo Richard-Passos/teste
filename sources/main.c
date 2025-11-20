@@ -9,6 +9,7 @@
 #include "HUD.h"
 #include "abilities-attacks.h"
 #include "game_state.h"
+#include "boss.h"
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -50,6 +51,7 @@ int main(void) {
       update_player(delta_time);
       update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
       update_monsters(delta_time);
+      update_boss(&game_state.player, delta_time, walls, walls_count);
       //----------------------------------------------------------------------------------
 
       // Update
@@ -60,13 +62,13 @@ int main(void) {
       // Actions
       //----------------------------------------------------------------------------------
       if (IsKeyPressed(KEY_ESCAPE))
-        set_screen(paused);
+        set_screen(SCREEN_PAUSED);
       else if (IsKeyPressed(KEY_TAB))
-        set_screen(inventory);
+        set_screen(SCREEN_INVENTORY);
       else if (game_state.level > MAX_LEVEL)
-        set_screen(win);
+        set_screen(SCREEN_WIN);
       else if (player->combat.life <= 0)
-        set_screen(game_over);
+        set_screen(SCREEN_GAME_OVER);
       //----------------------------------------------------------------------------------
     }
   }

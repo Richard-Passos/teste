@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "teleport.h"
 #include "shop.h"
+#include "boss.h"
 
 char map_path[100];
 
@@ -19,13 +20,11 @@ Texture2D map_textures[99];
 int map_textures_count = 0;
 bool should_load_textures = true;
 
-Rectangle boss_start = {0};
-
 void add_texture(char texture_path[]) {
     map_textures[map_textures_count++] = LoadTexture(texture_path);
 }
 
-int load_map(char path[]) {
+bool load_map(char path[]) {
     // Load just once
     //----------------------------------------------------------------------------------
     if (strcmp(path, map_path) == 0) return 1;
@@ -40,7 +39,7 @@ int load_map(char path[]) {
     }
     //----------------------------------------------------------------------------------
 
-    // Reset
+    // Textures
     //----------------------------------------------------------------------------------
     walls_count = 0;
     items_count = 0;
@@ -48,8 +47,11 @@ int load_map(char path[]) {
     abilities_count = 0;
     monsters_count = 0;
     teleports_count = 0;
-    SHOP.should_draw = false;
-    boss_start = (Rectangle){0};
+    shop.should_draw = false;
+    // <<< ESSENCIAL: marca como *inexistente*
+    boss.hitbox = (Rectangle){-1, -1, 0, 0};
+    boss.active = false; // <<< Boss começa desligado sempre
+    boss.life = boss.max_life;
     //----------------------------------------------------------------------------------
 
     // Textures
@@ -59,7 +61,7 @@ int load_map(char path[]) {
     //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
-    if (!file) return 0;
+    if (!file) return false;
 
     char line[MAX_MAP_COLS];
     int y = 0;
@@ -73,7 +75,7 @@ int load_map(char path[]) {
                     break;
                 case 'C':
                 case 'c':
-                    boss_start = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                    add_boss(x, y);
                     break;
                 case 'M':
                 case 'm':
@@ -113,9 +115,18 @@ int load_map(char path[]) {
 
     fclose(file);
 
-    flying(); // Set each enemy as flying or grounded
+    // ==========================================================
+    //     SOMENTE SPAWNAR SE REALMENTE HOUVER UM CHEFE NO MAPA
+    // ==========================================================
+    if (boss.hitbox.x != -1 && boss.hitbox.y != -1) {
+        spawn_boss();
+    } else {
+        boss.active = false; // Garantia
+    }
 
-    return 1;
+    flying(); // monstros voadores ou terrestres
+
+    return true;
 }
 
 void unload_map() {
@@ -143,6 +154,7 @@ void draw_map() {
     draw_teleports();
     draw_shop();
     draw_monsters();
+    draw_boss();
     draw_abilities();
     draw_player();
     draw_healing_effect();
@@ -159,5 +171,3 @@ void draw_map() {
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
-
-

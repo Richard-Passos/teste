@@ -62,6 +62,8 @@ typedef struct {
     DashState dash;
     PlayerCombat combat;
     bool is_sitting;
+    bool boss_hit;
+
     bool should_keep_pos;
 } Player;
 

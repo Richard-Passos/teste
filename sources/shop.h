@@ -17,5 +17,5 @@ void draw_shop();
 
 bool handle_shop_interaction();
 
-extern Shop SHOP;
+extern Shop shop;
 #endif //HOLLOW_SHOP_H

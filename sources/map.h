@@ -9,13 +9,10 @@
 
 void add_texture(char texture_path[]);
 
-/* Returns 0 when not loaded, 1 when loaded for the first time, 2 when already loaded */
-int load_map(char path[]);
+bool load_map(char path[]);
 
 void unload_map();
 
 void draw_map();
-
-extern Rectangle boss_start;
 
 #endif

@@ -24,7 +24,7 @@ void draw_hud() {
 
         char gainText[32];
         sprintf(gainText, "+%d", player->last_money_gain);
-        DrawText(gainText, 190, 750, 30, gainColor);
+        DrawText(gainText, 125, 720, 30, gainColor);
     }
 
 

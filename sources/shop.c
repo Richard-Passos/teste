@@ -7,33 +7,33 @@
 #include "shop.h"
 #include "game_state.h"
 
-Shop SHOP = {0};
+Shop shop = {0};
 
 void add_shop(int x, int y) {
-    SHOP.hitbox = (Rectangle){
+    shop.hitbox = (Rectangle){
         x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE * 2, TILE_SIZE * 3, TILE_SIZE * 3
     };
-    SHOP.should_draw = true;
+    shop.should_draw = true;
 }
 
 void draw_shop() {
-    if (SHOP.should_draw) {
-        DrawRectangle(SHOP.hitbox.x, SHOP.hitbox.y, SHOP.hitbox.width, SHOP.hitbox.height, ORANGE);
+    if (!shop.should_draw) return;
 
-        if (CheckCollisionRecs(game_state.player.hitbox, SHOP.hitbox)) {
-            DrawText("Entrar",
-                     SHOP.hitbox.x + 40,
-                     SHOP.hitbox.y - 50,
-                     32,
-                     WHITE);
-        }
+    DrawRectangle(shop.hitbox.x, shop.hitbox.y, shop.hitbox.width, shop.hitbox.height, ORANGE);
+
+    if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
+        DrawText("Entrar",
+                 shop.hitbox.x + 40,
+                 shop.hitbox.y - 50,
+                 32,
+                 WHITE);
     }
 }
 
 bool handle_shop_interaction() {
     bool is_ok = false;
 
-    if (CheckCollisionRecs(game_state.player.hitbox, SHOP.hitbox)) {
+    if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
         if (IsKeyPressed(KEY_UP))
             is_ok = true;
     }
