@@ -33,7 +33,7 @@ bool load_map(char path[]) {
 
     if (should_load_textures) {
         add_texture("../assets/wall.png");
-        add_texture("../assets/wall.png");
+        add_texture("../assets/bench.png");
 
         should_load_textures = false;
     }
@@ -48,7 +48,8 @@ bool load_map(char path[]) {
     monsters_count = 0;
     teleports_count = 0;
     shop.should_draw = false;
-    // <<< ESSENCIAL: marca como *inexistente*
+
+
     boss.hitbox = (Rectangle){-1, -1, 0, 0};
     boss.active = false; // <<< Boss começa desligado sempre
     boss.life = boss.max_life;
