@@ -2,6 +2,8 @@
 // Created by Harry on 10/11/2025.
 //
 
+#include <math.h>
+
 #include "game_state.h"
 #include "raylib.h"
 #include "stdio.h"
@@ -23,8 +25,8 @@ void draw_hud() {
         Color gainColor = (Color){0, 0, 0, transparency};
 
         char gainText[32];
-        sprintf(gainText, "+%d", player->last_money_gain);
-        DrawText(gainText, 125, 720, 30, gainColor);
+        sprintf(gainText, "%c%d", player->last_money_gain >= 0 ? '+' : '-', abs(player->last_money_gain));
+        DrawText(gainText, 140, 720, 20, gainColor);
     }
 
 

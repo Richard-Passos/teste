@@ -21,10 +21,10 @@ Screen screen = {SCREEN_MENU, false};
 Screen_name last_screen = -1;
 
 Asset screen_assets[MAX_SCREEN_ASSETS];
-int screen_assets_size = 0;
+int screen_assets_count = 0;
 
 Action screen_actions[MAX_SCREEN_ACTIONS];
-int screen_actions_size = 0, action_active_index = -1;
+int screen_actions_count = 0, action_active_index = -1;
 
 int handle_screens() {
     bool found_screen = 1;
@@ -56,9 +56,9 @@ int handle_screens() {
     // Actions active state
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KEY_UP))
-        action_active_index = action_active_index <= 0 ? screen_actions_size - 1 : action_active_index - 1;
+        action_active_index = action_active_index <= 0 ? screen_actions_count - 1 : action_active_index - 1;
     else if (IsKeyPressed(KEY_DOWN))
-        action_active_index = action_active_index >= screen_actions_size - 1 ? 0 : action_active_index + 1;
+        action_active_index = action_active_index >= screen_actions_count - 1 ? 0 : action_active_index + 1;
     //----------------------------------------------------------------------------------
 
     return found_screen;
@@ -91,9 +91,6 @@ void handle_menu_screen() {
 
     // Init
     //----------------------------------------------------------------------------------
-    Asset background = screen_assets[0],
-            logo = screen_assets[1];
-
     Action play_action = screen_actions[0],
             load_action = screen_actions[1],
             help_action = screen_actions[2],
@@ -103,13 +100,8 @@ void handle_menu_screen() {
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
-    draw_asset(&background);
-    draw_asset(&logo);
-
-    draw_action(&play_action);
-    draw_action(&load_action);
-    draw_action(&help_action);
-    draw_action(&exit_action);
+    draw_assets();
+    draw_actions();
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -155,13 +147,9 @@ void handle_paused_screen() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(GREEN);
+    draw_actions();
 
     DrawText("PAUSED", 16, 16, 32, WHITE);
-
-    draw_action(&continue_action);
-    draw_action(&inventory_action);
-    draw_action(&save_action);
-    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -185,9 +173,7 @@ void handle_inventory_screen() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(RED);
-
     DrawText("INVENTORY", 16, 16, 32, WHITE);
-
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -208,21 +194,23 @@ void handle_help_screen() {
             (Rectangle){center_on_screen(960, AXIS_X), center_on_screen(540, AXIS_Y), 960, 540}
         );
 
+        add_action("<- Voltar", (Rectangle){SCREEN_WIDTH - 316, 16, 300, 60});
+
         screen.is_loaded = true;
     }
     //----------------------------------------------------------------------------------
 
-    // Init
+    // Draw
     //----------------------------------------------------------------------------------
-    Asset bg_help = screen_assets[0];
+    Action go_back = screen_actions[0];
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLACK);
-
-    draw_asset(&bg_help);
+    draw_assets();
+    draw_actions();
 
     DrawText("HELP", 16, 16, 32, WHITE);
     EndDrawing();
@@ -230,7 +218,7 @@ void handle_help_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(&go_back) || IsKeyPressed(KEY_ESCAPE)) {
         set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
@@ -259,12 +247,9 @@ void handle_win_screen() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(YELLOW);
+    draw_actions();
 
     DrawText("WIN", 16, 16, 32, WHITE);
-
-    draw_action(&restart_action);
-    draw_action(&load_action);
-    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
@@ -287,7 +272,7 @@ void handle_game_over_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60});
+        add_action("Tentar de Novo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60});
         add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60});
 
         screen.is_loaded = true;
@@ -304,19 +289,33 @@ void handle_game_over_screen() {
     //----------------------------------------------------------------------------------
     BeginDrawing();
     ClearBackground(BLACK);
+    draw_actions();
 
     DrawText("GAME OVER", 16, 16, 32, WHITE);
-
-    draw_action(&restart_action);
-    draw_action(&back_menu_action);
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
     if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
-        reset_game_state();
-        save_game_state();
+        Player *player = &game_state.player;
+
+        if (player->has_spawn) {
+            player->hitbox = (Rectangle){
+                player->spawn_pos.x, player->spawn_pos.y, player->hitbox.width, player->hitbox.height
+            };
+            player->is_sitting = true;
+            player->speed.y = 0;
+            player->combat.life = player->combat.max_life;
+            player->souls = player->max_souls;
+
+            int lost_money = GetRandomValue(-35, -45);
+            player->money += lost_money;
+            player->last_money_gain = lost_money;
+            player->money_gain_timer = 3.0f;
+
+            player->should_keep_pos = true;
+        }
         set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&back_menu_action)) {
         reset_game_state();
@@ -398,19 +397,22 @@ void handle_shop_screen() {
         set_screen(SCREEN_INVENTORY);
     else if (handle_teleports_interaction()) {
         player->hitbox = (Rectangle){
-            shop.hitbox.x + shop.hitbox.width / 2 - player->hitbox.width / 2, shop.hitbox.y + shop.hitbox.height,
+            shop.hitbox.x + shop.hitbox.width / 2 - player->hitbox.width / 2,
+            shop.hitbox.y + shop.hitbox.height - TILE_SIZE,
             player->hitbox.width,
             player->hitbox.height
         };
         player->should_keep_pos = true;
 
-        set_screen(last_screen);
+        set_screen(SCREEN_VILLAGE);
     } else if (handle_shop_npc_interaction())
         set_screen(SCREEN_SHOP_NPC);
     //----------------------------------------------------------------------------------
 }
 
 void handle_shop_npc_screen() {
+    Player *player = &game_state.player;
+
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
@@ -419,10 +421,30 @@ void handle_shop_npc_screen() {
             (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
         );
 
-        for (int i = 0; i < game_state.items_count; i++)
-            if (game_state.items[i].is_buyable && !game_state.items[i].is_acquired) {
-                add_action(game_state.items[i].label, game_state.items[i].hitbox);
+        Item *items = game_state.items;
+        int *items_count = &game_state.items_count;
+
+        int buyable_items_count = 0;
+        for (int i = 0; i < *items_count; i++)
+            if (items[i].is_buyable && !items[i].is_acquired) {
+                char label[150];
+                sprintf(label, "Valor: %-3d | %s", items[i].cost, items[i].label);
+
+                add_action(
+                    label,
+                    (Rectangle){
+                        center_on_screen(600, AXIS_X), 150 + (buyable_items_count * 70), 600, 60
+                    }
+                );
+
+                buyable_items_count++;
             }
+
+        add_action(
+            "<- Voltar",
+            (Rectangle){
+                center_on_screen(600, AXIS_X), 150 + (buyable_items_count * 80), 600, 60
+            });
 
         screen.is_loaded = true;
     }
@@ -430,89 +452,154 @@ void handle_shop_npc_screen() {
 
     // Init
     //----------------------------------------------------------------------------------
-    Asset background = screen_assets[0];
+    Action go_back = screen_actions[screen_actions_count - 1];
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
     BeginDrawing();
-    draw_asset(&background);
+    draw_assets();
+    draw_actions();
 
-    for (int i = 0; i < screen_actions_size; i++)
-        draw_action(&screen_actions[i]);
+    DrawText("SHOP OWNER", 16, 16, 32, WHITE);
 
+    // Money
+    //----------------------------------------------------------------------------------
+    char money_text[64];
+    sprintf(money_text, "Moedas: %d", player->money);
+    DrawText(money_text, 10, 750, 30, WHITE);
+
+    if (player->money_gain_timer > 0.0f) {
+        // Fade effect
+        //----------------------------------------------------------------------------------
+        float alpha = player->money_gain_timer / 1.5f;
+        int transparency = (int) (255 * alpha);
+
+        Color cost_color = (Color){255, 255, 255, transparency};
+
+        char cost_text[32];
+        sprintf(cost_text, "-%d", player->last_money_gain);
+        DrawText(cost_text, 140, 720, 20, cost_color);
+        //----------------------------------------------------------------------------------
+    }
+    //----------------------------------------------------------------------------------
     EndDrawing();
     //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE))
+    for (int i = 0; i < (screen_actions_count - 1); i++) {
+        Action action = screen_actions[i];
+        Item *item = NULL;
+
+        if (is_action_pressed(&action)) {
+            // Get item
+            //----------------------------------------------------------------------------------
+            int buyable_items_count = 0;
+            for (int j = 0; j < game_state.items_count; j++)
+                if (game_state.items[j].is_buyable && !game_state.items[j].is_acquired) {
+                    if (buyable_items_count == action.index) {
+                        item = &game_state.items[j];
+                        break;
+                    } else
+                        buyable_items_count++;
+                }
+            //----------------------------------------------------------------------------------
+
+            // Buy item
+            //----------------------------------------------------------------------------------
+            if (item != NULL && player->money >= item->cost) {
+                player->money -= item->cost;
+                player->last_money_gain = item->cost;
+                player->money_gain_timer = 1.5f;
+
+                item->is_acquired = true;
+                set_screen(SCREEN_SHOP_NPC); // Reset screen to reload actions
+            }
+            //----------------------------------------------------------------------------------
+        }
+    }
+
+    if (is_action_pressed(&go_back) || IsKeyPressed(KEY_ESCAPE))
         set_screen(last_screen);
     //----------------------------------------------------------------------------------
 }
 
 void set_screen(Screen_name name) {
-    for (int i = 0; i < screen_assets_size; i++)
+    for (int i = 0; i < screen_assets_count; i++)
         UnloadTexture(screen_assets[i].texture);
 
     if (screen.name == SCREEN_VILLAGE || screen.name == SCREEN_START || screen.name == SCREEN_SHOP)
         last_screen = screen.name;
 
-    screen_assets_size = 0;
-    screen_actions_size = 0;
+    screen_assets_count = 0;
+    screen_actions_count = 0;
     action_active_index = -1;
     screen.is_loaded = false;
     screen.name = name;
 }
 
-void draw_asset(Asset *asset) {
-    DrawTexturePro(
-        asset->texture,
-        (Rectangle){0, 0, asset->texture.width, asset->texture.height},
-        asset->hitbox,
-        (Vector2){0, 0},
-        0.0f,
-        WHITE
-    );
-}
-
 void add_asset(char texture_path[], Rectangle hitbox) {
-    screen_assets[screen_assets_size++] = (Asset){LoadTexture(texture_path), hitbox};
+    screen_assets[screen_assets_count++] = (Asset){LoadTexture(texture_path), hitbox};
 }
 
-void draw_action(Action *action) {
-    bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action->hitbox),
-            is_active = action_active_index == action->index;
+void draw_assets() {
+    for (int i = 0; i < screen_assets_count; i++) {
+        Asset *asset = &screen_assets[i];
 
-    // Rectangle
-    //--------------------------------------------------------------------------------------
-    DrawRectangleRec(action->hitbox, is_hovered ? RED : BLUE);
-    DrawRectangleLines(action->hitbox.x, action->hitbox.y, action->hitbox.width, action->hitbox.height, BLACK);
-    //--------------------------------------------------------------------------------------
-
-    // Text
-    //--------------------------------------------------------------------------------------
-    int font_size = 32;
-    int text_x = action->hitbox.x + action->hitbox.width * .1;
-    int text_y = action->hitbox.y + (action->hitbox.height - font_size) / 2;
-
-    DrawText(action->label, text_x, text_y, font_size, WHITE);
-
-    if (is_active) {
-        DrawText(">", action->hitbox.x - font_size, text_y, font_size, WHITE);
-        DrawText("<", action->hitbox.x + action->hitbox.width + font_size / 2, text_y, font_size, WHITE);
+        DrawTexturePro(
+            asset->texture,
+            (Rectangle){0, 0, asset->texture.width, asset->texture.height},
+            asset->hitbox,
+            (Vector2){0, 0},
+            0.0f,
+            WHITE
+        );
     }
-    //--------------------------------------------------------------------------------------
 }
 
 void add_action(char label[], Rectangle hitbox) {
-    screen_actions[screen_actions_size] = (Action){label, hitbox, screen_actions_size++};
+    Action *action = &screen_actions[screen_actions_count];
+
+    strcpy(action->label, label);
+    action->hitbox = hitbox;
+    action->index = screen_actions_count++;
+}
+
+void draw_actions() {
+    for (int i = 0; i < screen_actions_count; i++) {
+        Action *action = &screen_actions[i];
+
+        bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action->hitbox),
+                is_active = action_active_index == action->index;
+
+        // Rectangle
+        //--------------------------------------------------------------------------------------
+        DrawRectangleRec(action->hitbox, is_hovered ? RED : BLUE);
+        DrawRectangleLines(action->hitbox.x, action->hitbox.y, action->hitbox.width, action->hitbox.height, BLACK);
+        //--------------------------------------------------------------------------------------
+
+        // Text
+        //--------------------------------------------------------------------------------------
+        int font_count = 32;
+        int text_x = action->hitbox.x + action->hitbox.width * .1;
+        int text_y = action->hitbox.y + (action->hitbox.height - font_count) / 2;
+
+        DrawText(action->label, text_x, text_y, font_count, WHITE);
+
+        if (is_active) {
+            DrawText(">", action->hitbox.x - font_count, text_y, font_count, WHITE);
+            DrawText("<", action->hitbox.x + action->hitbox.width + font_count / 2, text_y, font_count, WHITE);
+        }
+        //--------------------------------------------------------------------------------------
+    }
 }
 
 bool is_action_pressed(Action *action) {
-    bool is_pressed = (IsKeyPressed(KEY_SPACE) && action_active_index == action->index) || (
+    bool is_pressed = (IsKeyPressed(KEY_X) && action_active_index == action->index) || (
                           IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(
                               GetMousePosition(), action->hitbox));
+
     return is_pressed;
 }
 

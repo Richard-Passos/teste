@@ -60,6 +60,8 @@ typedef struct {
     bool boss_hit;
 
     bool should_keep_pos;
+    Vector2 spawn_pos;
+    bool has_spawn;
 } Player;
 
 void add_player(int, int);

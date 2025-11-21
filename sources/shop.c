@@ -5,6 +5,9 @@
 #include "raylib.h"
 #include "config.h"
 #include "shop.h"
+
+#include <stdio.h>
+
 #include "game_state.h"
 
 Shop shop = {0};
@@ -70,7 +73,7 @@ void draw_shop_npc() {
 
     if (CheckCollisionRecs(game_state.player.hitbox, shop_npc.hitbox)) {
         DrawText("Comprar",
-                 shop_npc.hitbox.x + 40,
+                 shop_npc.hitbox.x,
                  shop_npc.hitbox.y - 50,
                  32,
                  WHITE);

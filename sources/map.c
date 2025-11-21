@@ -161,6 +161,7 @@ void draw_map() {
     draw_benches();
     draw_teleports();
     draw_shop();
+    draw_shop_npc();
     draw_monsters();
     draw_boss();
     draw_abilities();

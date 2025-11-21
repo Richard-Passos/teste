@@ -16,7 +16,7 @@ typedef struct {
 } Asset;
 
 typedef struct {
-    char *label;
+    char label[150];
     Rectangle hitbox;
     int index;
 } Action;
@@ -61,13 +61,13 @@ void handle_shop_npc_screen();
 
 void set_screen(Screen_name);
 
-void draw_asset(Asset *);
-
 void add_asset(char [], Rectangle);
 
-void draw_action(Action *);
+void draw_assets();
 
 void add_action(char [], Rectangle);
+
+void draw_actions();
 
 bool is_action_pressed(Action *);
 

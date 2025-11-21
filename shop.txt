@@ -3,5 +3,5 @@ p               p
 p               p
 p               p
 t               p
-tj          n   p
+t j         n   p
 ppppppppppppppppp
