@@ -16,6 +16,7 @@ typedef struct {
     bool is_active;
     Texture2D texture;
     Rectangle hitbox;
+    int cost;
 } Item;
 
 void add_item(int, int);

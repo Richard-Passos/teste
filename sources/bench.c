@@ -68,6 +68,8 @@ void handle_benches_interaction() {
             player->hitbox.x = benches[i].hitbox.x;
             player->combat.life = player->combat.max_life;
             player->souls = player->max_souls;
+            player->spawn_pos = (Vector2){benches[i].hitbox.x, benches[i].hitbox.y - benches[i].hitbox.height / 2};
+            player->has_spawn = true;
 
             break; // já achou um banco com o qual colidiu; não precisa checar os outros
         }

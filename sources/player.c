@@ -17,8 +17,7 @@ void add_player(int x, int y) {
         player->should_keep_pos = false;
     else
         player->hitbox = (Rectangle){
-            x * TILE_SIZE, y * TILE_SIZE, player->hitbox.width,
-            player->hitbox.height
+            x * TILE_SIZE, y * TILE_SIZE, player->hitbox.width, player->hitbox.height
         };
     //----------------------------------------------------------------------------------
 }

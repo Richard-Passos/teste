@@ -23,6 +23,22 @@ bool load_game_state() {
         // Copy bytes into game_state
         memcpy(&game_state, file_data, game_state_size);
 
+        // Spawn player on last bench
+        //--------------------------------------------------------------------------------------
+        Player *player = &game_state.player;
+
+        if (player->has_spawn) {
+            player->hitbox = (Rectangle){
+                player->spawn_pos.x, player->spawn_pos.y, player->hitbox.width, player->hitbox.height
+            };
+            player->is_sitting = true;
+            player->speed.y = 0;
+            player->combat.life = player->combat.max_life;
+            player->souls = player->max_souls;
+            player->should_keep_pos = true;
+        }
+        //--------------------------------------------------------------------------------------
+
         UnloadFileData(file_data);
 
         is_ok = true;
@@ -45,10 +61,10 @@ void reset_game_state() {
     game_state.abilities_count = 1;
 
     game_state.items[0] = (Item){"Charm 1", "../assets/ability.png",false, false, false};
-    game_state.items[1] = (Item){"Charm 2", "../assets/ability.png", true, false, false};
+    game_state.items[1] = (Item){"Charm 2", "../assets/ability.png", true, false, false, .cost = 50};
     game_state.items[2] = (Item){"Charm 3", "../assets/ability.png", false, false, false};
     game_state.items[3] = (Item){"Charm 4", "../assets/ability.png", false, false, false};
-    game_state.items[4] = (Item){"Charm 5", "../assets/ability.png", true, false, false};
+    game_state.items[4] = (Item){"Charm 5", "../assets/ability.png", true, false, false, .cost = 10};
     game_state.items_count = 5;
 
     Player player = {0};
@@ -69,6 +85,7 @@ void reset_game_state() {
     player.combat.hurt_timer = 0;
     player.combat.heal_hold_needed = 1.0f;
     player.is_sitting = false;
+    player.has_spawn = false;
 
     game_state.level = MIN_LEVEL;
     game_state.player = player;
