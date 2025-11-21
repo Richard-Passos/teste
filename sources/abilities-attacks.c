@@ -192,8 +192,11 @@ void update_ability_acquisition() {
     for (int i = 0; i < *abilities_count; i++) {
         if (abilities[i].acquired) continue;
 
-        if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP))
+        if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
             abilities[i].acquired = true;
+            abilities[i].is_active = false;
+        }
+
     }
 }
 
@@ -295,15 +298,15 @@ void HealAbility(float delta) {
             player->combat.heal_cooldown = 0.0f;
     }
 
-    // Só pode curar se estiver PARADO
+    // Só pode curar se estiver PARADO e no CHÃO
     if (player->souls >= 33 &&
         player->combat.heal_cooldown <= 0.0f &&
-        is_player_stopped) {
+        is_player_stopped &&
+        player->on_ground) {
         if (IsKeyDown(KEY_A)) {
             player->combat.is_healing = true;
             player->combat.heal_hold_time += delta;
 
-            // Cura completa
             if (player->combat.heal_hold_time >= player->combat.heal_hold_needed) {
                 player->combat.life += 1;
                 if (player->combat.life > player->combat.max_life)

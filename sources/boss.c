@@ -67,9 +67,17 @@ void boss_chase(Player *player, float delta) {
 
     float speed = 225;
 
-    if (player->hitbox.x < boss.hitbox.x)
+    float px = player->hitbox.x + player->hitbox.width/2;
+    float bx = boss.hitbox.x + boss.hitbox.width/2;
+
+    float diff = px - bx;
+
+    if (fabsf(diff) < 15) {
+        boss.velocity.x = 0;
+    }
+    else if (diff < 0)
         boss.velocity.x = -speed;
-    else if (player->hitbox.x > boss.hitbox.x)
+    else
         boss.velocity.x = speed;
 
     boss.velocity.y = 0;
@@ -80,6 +88,7 @@ void boss_chase(Player *player, float delta) {
         boss.velocity = (Vector2){0};
     }
 }
+
 
 // =======================================================
 // NOVO SISTEMA DE PULO

@@ -84,6 +84,7 @@ void handle_menu_screen() {
         add_action("Ajuda", (Rectangle){center_on_screen(600, AXIS_X), 390, 600, 60});
         add_action("Sair", (Rectangle){center_on_screen(600, AXIS_X), 460, 600, 60});
 
+
         screen.is_loaded = true;
     }
     //----------------------------------------------------------------------------------
