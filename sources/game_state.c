@@ -79,7 +79,7 @@ void reset_game_state() {
     player.max_souls = 100;
     player.abilitySoulProjectile = &game_state.abilities[0];
     player.combat.life = 5;
-    player.combat.max_life = 99;
+    player.combat.max_life = 5;
     player.combat.invulnerable = false;
     player.combat.invuln_timer = 0;
     player.combat.hurt_timer = 0;

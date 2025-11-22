@@ -306,16 +306,17 @@ void handle_game_over_screen() {
             };
             player->is_sitting = true;
             player->speed.y = 0;
-            player->combat.life = player->combat.max_life;
-            player->souls = player->max_souls;
-
-            int lost_money = GetRandomValue(-35, -45);
-            player->money += lost_money;
-            player->last_money_gain = lost_money;
-            player->money_gain_timer = 3.0f;
-
             player->should_keep_pos = true;
         }
+
+        player->combat.life = player->combat.max_life;
+        player->souls = player->max_souls;
+
+        int lost_money = GetRandomValue(-35, -45);
+        player->money += lost_money;
+        player->last_money_gain = lost_money;
+        player->money_gain_timer = 3.0f;
+
         set_screen(SCREEN_VILLAGE);
     } else if (is_action_pressed(&back_menu_action)) {
         reset_game_state();
