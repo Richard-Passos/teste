@@ -53,7 +53,7 @@ bool load_map(char path[]) {
     unload_abilities();
 
     boss.hitbox = (Rectangle){-1, -1, 0, 0};
-    boss.active = false; // <<< Boss começa desligado sempre
+    boss.active = false;
     boss.life = boss.max_life;
     //----------------------------------------------------------------------------------
 
@@ -130,7 +130,7 @@ bool load_map(char path[]) {
     if (boss.hitbox.x != -1 && boss.hitbox.y != -1) {
         spawn_boss();
     } else {
-        boss.active = false; // Garantia
+        boss.active = false;
     }
 
     flying(); // monstros voadores ou terrestres

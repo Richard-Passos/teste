@@ -85,7 +85,7 @@ void PlayerMonsterCollision(float delta) {
         // pula monstros "mortos"
         if (monsters[i].hitbox.width == 0 || monsters[i].hitbox.height == 0) continue;
 
-        if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+        if (!player->dash.active && CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
             // Aplica dano
             player->combat.life -= 1;
             if (player->combat.life < 0) player->combat.life = 0;
@@ -95,12 +95,12 @@ void PlayerMonsterCollision(float delta) {
             player->combat.invuln_timer = 1.0f;
             player->combat.hurt_timer = 0.1f;
 
-            // Knockback: define direção/opções
+            // Knockback:
             // Se o jogador está à esquerda do monstro, empurra para a esquerda (-1)
             float dir = (player->hitbox.x < monsters[i].hitbox.x) ? -1.0f : 1.0f;
             player->combat.push_dir = dir;
-            player->combat.push_speed = 420.0f; // velocidade horizontal do knockback (ajustar)
-            player->combat.push_timer = 0.18f; // duração do empurrão em segundos (ajustar)
+            player->combat.push_speed = 620.0f; // velocidade horizontal do knockback
+            player->combat.push_timer = 0.18f; // duração do empurrão em segundos
 
             // Aplica pequena elevação imediata se estiver no chão para dar "pop"
             if (player->on_ground) {
@@ -113,12 +113,22 @@ void PlayerMonsterCollision(float delta) {
 
             break; // apenas um hit por frame
         }
+        if (player->dash.active && CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
+            if (!player->combat.invulnerable) {
+
+                // Knockback
+                float dir = (player->hitbox.x < monsters[i].hitbox.x) ? -1.0f : 1.0f;
+                player->combat.push_dir = dir;
+                player->combat.push_speed = 620.0f;
+                player->combat.push_timer = 0.18f;
+            }
+        }
     }
 
     // ---------------------------------------------
     // Colisão do BOSS com o jogador (dano ao player)
     // ---------------------------------------------
-    if (boss.active && boss.hitbox.width > 0 && boss.hitbox.height > 0) {
+    if (!player->dash.active && boss.active && boss.hitbox.width > 0 && boss.hitbox.height > 0) {
         if (!player->combat.invulnerable) {
             if (CheckCollisionRecs(player->hitbox, boss.hitbox)) {
                 // Dano
@@ -130,10 +140,10 @@ void PlayerMonsterCollision(float delta) {
                 player->combat.invuln_timer = 1.0f;
                 player->combat.hurt_timer = 0.1f;
 
-                // Knockback igual ao dos monstros
+                // Knockback
                 float dir = (player->hitbox.x < boss.hitbox.x) ? -1.0f : 1.0f;
                 player->combat.push_dir = dir;
-                player->combat.push_speed = 420.0f;
+                player->combat.push_speed = 820.0f;
                 player->combat.push_timer = 0.18f;
 
                 // Pop no jogador
@@ -146,6 +156,19 @@ void PlayerMonsterCollision(float delta) {
             }
         }
     }
+
+    if (player->dash.active && CheckCollisionRecs(player->hitbox, boss.hitbox)) {
+        if (!player->combat.invulnerable) {
+
+            // Knockback
+            float dir = (player->hitbox.x < boss.hitbox.x) ? -1.0f : 1.0f;
+            player->combat.push_dir = dir;
+            player->combat.push_speed = 820.0f;
+            player->combat.push_timer = 0.18f;
+        }
+    }
+
+
 }
 
 void update_player(float delta) {
@@ -160,40 +183,30 @@ void update_player(float delta) {
             player->combat.push_timer = 0.0f;
     }
 
+    // ---------------------------------------------------------
+    // 2) Movimentação horizontal
+    // ---------------------------------------------------------
 
-    // ---------------------------------------------------------
-    // 2) Movimentação horizontal e Dash
-    // ---------------------------------------------------------
+    DashAbility(delta);
+
     if (player->combat.push_timer > 0.0f) {
         player->speed.x = player->combat.push_dir * player->combat.push_speed;
     } else {
         player->speed.x = 0.0f;
 
-        bool dash_hit = DashAbility(delta);
-
-        if (dash_hit) {
-            player->speed.x = 0.0f;
-            return;
-        }
-
-
+        // Cura trava movimento
         if (player->combat.is_healing) {
-            player->speed.x = 0.0f; // Travar movimentação
-            goto apply_horizontal; // Pular para aplicar movimento
+            player->speed.x = 0.0f;
+            goto apply_horizontal;
         }
 
-        if (player->dash.recovery > 0.0f) {
-            return;
-        } else {
-            if (!player->dash.active) {
-                if (IsKeyDown(KEY_LEFT)) {
-                    player->speed.x = -PLAYER_HOR_SPEED;
-                    player->facing_right = false;
-                } else if (IsKeyDown(KEY_RIGHT)) {
-                    player->speed.x = PLAYER_HOR_SPEED;
-                    player->facing_right = true;
-                }
-            }
+        // Movimento normal (SEM DASH)
+        if (IsKeyDown(KEY_LEFT)) {
+            player->speed.x = -PLAYER_HOR_SPEED;
+            player->facing_right = false;
+        } else if (IsKeyDown(KEY_RIGHT)) {
+            player->speed.x = PLAYER_HOR_SPEED;
+            player->facing_right = true;
         }
     }
 
@@ -260,7 +273,6 @@ apply_horizontal:
     // ---------------------------------------------------------
     PlayerMonsterCollision(delta);
 
-
     // ---------------------------------------------------------
     // 5) Ataque
     // ---------------------------------------------------------
@@ -293,7 +305,6 @@ apply_horizontal:
                 TILE_SIZE * 1.5f
             };
         } else if (player->attack_dir == -1) {
-            // baixo
             player->attack_box = (Rectangle){
                 player->hitbox.x + player->hitbox.width / 4.0f,
                 player->hitbox.y + player->hitbox.height,
@@ -301,7 +312,6 @@ apply_horizontal:
                 TILE_SIZE * 1.5f
             };
         } else {
-            // frente
             float offsetX = (player->facing_right) ? player->hitbox.width : -TILE_SIZE * 2;
             player->attack_box = (Rectangle){
                 player->hitbox.x + offsetX,
@@ -350,9 +360,8 @@ apply_horizontal:
             player->is_attacking = false;
     }
 
-
+    // Ataque no boss
     if (boss.active && player->is_attacking) {
-        // Se ainda não atingiu o boss neste ataque
         if (!player->boss_hit) {
             if (CheckCollisionRecs(player->attack_box, boss.hitbox)) {
                 boss.life -= 1;
@@ -360,13 +369,11 @@ apply_horizontal:
                 boss.invulnerable = true;
                 boss.invuln_time = 0.3f;
 
-                // Ganho de almas como no monstro
                 if (player->souls <= player->max_souls) player->souls += 10;
                 if (player->souls >= player->max_souls) player->souls = 100;
 
                 player->boss_hit = true;
 
-                // Morte do boss
                 if (boss.life <= 0) {
                     boss.active = false;
 
@@ -376,7 +383,6 @@ apply_horizontal:
                     player->money_gain_timer = 2.0f;
                 }
 
-                // Pogo Jump — igual o monstro
                 if (player->attack_dir == -1 && player->speed.y > 0) {
                     player->speed.y = -PLAYER_JUMP_SPEED * 0.7f;
                     player->jump_count = 1;
@@ -399,3 +405,4 @@ apply_horizontal:
     // Cura
     HealAbility(delta);
 }
+
