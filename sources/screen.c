@@ -307,10 +307,10 @@ void handle_game_over_screen() {
             player->is_sitting = true;
             player->speed.y = 0;
             player->should_keep_pos = true;
+            player->souls = player->max_souls;
         }
 
         player->combat.life = player->combat.max_life;
-        player->souls = player->max_souls;
 
         int lost_money = GetRandomValue(-35, -45);
         player->money += lost_money;
