@@ -300,17 +300,19 @@ void handle_game_over_screen() {
     if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
         Player *player = &game_state.player;
 
+        player->combat.life = player->combat.max_life;
+        player->speed.y = 0;
+        player->speed.x = 0;
+        player->combat.push_speed = 0;
+
         if (player->has_spawn) {
             player->hitbox = (Rectangle){
                 player->spawn_pos.x, player->spawn_pos.y, player->hitbox.width, player->hitbox.height
             };
-            player->is_sitting = true;
-            player->speed.y = 0;
-            player->should_keep_pos = true;
             player->souls = player->max_souls;
+            player->is_sitting = true;
+            player->should_keep_pos = true;
         }
-
-        player->combat.life = player->combat.max_life;
 
         int lost_money = GetRandomValue(-35, -45);
         player->money += lost_money;

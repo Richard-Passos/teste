@@ -48,9 +48,9 @@ void handle_benches_interaction() {
     //----------------------------------------------------------------------------------
     if (player->is_sitting) {
         // Qualquer input de ação cancela o descanso
-        if ((IsKeyPressed(KEY_C) || IsKeyPressed(KEY_X) || IsKeyPressed(KEY_LEFT) ||
-             IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_F) ||
-             IsKeyPressed(KEY_A))) {
+        if ((IsKeyDown(KEY_C) || IsKeyDown(KEY_X) || IsKeyDown(KEY_LEFT) ||
+             IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_SPACE) || IsKeyDown(KEY_F) ||
+             IsKeyDown(KEY_A))) {
             player->is_sitting = false;
         }
 
