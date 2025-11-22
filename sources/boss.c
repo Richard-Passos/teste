@@ -11,7 +11,7 @@ Boss boss = {0};
 
 void add_boss(int x, int y) {
     boss.hitbox = (Rectangle){
-        x * TILE_SIZE, y * TILE_SIZE - TILE_SIZE, TILE_SIZE * 2, TILE_SIZE * 2
+        x * TILE_SIZE, y * TILE_SIZE - 2*TILE_SIZE, TILE_SIZE * 3, TILE_SIZE * 3
     };
 }
 

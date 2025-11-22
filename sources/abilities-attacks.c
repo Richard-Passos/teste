@@ -199,91 +199,80 @@ void update_ability_acquisition() {
 
     }
 }
-
 bool DashAbility(float delta) {
-    const float DASH_SPEED = 600.0f;
+    const float DASH_SPEED = 1000.0f;
     const float DASH_DURATION = 0.15f;
     const float DASH_COOLDOWN = 1.0f;
 
     Player *player = &game_state.player;
-
-    bool dash_cancelled = false;
 
     // Atualiza cooldown
     if (player->dash.cooldown > 0.0f)
         player->dash.cooldown -= delta;
 
     // Inicia o dash
-    if (IsKeyPressed(KEY_C) && player->dash.cooldown <= 0.0f && !player->dash.active) {
+    if (IsKeyPressed(KEY_C) &&
+        player->dash.cooldown <= 0.0f &&
+        !player->dash.active)
+    {
         player->dash.active = true;
         player->dash.timer = DASH_DURATION;
         player->dash.cooldown = DASH_COOLDOWN;
-        player->dash.hit_confirmed = false; // novo campo: evita múltiplos hits
+        player->dash.hit_confirmed = false;
     }
 
     // Se estiver em dash
-    if (player->dash.active) {
+    if (player->dash.active)
+    {
         player->dash.timer -= delta;
 
         float dir = player->facing_right ? 1.0f : -1.0f;
+        float dash_speed = dir * DASH_SPEED;
+
         player->speed.y = 0.0f;
-        player->speed.x = dir * DASH_SPEED;
+        player->speed.x = dash_speed;
 
-        float dx = player->speed.x * delta;
-        float step = (dx > 0) ? 1 : -1;
+        // Movimentação pixel-a-pixel
+        float dx = dash_speed * delta;
+        int step = (dx > 0) ? 1 : -1;
+        float moved = 0;
 
-        for (float x = 0; x < fabsf(dx); x += 1.0f) {
+        while (fabsf(moved) < fabsf(dx))
+        {
             player->hitbox.x += step;
+            moved += step;
 
-            // COLISÃO COM PAREDE
+            // Colisão com paredes
+            bool collided = false;
             for (int w = 0; w < walls_count; w++) {
                 if (CheckCollisionRecs(player->hitbox, walls[w].hitbox)) {
-                    // Volta 1 pixel e cancela o dash
-                    player->hitbox.x -= step;
-                    player->dash.active = false;
-                    player->dash.timer = 0.0f;
-                    player->speed.x = 0;
-                    goto dash_after_movement;
-                }
-            }
-        }
-
-    dash_after_movement:
-
-        // Colisão com monstros
-        if (!player->dash.hit_confirmed) {
-            for (int i = 0; i < monsters_count; i++) {
-                if (monsters[i].hitbox.width == 0) continue;
-
-                if (CheckCollisionRecs(player->hitbox, monsters[i].hitbox)) {
-                    player->dash.hit_confirmed = true;
-                    player->dash.active = false;
-                    player->dash.timer = 0.0f;
-                    player->speed.x = 0;
-
-                    // PREVINE KNOCKBACK IMEDIATO
-                    player->ignore_next_monster_hit = true;
-
-                    if (dir > 0)
-                        player->hitbox.x = monsters[i].hitbox.x - player->hitbox.width - 1.0f;
-                    else
-                        player->hitbox.x = monsters[i].hitbox.x + monsters[i].hitbox.width + 1.0f;
-
+                    collided = true;
                     break;
                 }
             }
+
+            if (collided) {
+                // Volta 1 pixel
+                player->hitbox.x -= step;
+
+                // Cancela dash
+                player->dash.active = false;
+                player->dash.timer = 0.0f;
+                player->speed.x = 0;
+                break;
+            }
         }
 
-        // Acabou o tempo do dash
+        // Se esgotou o tempo, cancela
         if (player->dash.timer <= 0.0f) {
             player->dash.active = false;
-            player->speed.x = 0.0f;
+            player->speed.x = 0;
         }
     }
 
-
-    return dash_cancelled;
+    return player->dash.active;
 }
+
 
 
 void HealAbility(float delta) {
