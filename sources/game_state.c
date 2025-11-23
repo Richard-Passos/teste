@@ -57,9 +57,9 @@ void reset_game_state() {
 
     game_state.items[0] = (Item){"Mais Vida", "../assets/ability.png",false, false, false};
     game_state.items[1] = (Item){"Mais Dano", "../assets/ability.png", false, false, false, .cost = 50};
-    game_state.items[2] = (Item){"Mais Velocidade", "../assets/ability.png", false, true, true};
-    game_state.items[3] = (Item){"Mais dinheiro", "../assets/ability.png", false, true, true};
-    game_state.items[4] = (Item){"Dash Invulneravel", "../assets/ability.png", false, true, true, .cost = 10};
+    game_state.items[2] = (Item){"Mais Velocidade", "../assets/ability.png", false, false, false};
+    game_state.items[3] = (Item){"Mais dinheiro", "../assets/ability.png", false, false, false};
+    game_state.items[4] = (Item){"Dash Invulneravel", "../assets/ability.png", false, false, false, .cost = 10};
     game_state.items_count = 5;
     player.items.add_life = &game_state.items[0];
     player.items.add_damage = &game_state.items[1];
