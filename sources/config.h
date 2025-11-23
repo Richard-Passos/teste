@@ -17,7 +17,7 @@
 #define SCREEN_HEIGHT 800
 #define TILE_SIZE 64
 
-#define MAP_FILE_PATH "../map.txt"
+#define MAP_FILE_PATH "../map1.txt"
 #define VILLAGE_FILE_PATH "../village.txt"
 #define SHOP_FILE_PATH "../shop.txt"
 #define GAME_STATE_FILE_PATH "../game_state.bin"
