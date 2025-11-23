@@ -53,13 +53,15 @@ void flying() {
     }
 }
 
-void update_monsters(float delta) {
+void update_monsters() {
+    float delta_time = GetFrameTime();
+
     for (int i = 0; i < monsters_count; i++) {
         Monster *m = &monsters[i];
 
         // Atualiza timers de dano
         if (m->invulnerable) {
-            m->invuln_time -= delta;
+            m->invuln_time -= delta_time;
             if (m->invuln_time <= 0) {
                 m->invulnerable = false;
             }
@@ -74,7 +76,7 @@ void update_monsters(float delta) {
         m->on_ground = false;
 
         // --- Movimento horizontal ---
-        m->hitbox.x += m->direction * m->speed.x * delta;
+        m->hitbox.x += m->direction * m->speed.x * delta_time;
 
         // --- Colisão horizontal (laterais) ---
         for (int j = 0; j < walls_count; j++) {
@@ -93,8 +95,8 @@ void update_monsters(float delta) {
 
         // --- Gravidade e movimento vertical ---
         if (!m->is_flying) {
-            m->speed.y += GRAVITY * delta;
-            m->hitbox.y += m->speed.y * delta;
+            m->speed.y += GRAVITY * delta_time;
+            m->hitbox.y += m->speed.y * delta_time;
         }
 
 

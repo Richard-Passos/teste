@@ -28,7 +28,7 @@ extern int monsters_count;
 
 void flying();
 
-void update_monsters(float delta);
+void update_monsters();
 
 void draw_monsters();
 #endif

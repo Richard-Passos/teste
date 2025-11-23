@@ -4,17 +4,20 @@
 
 #include <math.h>
 
+#include "config.h"
 #include "game_state.h"
 #include "raylib.h"
 #include "stdio.h"
 #include "player.h"
+
+char level_text[10];
 
 void draw_hud() {
     Player *player = &game_state.player;
 
     char moneyText[64];
     sprintf(moneyText, "Moedas: %d", player->money);
-    DrawText(moneyText, 10, 750, 30, BLACK);
+    DrawText(moneyText, 16, SCREEN_HEIGHT - 16, 30, BLACK);
 
     // Desenha o ganho
     if (player->money_gain_timer > 0.0f) {
@@ -26,7 +29,7 @@ void draw_hud() {
 
         char gainText[32];
         sprintf(gainText, "%c%d", player->last_money_gain >= 0 ? '+' : '-', abs(player->last_money_gain));
-        DrawText(gainText, 140, 720, 20, gainColor);
+        DrawText(gainText, 146, SCREEN_HEIGHT - 36, 20, gainColor);
     }
 
 
@@ -42,7 +45,7 @@ void draw_hud() {
     float fillWidth = (souls / maxSouls) * barWidth;
 
     // Cor de fundo da barra
-    DrawRectangle(10, 50, 200, 20, (Color){80, 80, 80, 255});
+    DrawRectangle(16, 50, 200, 20, (Color){80, 80, 80, 255});
 
     // Cor da barra conforme a quantidade
     Color fillColor;
@@ -53,18 +56,18 @@ void draw_hud() {
     }
 
     // Desenha o preenchimento
-    DrawRectangle(10, 50, fillWidth, 20, fillColor);
+    DrawRectangle(16, 50, fillWidth, 20, fillColor);
 
     // Moldura
-    DrawRectangleLines(10, 50, barWidth, 20, BLACK);
+    DrawRectangleLines(16, 50, barWidth, 20, BLACK);
 
     // ==============================
     // Barra de Vida
     // ==============================
     int squareSize = 30;
     int spacing = 5;
-    int startX = 10;
-    int startY = 10;
+    int startX = 16;
+    int startY = 16;
 
     for (int i = 0; i < player->combat.max_life; i++) {
         int x = startX + i * (squareSize + spacing);
@@ -72,4 +75,10 @@ void draw_hud() {
         DrawRectangle(x, startY, squareSize, squareSize, color);
         DrawRectangleLines(x, startY, squareSize, squareSize, BLACK);
     }
+
+    // ==============================
+    // Level
+    // ==============================
+    sprintf(level_text, "%02d/%02d", game_state.level, MAX_LEVEL);
+    DrawText(level_text, SCREEN_WIDTH - 106, 16, 32, BLACK);
 }

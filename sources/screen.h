@@ -69,7 +69,9 @@ void add_action(char [], Rectangle);
 
 void draw_actions();
 
-bool is_action_pressed(Action *);
+void draw_action(Action);
+
+bool is_action_pressed(Action);
 
 float center_on_screen(float, Axis);
 

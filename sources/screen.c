@@ -14,8 +14,8 @@
 #include "shop.h"
 #include "teleport.h"
 
-#define MAX_SCREEN_ASSETS 2
-#define MAX_SCREEN_ACTIONS 4
+#define MAX_SCREEN_ASSETS 99
+#define MAX_SCREEN_ACTIONS 99
 
 Screen screen = {SCREEN_MENU, false};
 Screen_name last_screen = -1;
@@ -107,16 +107,16 @@ void handle_menu_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_action_pressed(&play_action)) {
+    if (is_action_pressed(play_action)) {
         reset_game_state();
         save_game_state();
         set_screen(SCREEN_VILLAGE);
-    } else if (is_action_pressed(&load_action)) {
+    } else if (is_action_pressed(load_action)) {
         load_game_state();
         set_screen(SCREEN_VILLAGE);
-    } else if (is_action_pressed(&help_action)) {
+    } else if (is_action_pressed(help_action)) {
         set_screen(SCREEN_HELP);
-    } else if (is_action_pressed(&exit_action)) {
+    } else if (is_action_pressed(exit_action)) {
         CloseWindow();
     }
     //----------------------------------------------------------------------------------
@@ -155,13 +155,13 @@ void handle_paused_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_action_pressed(&continue_action) || IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(continue_action) || IsKeyPressed(KEY_ESCAPE)) {
         set_screen(last_screen);
-    } else if (is_action_pressed(&inventory_action)) {
+    } else if (is_action_pressed(inventory_action)) {
         set_screen(SCREEN_INVENTORY);
-    } else if (is_action_pressed(&save_action)) {
+    } else if (is_action_pressed(save_action)) {
         save_game_state();
-    } else if (is_action_pressed(&back_menu_action)) {
+    } else if (is_action_pressed(back_menu_action)) {
         save_game_state();
         set_screen(SCREEN_MENU);
     }
@@ -169,19 +169,97 @@ void handle_paused_screen() {
 }
 
 void handle_inventory_screen() {
-    // Draw
+    const int MAX_CHARMS_ACTIVATED = 3;
+    int active_charms_count = 0;
+
+    Item *items = game_state.items;
+    int *items_count = &game_state.items_count;
+
+    // Load
     //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        int acquired_items_count = 0;
+        for (int i = 0; i < *items_count; i++)
+            if (items[i].is_acquired && items[i].is_active) {
+                add_action(
+                    items[i].label,
+                    (Rectangle){32 + acquired_items_count * 74, 350, 64, 64}
+                );
+
+                acquired_items_count++;
+            }
+
+        add_action("<- Voltar", (Rectangle){SCREEN_WIDTH - 316, 16, 300, 60});
+
+        screen.is_loaded = true;
+    }
+    //----------------------------------------------------------------------------------
+
+    Action go_back = screen_actions[screen_actions_count - 1];
+
     BeginDrawing();
     ClearBackground(RED);
+    DrawText("Amuletos ativos:", 32, 110, 24, WHITE);
+    for (int i = 0; i < MAX_CHARMS_ACTIVATED; i++)
+        DrawRectangle(32 + i * 74, 150, 64, 64, (Color){0, 0, 0, 100});
+
+    for (int i = 0; i < screen_actions_count - 1; i++) {
+        Action action = screen_actions[i];
+        Item *item = NULL;
+
+        // Get acquired and active items
+        //----------------------------------------------------------------------------------
+        for (int j = 0; j < game_state.items_count; j++)
+            if (game_state.items[j].is_acquired && game_state.items[j].is_active) {
+                if (strcmp(game_state.items[j].label, action.label) == 0) {
+                    item = &game_state.items[j];
+                    break;
+                }
+            }
+        //----------------------------------------------------------------------------------
+
+        if (item != NULL) {
+            active_charms_count++;
+            action.hitbox.x = 32 + ((active_charms_count - 1) * 74);
+            action.hitbox.y = 150;
+            draw_action(action);
+        }
+    }
+
+    DrawText("Amuletos adiquiridos:", 32, 310, 24, WHITE);
+    for (int i = 0; i < *items_count; i++)
+        DrawRectangle(32 + i * 74, 350, 64, 64, (Color){0, 0, 0, 100});
+
+    draw_actions();
+
     DrawText("INVENTORY", 16, 16, 32, WHITE);
     EndDrawing();
-    //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        set_screen(last_screen);
+    for (int i = 0; i < screen_actions_count - 1; i++) {
+        Action action = screen_actions[i];
+        Item *item = NULL;
+
+        if (is_action_pressed(action)) {
+            // Get item
+            //----------------------------------------------------------------------------------
+            for (int j = 0; j < game_state.items_count; j++)
+                if (game_state.items[j].is_acquired && strcmp(game_state.items[j].label, action.label) == 0) {
+                    item = &game_state.items[j];
+                    break;
+                }
+            //----------------------------------------------------------------------------------
+
+            if (item != NULL && game_state.player.is_sitting) {
+                item->is_active = active_charms_count >= MAX_CHARMS_ACTIVATED ? false : !item->is_active; // Toggle item
+                set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
+            }
+        }
     }
+
+    if (is_action_pressed(go_back) || IsKeyPressed(KEY_ESCAPE))
+        set_screen(last_screen);
     //----------------------------------------------------------------------------------
 }
 
@@ -200,7 +278,7 @@ void handle_help_screen() {
     }
     //----------------------------------------------------------------------------------
 
-    // Draw
+    // Init
     //----------------------------------------------------------------------------------
     Action go_back = screen_actions[0];
     //----------------------------------------------------------------------------------
@@ -218,7 +296,7 @@ void handle_help_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_action_pressed(&go_back) || IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(go_back) || IsKeyPressed(KEY_ESCAPE)) {
         set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
@@ -255,14 +333,14 @@ void handle_win_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
+    if (is_action_pressed(restart_action) || IsKeyPressed(KEY_ESCAPE)) {
         reset_game_state();
         save_game_state();
         set_screen(SCREEN_VILLAGE);
-    } else if (is_action_pressed(&load_action)) {
+    } else if (is_action_pressed(load_action)) {
         load_game_state();
         set_screen(SCREEN_VILLAGE);
-    } else if (is_action_pressed(&back_menu_action)) {
+    } else if (is_action_pressed(back_menu_action)) {
         set_screen(SCREEN_MENU);
     }
     //----------------------------------------------------------------------------------
@@ -297,30 +375,12 @@ void handle_game_over_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    if (is_action_pressed(&restart_action) || IsKeyPressed(KEY_ESCAPE)) {
-        Player *player = &game_state.player;
-
-        player->combat.life = player->combat.max_life;
-        player->speed.y = 0;
-        player->speed.x = 0;
-        player->combat.push_speed = 0;
-
-        if (player->has_spawn) {
-            player->hitbox = (Rectangle){
-                player->spawn_pos.x, player->spawn_pos.y, player->hitbox.width, player->hitbox.height
-            };
-            player->souls = player->max_souls;
-            player->is_sitting = true;
-            player->should_keep_pos = true;
-        }
-
-        int lost_money = GetRandomValue(-35, -45);
-        player->money += lost_money;
-        player->last_money_gain = lost_money;
-        player->money_gain_timer = 3.0f;
+    if (is_action_pressed(restart_action) || IsKeyPressed(KEY_ESCAPE)) {
+        spawn_player_on_bench();
+        add_player_money(GetRandomValue(-35, -45));
 
         set_screen(SCREEN_VILLAGE);
-    } else if (is_action_pressed(&back_menu_action)) {
+    } else if (is_action_pressed(back_menu_action)) {
         reset_game_state();
         save_game_state();
         set_screen(SCREEN_MENU);
@@ -329,28 +389,9 @@ void handle_game_over_screen() {
 }
 
 void handle_village_screen() {
-    Player *player = &game_state.player;
+    if (!load_map(VILLAGE_FILE_PATH)) CloseWindow();
 
-    // Load
-    //--------------------------------------------------------------------------------------
-    if (!load_map(VILLAGE_FILE_PATH)) {
-        CloseWindow();
-    }
-    //--------------------------------------------------------------------------------------
-
-    // Update
-    //----------------------------------------------------------------------------------
-    float delta_time = GetFrameTime();
-
-    update_player(delta_time);
-    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
-    update_monsters(delta_time);
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    draw_map();
-    //----------------------------------------------------------------------------------
+    handle_map();
 
     // Actions
     //----------------------------------------------------------------------------------
@@ -363,37 +404,22 @@ void handle_village_screen() {
         set_screen(SCREEN_PAUSED);
     else if (IsKeyPressed(KEY_TAB))
         set_screen(SCREEN_INVENTORY);
-    else if (handle_teleports_interaction())
+    else if (handle_teleports_interaction()) {
+        set_map_path(game_state.level);
         set_screen(SCREEN_START);
+    }
     //----------------------------------------------------------------------------------
 }
 
 void handle_shop_screen() {
-    Player *player = &game_state.player;
+    if (!load_map(SHOP_FILE_PATH)) CloseWindow();
 
-    // Load
-    //--------------------------------------------------------------------------------------
-    if (!load_map(SHOP_FILE_PATH)) {
-        CloseWindow();
-    }
-    //--------------------------------------------------------------------------------------
-
-    // Update
-    //----------------------------------------------------------------------------------
-    float delta_time = GetFrameTime();
-
-    update_player(delta_time);
-    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
-    update_monsters(delta_time);
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    draw_map();
-    //----------------------------------------------------------------------------------
+    handle_map();
 
     // Actions
     //----------------------------------------------------------------------------------
+    Player *player = &game_state.player;
+
     if (IsKeyPressed(KEY_ESCAPE))
         set_screen(SCREEN_PAUSED);
     else if (IsKeyPressed(KEY_TAB))
@@ -453,13 +479,8 @@ void handle_shop_npc_screen() {
     }
     //----------------------------------------------------------------------------------
 
-    // Init
-    //----------------------------------------------------------------------------------
     Action go_back = screen_actions[screen_actions_count - 1];
-    //----------------------------------------------------------------------------------
 
-    // Draw
-    //----------------------------------------------------------------------------------
     BeginDrawing();
     draw_assets();
     draw_actions();
@@ -487,7 +508,6 @@ void handle_shop_npc_screen() {
     }
     //----------------------------------------------------------------------------------
     EndDrawing();
-    //----------------------------------------------------------------------------------
 
     // Actions
     //----------------------------------------------------------------------------------
@@ -495,17 +515,16 @@ void handle_shop_npc_screen() {
         Action action = screen_actions[i];
         Item *item = NULL;
 
-        if (is_action_pressed(&action)) {
+        if (is_action_pressed(action)) {
             // Get item
             //----------------------------------------------------------------------------------
             int buyable_items_count = 0;
             for (int j = 0; j < game_state.items_count; j++)
                 if (game_state.items[j].is_buyable && !game_state.items[j].is_acquired) {
-                    if (buyable_items_count == action.index) {
+                    if (buyable_items_count++ == action.index) {
                         item = &game_state.items[j];
                         break;
-                    } else
-                        buyable_items_count++;
+                    }
                 }
             //----------------------------------------------------------------------------------
 
@@ -523,7 +542,7 @@ void handle_shop_npc_screen() {
         }
     }
 
-    if (is_action_pressed(&go_back) || IsKeyPressed(KEY_ESCAPE))
+    if (is_action_pressed(go_back) || IsKeyPressed(KEY_ESCAPE))
         set_screen(last_screen);
     //----------------------------------------------------------------------------------
 }
@@ -570,38 +589,40 @@ void add_action(char label[], Rectangle hitbox) {
 }
 
 void draw_actions() {
-    for (int i = 0; i < screen_actions_count; i++) {
-        Action *action = &screen_actions[i];
-
-        bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action->hitbox),
-                is_active = action_active_index == action->index;
-
-        // Rectangle
-        //--------------------------------------------------------------------------------------
-        DrawRectangleRec(action->hitbox, is_hovered ? RED : BLUE);
-        DrawRectangleLines(action->hitbox.x, action->hitbox.y, action->hitbox.width, action->hitbox.height, BLACK);
-        //--------------------------------------------------------------------------------------
-
-        // Text
-        //--------------------------------------------------------------------------------------
-        int font_count = 32;
-        int text_x = action->hitbox.x + action->hitbox.width * .1;
-        int text_y = action->hitbox.y + (action->hitbox.height - font_count) / 2;
-
-        DrawText(action->label, text_x, text_y, font_count, WHITE);
-
-        if (is_active) {
-            DrawText(">", action->hitbox.x - font_count, text_y, font_count, WHITE);
-            DrawText("<", action->hitbox.x + action->hitbox.width + font_count / 2, text_y, font_count, WHITE);
-        }
-        //--------------------------------------------------------------------------------------
-    }
+    for (int i = 0; i < screen_actions_count; i++) draw_action(screen_actions[i]);
 }
 
-bool is_action_pressed(Action *action) {
-    bool is_pressed = (IsKeyPressed(KEY_X) && action_active_index == action->index) || (
+void draw_action(Action action) {
+    bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action.hitbox),
+            is_active = action_active_index == action.index;
+
+    // Rectangle
+    //--------------------------------------------------------------------------------------
+    DrawRectangleRec(action.hitbox, is_hovered ? RED : BLUE);
+    DrawRectangleLines(action.hitbox.x, action.hitbox.y, action.hitbox.width, action.hitbox.height, BLACK);
+    //--------------------------------------------------------------------------------------
+
+    // Text
+    //--------------------------------------------------------------------------------------
+    int font_count = 32;
+    int text_x = action.hitbox.x + action.hitbox.width * .1;
+    int text_y = action.hitbox.y + (action.hitbox.height - font_count) / 2;
+
+    DrawText(action.label, text_x, text_y, font_count, WHITE);
+
+    if (is_active) {
+        DrawText(">", action.hitbox.x - font_count, text_y, font_count, WHITE);
+        DrawText("<", action.hitbox.x + action.hitbox.width + font_count / 2, text_y, font_count, WHITE);
+    }
+    //--------------------------------------------------------------------------------------
+}
+
+bool is_action_pressed(Action action) {
+    bool is_pressed = (IsKeyPressed(KEY_X) && action_active_index == action.index) || (
                           IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(
-                              GetMousePosition(), action->hitbox));
+                              GetMousePosition(), action.hitbox));
+
+    if (is_pressed) printf("\nAction: %d", action.index);
 
     return is_pressed;
 }
