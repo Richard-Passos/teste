@@ -17,7 +17,7 @@ void draw_hud() {
 
     char moneyText[64];
     sprintf(moneyText, "Moedas: %d", player->money);
-    DrawText(moneyText, 16, SCREEN_HEIGHT - 16, 30, BLACK);
+    DrawText(moneyText, 16, SCREEN_HEIGHT - 40, 30, BLACK);
 
     // Desenha o ganho
     if (player->money_gain_timer > 0.0f) {
@@ -29,7 +29,7 @@ void draw_hud() {
 
         char gainText[32];
         sprintf(gainText, "%c%d", player->last_money_gain >= 0 ? '+' : '-', abs(player->last_money_gain));
-        DrawText(gainText, 146, SCREEN_HEIGHT - 36, 20, gainColor);
+        DrawText(gainText, 146, SCREEN_HEIGHT - 66, 20, gainColor);
     }
 
 

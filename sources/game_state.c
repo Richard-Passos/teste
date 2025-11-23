@@ -45,13 +45,13 @@ void set_game_state(Game_state gs) {
 void reset_game_state() {
     Player player = {0};
 
-    game_state.abilities[0] = (Ability){"../assets/soul_projectile.png",false, false};
-    game_state.abilities[1] = (Ability){"../assets/dash.png",false, false};
+    game_state.abilities[0] = (Ability){"../assets/dash.png",false, false};
+    game_state.abilities[1] = (Ability){"../assets/soul_projectile.png",false, false};
     game_state.abilities[2] = (Ability){"../assets/double_jump.png",false, false};
     game_state.abilities[3] = (Ability){"", true, false};
     game_state.abilities_count = 4;
-    player.abilities.soul_projectile = &game_state.abilities[0];
-    player.abilities.dash = &game_state.abilities[1];
+    player.abilities.dash = &game_state.abilities[0];
+    player.abilities.soul_projectile = &game_state.abilities[1];
     player.abilities.double_jump = &game_state.abilities[2];
     player.abilities.heal = &game_state.abilities[3];
 
