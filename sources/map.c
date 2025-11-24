@@ -4,7 +4,7 @@
 #include "config.h"
 #include "wall.h"
 #include "item.h"
-#include "abilities-attacks.h"
+#include "abilities.h"
 #include "bench.h"
 #include "enemies.h"
 #include "game_state.h"
@@ -15,6 +15,7 @@
 #include "boss.h"
 
 char map_path[100];
+char last_map_path[100];
 
 Texture2D map_textures[99];
 int map_textures_count = 0;
@@ -27,9 +28,9 @@ void add_texture(char texture_path[]) {
 bool load_map(char path[]) {
     // Load just once
     //----------------------------------------------------------------------------------
-    if (strcmp(path, map_path) == 0) return 1;
+    if (strcmp(path, last_map_path) == 0) return 1;
 
-    strcpy(map_path, path);
+    strcpy(last_map_path, path);
 
     if (should_load_textures) {
         add_texture("../assets/wall.png");
@@ -53,73 +54,70 @@ bool load_map(char path[]) {
     unload_abilities();
 
     boss.hitbox = (Rectangle){-1, -1, 0, 0};
-    boss.active = false; // <<< Boss começa desligado sempre
+    boss.active = false;
     boss.life = boss.max_life;
     //----------------------------------------------------------------------------------
 
-    // Textures
-    //----------------------------------------------------------------------------------
     Texture wall_texture = map_textures[0],
             bench_texture = map_textures[1],
             shop_texture = map_textures[2],
             npc_texture = map_textures[3];
-    //----------------------------------------------------------------------------------
 
     FILE *file = fopen(path, "r");
     if (!file) return false;
 
     char line[MAX_MAP_COLS];
-    int y = 0;
+    int row = 0;
 
     while (fgets(line, sizeof(line), file)) {
-        for (int x = 0; line[x] != '\0' && line[x] != '\n'; x++) {
-            switch (line[x]) {
+        for (int col = 0; col < strlen(line); col++) {
+            switch (line[col]) {
                 case 'J':
                 case 'j':
-                    add_player(x, y);
+                    add_player(col, row);
                     break;
                 case 'C':
                 case 'c':
-                    add_boss(x, y);
+                    add_boss(col, row);
                     break;
                 case 'M':
                 case 'm':
-                    add_monster(x, y, LAND_MONSTER_HOR_SPEED, 0.0f);
+                    add_monster(col, row, LAND_MONSTER_HOR_SPEED, 0.0f);
                     break;
                 case 'A':
                 case 'a':
-                    add_item(x, y);
+                    add_item(col, row);
                     break;
                 case 'H':
                 case 'h':
-                    add_ability(x, y);
+                    add_ability(col, row);
                     break;
                 case 'P':
                 case 'p':
-                    add_wall(x, y, wall_texture);
+                    add_wall(col, row, wall_texture);
                     break;
                 case 'B':
                 case 'b':
-                    add_bench(x, y, bench_texture);
+                    add_bench(col, row, bench_texture);
                     break;
                 case 'T':
                 case 't':
-                    add_teleport(x, y);
+                    add_teleport(col, row);
                     break;
                 case 'S':
                 case 's':
-                    add_shop(x, y, shop_texture);
+                    add_shop(col, row, shop_texture);
                     break;
                 case 'N':
                 case 'n':
-                    add_shop_npc(x, y, npc_texture);
+                    add_shop_npc(col, row, npc_texture);
                     break;
                 default:
                     break;
             }
         }
 
-        y++;
+        row++;
     }
 
     fclose(file);
@@ -130,7 +128,7 @@ bool load_map(char path[]) {
     if (boss.hitbox.x != -1 && boss.hitbox.y != -1) {
         spawn_boss();
     } else {
-        boss.active = false; // Garantia
+        boss.active = false;
     }
 
     flying(); // monstros voadores ou terrestres
@@ -143,19 +141,20 @@ void unload_map() {
         UnloadTexture(map_textures[i]);
     }
 
-    strcpy(map_path, "");
+    strcpy(last_map_path, "");
     should_load_textures = true;
 }
 
-void draw_map() {
-    Player *player = &game_state.player;
+void handle_map() {
+    update_map();
+    draw_map();
+}
 
-    // Draw
-    //----------------------------------------------------------------------------------
+void draw_map() {
     BeginDrawing();
     ClearBackground(LIGHTGRAY);
-    BeginMode2D(camera); // Tudo dentro do modo 2D se move com a câmera
 
+    BeginMode2D(camera); // Tudo dentro do modo 2D se move com a câmera
     draw_walls();
     draw_items();
     draw_benches();
@@ -168,7 +167,21 @@ void draw_map() {
     draw_player();
     draw_healing_effect();
     EndMode2D();
+
     draw_hud();
     EndDrawing();
-    //----------------------------------------------------------------------------------
+}
+
+void update_map() {
+    Player *player = &game_state.player;
+    float delta_time = GetFrameTime();
+
+    update_player();
+    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
+    update_monsters();
+    update_boss(&game_state.player, delta_time, walls, walls_count);
+}
+
+void set_map_path(int level) {
+    sprintf(map_path, "%s%d.txt", MAP_DEFAULT_PATH, level);
 }

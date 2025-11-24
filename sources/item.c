@@ -8,15 +8,13 @@
 #include "game_state.h"
 
 void add_item(int x, int y) {
-    Item *items = game_state.items;
-
     Item *item = get_available_item();
 
     if (!item) return;
 
     item->texture = LoadTexture(item->texture_path);
     item->hitbox = (Rectangle){x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-    items->is_active = true;
+    item->is_active = true;
 }
 
 void draw_items() {
@@ -58,7 +56,9 @@ void unload_items() {
     for (int i = 0; i < *items_count; i++)
         if (items[i].is_active) {
             UnloadTexture(items[i].texture);
-            items[i].is_active = false;
+
+            if (!items[i].is_acquired)
+                items[i].is_active = false;
         }
 }
 
@@ -71,5 +71,19 @@ Item *get_available_item() {
             return &items[i];
 
     return NULL;
+}
+
+void update_item_acquisition() {
+    Item *items = game_state.items;
+    int *items_count = &game_state.items_count;
+
+    for (int i = 0; i < *items_count; i++) {
+        if (items[i].is_acquired) continue;
+
+        if (CheckCollisionRecs(game_state.player.hitbox, items[i].hitbox) && IsKeyPressed(KEY_UP)) {
+            items[i].is_acquired = true;
+            items[i].is_active = false;
+        }
+    }
 }
 

@@ -5,7 +5,13 @@
 #ifndef MY_RAYLIB_GAME_PLAYER_H
 #define MY_RAYLIB_GAME_PLAYER_H
 #include "enemies.h"
-#include "abilities-attacks.h"
+#include "abilities.h"
+#include "item.h"
+
+typedef struct {
+    float speed;
+    float money;
+} Multipliers;
 
 typedef struct {
     bool active;
@@ -13,11 +19,12 @@ typedef struct {
     float cooldown;
     bool hit_confirmed;
     float recovery;
-} DashState;
+} Dash_state;
 
 typedef struct {
     int life;
     int max_life;
+    int damage;
 
     bool invulnerable;
     float invuln_timer;
@@ -26,13 +33,22 @@ typedef struct {
     float push_timer;
     float push_dir;
     float push_speed;
-
-    float heal_cooldown;
-    float heal_cooldown_max;
-    bool is_healing;
-    float heal_hold_time;
-    float heal_hold_needed;
 } PlayerCombat;
+
+typedef struct {
+    Ability *soul_projectile;
+    Ability *dash;
+    Ability *double_jump;
+    Ability *heal;
+} Abilities;
+
+typedef struct {
+    Item *add_life;
+    Item *add_damage;
+    Item *add_speed;
+    Item *add_money;
+    Item *add_invuln_dash;
+} Items;
 
 typedef struct {
     Rectangle hitbox;
@@ -52,12 +68,14 @@ typedef struct {
     int last_money_gain;
     int souls;
     int max_souls;
-    Ability *abilitySoulProjectile;
-    DashState dash;
     PlayerCombat combat;
     bool ignore_next_monster_hit;
     bool is_sitting;
     bool boss_hit;
+
+    Abilities abilities;
+    Items items;
+    Multipliers multipliers;
 
     bool should_keep_pos;
     Vector2 spawn_pos;
@@ -68,6 +86,26 @@ void add_player(int, int);
 
 void draw_player();
 
-void update_player(float);
+bool has_collided(Player *, Wall *);
+
+void update_player_items();
+
+void update_player();
+
+void handle_timers();
+
+void handle_horizontal_movement();
+
+void handle_vertical_movement();
+
+void handle_attack();
+
+void handle_monsters_collision();
+
+void spawn_player_on_bench();
+
+void add_player_money(int);
+
+void add_player_souls(int);
 
 #endif //MY_RAYLIB_GAME_PLAYER_H

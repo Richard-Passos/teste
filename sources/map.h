@@ -13,6 +13,13 @@ bool load_map(char path[]);
 
 void unload_map();
 
+void handle_map();
+
 void draw_map();
 
+void update_map();
+
+void set_map_path(int);
+
+extern char map_path[100];
 #endif

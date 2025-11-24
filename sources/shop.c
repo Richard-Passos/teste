@@ -30,7 +30,7 @@ void draw_shop() {
         shop.hitbox,
         (Vector2){0, 0},
         0.0f,
-        ORANGE
+        WHITE
     );
 
     if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
@@ -68,7 +68,7 @@ void draw_shop_npc() {
         shop_npc.hitbox,
         (Vector2){0, 0},
         0.0f,
-        ORANGE
+        WHITE
     );
 
     if (CheckCollisionRecs(game_state.player.hitbox, shop_npc.hitbox)) {

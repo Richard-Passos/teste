@@ -25,5 +25,7 @@ void draw_items();
 
 void unload_items();
 
+void update_item_acquisition();
+
 Item *get_available_item();
 #endif //HOLLOW_ITEM_H

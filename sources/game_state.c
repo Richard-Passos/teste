@@ -23,21 +23,7 @@ bool load_game_state() {
         // Copy bytes into game_state
         memcpy(&game_state, file_data, game_state_size);
 
-        // Spawn player on last bench
-        //--------------------------------------------------------------------------------------
-        Player *player = &game_state.player;
-
-        if (player->has_spawn) {
-            player->hitbox = (Rectangle){
-                player->spawn_pos.x, player->spawn_pos.y, player->hitbox.width, player->hitbox.height
-            };
-            player->is_sitting = true;
-            player->speed.y = 0;
-            player->combat.life = player->combat.max_life;
-            player->souls = player->max_souls;
-            player->should_keep_pos = true;
-        }
-        //--------------------------------------------------------------------------------------
+        spawn_player_on_bench();
 
         UnloadFileData(file_data);
 
@@ -57,17 +43,30 @@ void set_game_state(Game_state gs) {
 }
 
 void reset_game_state() {
-    game_state.abilities[0] = (Ability){"../assets/ability.png",false, false};
-    game_state.abilities_count = 1;
-
-    game_state.items[0] = (Item){"Charm 1", "../assets/ability.png",false, false, false};
-    game_state.items[1] = (Item){"Charm 2", "../assets/ability.png", true, false, false, .cost = 50};
-    game_state.items[2] = (Item){"Charm 3", "../assets/ability.png", false, false, false};
-    game_state.items[3] = (Item){"Charm 4", "../assets/ability.png", false, false, false};
-    game_state.items[4] = (Item){"Charm 5", "../assets/ability.png", true, false, false, .cost = 10};
-    game_state.items_count = 5;
-
     Player player = {0};
+
+    game_state.abilities[0] = (Ability){"../assets/dash.png",false, false};
+    game_state.abilities[1] = (Ability){"../assets/soul_projectile.png",false, false};
+    game_state.abilities[2] = (Ability){"../assets/double_jump.png",false, false};
+    game_state.abilities[3] = (Ability){"", true, false};
+    game_state.abilities_count = 4;
+    player.abilities.dash = &game_state.abilities[0];
+    player.abilities.soul_projectile = &game_state.abilities[1];
+    player.abilities.double_jump = &game_state.abilities[2];
+    player.abilities.heal = &game_state.abilities[3];
+
+    game_state.items[0] = (Item){"Mais Vida", "../assets/ability.png",false, false, false};
+    game_state.items[1] = (Item){"Mais Dano", "../assets/ability.png", false, false, false, .cost = 50};
+    game_state.items[2] = (Item){"Mais Velocidade", "../assets/ability.png", false, false, false};
+    game_state.items[3] = (Item){"Mais dinheiro", "../assets/ability.png", false, false, false};
+    game_state.items[4] = (Item){"Dash Invulneravel", "../assets/ability.png", false, false, false, .cost = 10};
+    game_state.items_count = 5;
+    player.items.add_life = &game_state.items[0];
+    player.items.add_damage = &game_state.items[1];
+    player.items.add_speed = &game_state.items[2];
+    player.items.add_money = &game_state.items[3];
+    player.items.add_invuln_dash = &game_state.items[4];
+
     player.hitbox = (Rectangle){0, 0,TILE_SIZE, TILE_SIZE};
     player.speed = (Vector2){0, 0};
     player.can_jump = false;
@@ -77,15 +76,18 @@ void reset_game_state() {
     player.money = 0;
     player.souls = 0;
     player.max_souls = 100;
-    player.abilitySoulProjectile = &game_state.abilities[0];
+
     player.combat.life = 5;
     player.combat.max_life = 5;
+    player.combat.damage = 1;
     player.combat.invulnerable = false;
     player.combat.invuln_timer = 0;
     player.combat.hurt_timer = 0;
-    player.combat.heal_hold_needed = 1.0f;
+
     player.is_sitting = false;
     player.has_spawn = false;
+    player.multipliers.speed = 1;
+    player.multipliers.money = 1;
 
     game_state.level = MIN_LEVEL;
     game_state.player = player;

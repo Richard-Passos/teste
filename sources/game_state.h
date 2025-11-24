@@ -8,7 +8,7 @@
 #define MIN_LEVEL 1
 #define MAX_LEVEL 3
 #include "player.h"
-#include "abilities-attacks.h"
+#include "abilities.h"
 #include "item.h"
 
 typedef struct {

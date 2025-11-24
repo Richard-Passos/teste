@@ -40,8 +40,8 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/enemies.h
         sources/HUD.c
         sources/HUD.h
-        sources/abilities-attacks.c
-        sources/abilities-attacks.h
+        sources/abilities.c
+        sources/abilities.h
         sources/wall.c
         sources/wall.h
         sources/item.c
