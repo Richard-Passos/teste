@@ -33,15 +33,6 @@ bool load_game_state() {
     return is_ok;
 }
 
-void set_game_state(Game_state gs) {
-    if (gs.level > MAX_LEVEL)
-        game_state.level = MAX_LEVEL;
-    else if (gs.level < MIN_LEVEL)
-        game_state.level = MIN_LEVEL;
-    else
-        game_state.level = gs.level;
-}
-
 void reset_game_state() {
     Player player = {0};
 

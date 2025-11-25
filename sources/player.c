@@ -76,7 +76,7 @@ void update_player_items() {
         player->combat.damage = 1;
     }
     if (player->items.add_speed->is_acquired && player->items.add_speed->is_active) {
-        player->multipliers.speed = 1.15f;
+        player->multipliers.speed = 1.2f;
     } else {
         player->multipliers.speed = 1;
     }
