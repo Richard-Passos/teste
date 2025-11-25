@@ -180,14 +180,11 @@ void handle_inventory_screen() {
     if (!screen.is_loaded) {
         int acquired_items_count = 0;
         for (int i = 0; i < *items_count; i++)
-            if (items[i].is_acquired && items[i].is_active) {
+            if (items[i].is_acquired)
                 add_action(
                     items[i].label,
-                    (Rectangle){32 + acquired_items_count * 74, 350, 64, 64}
+                    (Rectangle){32 + acquired_items_count++ * 74, 350, 64, 64}
                 );
-
-                acquired_items_count++;
-            }
 
         add_action("<- Voltar", (Rectangle){SCREEN_WIDTH - 316, 16, 300, 60});
 
@@ -203,25 +200,19 @@ void handle_inventory_screen() {
     for (int i = 0; i < MAX_CHARMS_ACTIVATED; i++)
         DrawRectangle(32 + i * 74, 150, 64, 64, (Color){0, 0, 0, 100});
 
-    for (int i = 0; i < screen_actions_count - 1; i++) {
-        Action action = screen_actions[i];
-        Item *item = NULL;
+    for (int i = 0; i < *items_count; i++) {
+        Item *item = &items[i];
 
-        // Get acquired and active items
-        //----------------------------------------------------------------------------------
-        for (int j = 0; j < game_state.items_count; j++)
-            if (game_state.items[j].is_acquired && game_state.items[j].is_active) {
-                if (strcmp(game_state.items[j].label, action.label) == 0) {
-                    item = &game_state.items[j];
-                    break;
-                }
-            }
-        //----------------------------------------------------------------------------------
+        if (!item->is_acquired || !item->is_active) continue;
 
-        if (item != NULL) {
-            active_charms_count++;
-            action.hitbox.x = 32 + ((active_charms_count - 1) * 74);
+        for (int j = 0; j < screen_actions_count - 1; j++) {
+            Action action = screen_actions[j];
+
+            if (strcmp(item->label, action.label) != 0) continue;
+
+            action.hitbox.x = 32 + active_charms_count++ * 74;
             action.hitbox.y = 150;
+
             draw_action(action);
         }
     }
@@ -237,22 +228,20 @@ void handle_inventory_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    for (int i = 0; i < screen_actions_count - 1; i++) {
-        Action action = screen_actions[i];
-        Item *item = NULL;
+    for (int i = 0; i < *items_count; i++) {
+        Item *item = &items[i];
 
-        if (is_action_pressed(action)) {
-            // Get item
-            //----------------------------------------------------------------------------------
-            for (int j = 0; j < game_state.items_count; j++)
-                if (game_state.items[j].is_acquired && strcmp(game_state.items[j].label, action.label) == 0) {
-                    item = &game_state.items[j];
-                    break;
-                }
-            //----------------------------------------------------------------------------------
+        if (!item->is_acquired) continue;
 
-            if (item != NULL && game_state.player.is_sitting) {
-                item->is_active = active_charms_count >= MAX_CHARMS_ACTIVATED ? false : !item->is_active; // Toggle item
+        for (int j = 0; j < screen_actions_count - 1; j++) {
+            Action action = screen_actions[i],
+                    active_action = action;
+
+            if (strcmp(item->label, action.label) != 0) continue;
+
+            if (is_action_pressed(action)) {
+                // Toggle item
+                item->is_active = active_charms_count >= MAX_CHARMS_ACTIVATED ? false : !item->is_active;
                 set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
             }
         }
