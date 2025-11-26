@@ -239,7 +239,7 @@ void handle_inventory_screen() {
 
             if (strcmp(item->label, action.label) != 0) continue;
 
-            if (is_action_pressed(action)) {
+            if (game_state.player.is_sitting && is_action_pressed(action)) {
                 // Toggle item
                 item->is_active = active_charms_count >= MAX_CHARMS_ACTIVATED ? false : !item->is_active;
                 set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
