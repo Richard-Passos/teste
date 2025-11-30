@@ -19,6 +19,8 @@ typedef struct {
     char label[150];
     Rectangle hitbox;
     int index;
+    char texture_path[150];
+    Texture2D texture;
 } Action;
 
 typedef enum {
@@ -65,7 +67,7 @@ void add_asset(char [], Rectangle);
 
 void draw_assets();
 
-void add_action(char [], Rectangle);
+void add_action(char [], Rectangle, char []);
 
 void draw_actions();
 

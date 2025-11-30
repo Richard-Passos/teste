@@ -16,6 +16,8 @@ void add_wall(int, int, Texture2D);
 
 void draw_walls();
 
+Wall *handle_collision_with_walls(Rectangle);
+
 extern Wall walls[MAX_WALLS];
 extern int walls_count;
 

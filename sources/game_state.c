@@ -60,13 +60,8 @@ void reset_game_state() {
 
     player.hitbox = (Rectangle){0, 0,TILE_SIZE, TILE_SIZE};
     player.speed = (Vector2){0, 0};
-    player.can_jump = false;
-    player.is_attacking = false;
-    player.attack_timer = 0.0f;
     player.on_ground = false;
     player.money = 0;
-    player.souls = 0;
-    player.max_souls = 100;
 
     player.combat.life = 5;
     player.combat.max_life = 5;
@@ -74,6 +69,10 @@ void reset_game_state() {
     player.combat.invulnerable = false;
     player.combat.invuln_timer = 0;
     player.combat.hurt_timer = 0;
+    player.combat.is_attacking = false;
+    player.combat.attack_timer = 0.0f;
+    player.combat.souls = 0;
+    player.combat.max_souls = 100;
 
     player.is_sitting = false;
     player.has_spawn = false;

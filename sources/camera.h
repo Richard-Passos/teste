@@ -5,7 +5,6 @@
 #ifndef HOLLOW_CAMERA_H
 #define HOLLOW_CAMERA_H
 #include "raylib.h"
-#include "player.h"
 
 Camera2D init_camera(Vector2);
 
