@@ -5,6 +5,14 @@
 #include "player.h"
 #include "wall.h"
 
+#define BOSS_LIFE (LAND_MONSTER_LIFE * 4)
+#define BOSS_DAMAGE 2
+#define BOSS_SPEED 225
+#define BOSS_JUMP_TIME 0.9f
+#define BOSS_INVULN_TIMER 0.3f
+#define BOSS_HURT_TIMER 0.15f
+#define BOSS_ENGAGE_RANGE 400
+
 typedef enum {
     BOSS_IDLE,
     BOSS_CHASE_ATTACK,
@@ -13,41 +21,35 @@ typedef enum {
 
 typedef struct {
     Rectangle hitbox;
-    Vector2 velocity;
+    Vector2 speed;
 
     int life;
     int max_life;
+    int damage;
 
-    bool active;
-    bool engaged;
+    bool is_active;
+    bool is_engaged;
 
     // Invulnerabilidade
     bool invulnerable;
-    float invuln_time;
+    float invuln_timer;
     float hurt_timer;
 
     // Máquina de estados
     BossState state;
     float state_timer;
-
-    // Pulo
-    bool is_jumping;
-    float jump_velocity;
-    float target_x;
-    float target_y;
-    bool just_landed;
-    float landing_delay;
-
 } Boss;
 
 extern Boss boss;
 
 void add_boss(int, int);
 
-void spawn_boss();
-
-void update_boss(Player *player, float delta, Wall *walls, int wall_count);
+void update_boss();
 
 void draw_boss();
+
+Boss *handle_collision_with_boss(Rectangle, int);
+
+void handle_boss_death();
 
 #endif

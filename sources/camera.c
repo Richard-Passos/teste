@@ -3,7 +3,7 @@
 //
 
 #include "raylib.h"
-#include "config.h"
+#include "main.h"
 
 Camera2D camera = {0};
 

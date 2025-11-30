@@ -4,7 +4,6 @@
 
 #include <minwindef.h>
 #include "item.h"
-#include "config.h"
 #include "game_state.h"
 
 void add_item(int x, int y) {
@@ -71,6 +70,10 @@ Item *get_available_item() {
             return &items[i];
 
     return NULL;
+}
+
+bool is_item_active(Item *item) {
+    return item != NULL && item->is_acquired && item->is_active;
 }
 
 void update_item_acquisition() {

@@ -8,6 +8,10 @@
 
 #define MAX_ABILITIES 99
 
+#define DASH_SPEED 1000.0f
+#define DASH_DURATION 0.15f
+#define DASH_COOLDOWN 1.0f
+
 typedef struct {
     char texture_path[100];
     bool is_acquired;
@@ -28,6 +32,8 @@ void draw_abilities();
 void unload_abilities();
 
 Ability *get_available_ability();
+
+bool is_ability_active(Ability *);
 
 void soul_projectile_ability();
 
