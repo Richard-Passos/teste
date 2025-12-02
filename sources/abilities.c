@@ -24,32 +24,31 @@ void draw_abilities() {
     Ability *abilities = game_state.abilities;
     int *abilities_count = &game_state.abilities_count;
 
-    bool is_colliding = false;
 
     for (int i = 0; i < *abilities_count; i++) {
         Ability ability = abilities[i];
 
-        if (ability.is_acquired || !ability.is_active) continue;
-
-        DrawTexturePro(
+        if (!ability.is_acquired)
+        {
+            DrawTexturePro
+            (
             ability.texture,
             (Rectangle){0, 0, ability.texture.width, ability.texture.height},
             ability.hitbox,
             (Vector2){0, 0},
             0.0f,
             BLUE
-        );
-
-        if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, ability.hitbox)) {
-            DrawText(
-                "Inspecionar",
-                ability.hitbox.x - 50,
-                ability.hitbox.y - 50,
-                30,
-                WHITE
             );
 
-            is_colliding = true;
+            if (CheckCollisionRecs(game_state.player.hitbox, ability.hitbox)) {
+                DrawText(
+                    "Inspecionar",
+                    ability.hitbox.x - 50,
+                    ability.hitbox.y - 50,
+                    30,
+                    WHITE
+                );
+            }
         }
     }
 }
@@ -87,14 +86,43 @@ void update_ability_acquisition() {
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++) {
-        if (abilities[i].is_acquired) continue;
+        if (!abilities[i].is_acquired)
+        {
+            if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
+                abilities[i].is_acquired = true;
+                abilities[i].is_active = false;
 
-        if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
-            abilities[i].is_acquired = true;
-            abilities[i].is_active = false;
+                snprintf(
+                game_state.recent_ability_text,
+                sizeof(game_state.recent_ability_text),
+                "%s: %s",
+                abilities[i].label,
+                abilities[i].description
+                );
+
+                game_state.recent_ability_timer = 2.5f;
+            }
         }
     }
 }
+
+void draw_ability_popup() {
+    if (game_state.recent_ability_timer <= 0.0f) return;
+
+    float dt = GetFrameTime();
+    game_state.recent_ability_timer -= dt;
+
+    // Fundo
+    int w = MeasureText(game_state.recent_ability_text, 22) + 40;
+    int h = 40;
+    int x = GetScreenWidth() / 2 - w / 2;
+    int y = 100;
+
+    DrawRectangle(x, y, w, h, (Color){0, 0, 0, 180});
+    DrawRectangleLines(x, y, w, h, WHITE);
+    DrawText(game_state.recent_ability_text, x + 20, y + 10, 22, YELLOW);
+}
+
 
 void soul_projectile_ability() {
     const float SOUL_PROJECTILE_COOLDOWN = 3.0f;

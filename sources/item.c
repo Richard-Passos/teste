@@ -31,7 +31,7 @@ void draw_items() {
             items[i].hitbox,
             (Vector2){0, 0},
             0.0f,
-            ORANGE
+            WHITE
         );
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, items[i].hitbox)) {

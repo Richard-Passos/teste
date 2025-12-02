@@ -11,6 +11,7 @@
 typedef struct {
     char label[100];
     char texture_path[100];
+    char description[200];
     bool is_buyable;
     bool is_acquired;
     bool is_active;

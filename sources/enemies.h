@@ -5,7 +5,7 @@
 #include "main.h"
 
 #define MAX_MONSTERS 10
-#define LAND_MONSTER_HOR_SPEED 150.0f
+#define LAND_MONSTER_HOR_SPEED 20.0f
 #define LAND_MONSTER_LIFE 5
 #define FLYING_MONSTER_LIFE 3
 #define MONSTER_DAMAGE 1
