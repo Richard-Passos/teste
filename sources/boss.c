@@ -53,8 +53,7 @@ void start_chase_attack() {
 }
 
 void boss_chase() {
-    Player *player = &game_state.player;
-    float delta_time = GetFrameTime();;
+    Player *player = &game_state.player;;
 
     float px = player->hitbox.x + player->hitbox.width / 2;
     float bx = boss.hitbox.x + boss.hitbox.width / 2;
@@ -69,7 +68,7 @@ void boss_chase() {
         boss.speed.x = BOSS_SPEED;
 
     if (boss.state_timer > 0)
-        boss.state_timer -= delta_time;
+        boss.state_timer -= DELTA_TIME;
     else
         boss.state = BOSS_IDLE;
 }
@@ -88,11 +87,9 @@ void start_jump_attack() {
 }
 
 void boss_jump() {
-    float delta_time = GetFrameTime();
-
     // Vertical Movement
-    boss.speed.y += GRAVITY * delta_time;
-    float dy = boss.speed.y * delta_time;
+    boss.speed.y += GRAVITY * DELTA_TIME;
+    float dy = boss.speed.y * DELTA_TIME;
     float step_y = (dy > 0) ? 1 : -1;
 
     for (float y = 0; y < fabsf(dy); y++) {
@@ -115,7 +112,6 @@ void boss_jump() {
 
 void boss_idle() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     // Engage when player is nearby
     float dx = player->hitbox.x - boss.hitbox.x;
@@ -126,7 +122,7 @@ void boss_idle() {
     if (!boss.is_engaged) return;
 
     if (boss.state_timer > 0)
-        boss.state_timer -= delta_time;
+        boss.state_timer -= DELTA_TIME;
     else {
         int attack = GetRandomValue(BOSS_CHASE_ATTACK, BOSS_JUMP_ATTACK);
 
@@ -138,8 +134,6 @@ void boss_idle() {
 }
 
 void update_boss() {
-    float delta_time = GetFrameTime();
-
     if (!boss.is_active) return;
 
     switch (boss.state) {
@@ -154,7 +148,7 @@ void update_boss() {
             break;
     }
 
-    float dx = boss.speed.x * delta_time;
+    float dx = boss.speed.x * DELTA_TIME;
     float step = (dx > 0) ? 1 : -1;
 
     for (int x = 0; x < fabsf(dx); x++) {
@@ -168,12 +162,12 @@ void update_boss() {
     }
 
     if (boss.invuln_timer > 0)
-        boss.invuln_timer -= delta_time;
+        boss.invuln_timer -= DELTA_TIME;
     else
         boss.invulnerable = false;
 
     if (boss.hurt_timer > 0)
-        boss.hurt_timer -= delta_time;
+        boss.hurt_timer -= DELTA_TIME;
 }
 
 Boss *handle_collision_with_boss(Rectangle hitbox, int damage) {

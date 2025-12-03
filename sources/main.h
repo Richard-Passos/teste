@@ -24,4 +24,6 @@ typedef enum {
 #define VILLAGE_FILE_PATH "../village.txt"
 #define SHOP_FILE_PATH "../shop.txt"
 #define GAME_STATE_FILE_PATH "../game_state.bin"
+
+extern float DELTA_TIME;
 #endif //HOLLOW_MAIN_H

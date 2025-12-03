@@ -356,11 +356,6 @@ void handle_village_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    handle_benches_interaction();
-
-    if (handle_shop_interaction())
-        set_screen(SCREEN_SHOP);
-
     if (IsKeyPressed(KEY_ESCAPE))
         set_screen(SCREEN_PAUSED);
     else if (IsKeyPressed(KEY_TAB))
@@ -388,13 +383,13 @@ void handle_shop_screen() {
     else if (handle_teleports_interaction()) {
         player->hitbox = (Rectangle){
             shop.hitbox.x + shop.hitbox.width / 2 - player->hitbox.width / 2,
-            shop.hitbox.y + shop.hitbox.height - TILE_SIZE,
+            shop.hitbox.y + shop.hitbox.height - player->hitbox.height - 2,
             player->hitbox.width,
             player->hitbox.height
         };
         player->should_keep_pos = true;
 
-        set_screen(SCREEN_VILLAGE);
+        set_screen(last_screen);
     } else if (handle_shop_npc_interaction())
         set_screen(SCREEN_SHOP_NPC);
     //----------------------------------------------------------------------------------

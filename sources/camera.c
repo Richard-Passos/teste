@@ -18,5 +18,3 @@ void update_camera_center(Vector2 target) {
     camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
     camera.target = target;
 }
-
-

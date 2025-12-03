@@ -20,8 +20,6 @@ void add_monster(int x, int y) {
 }
 
 void draw_monsters() {
-    float delta_time = GetFrameTime();
-
     for (int i = 0; i < monsters_count; i++) {
         Monster *m = &monsters[i];
 
@@ -30,7 +28,7 @@ void draw_monsters() {
         Color color;
 
         if (m->hurt_timer > 0) {
-            m->hurt_timer -= delta_time;
+            m->hurt_timer -= DELTA_TIME;
             color = WHITE;
         } else if (m->is_flying)
             color = ORANGE;
@@ -66,15 +64,13 @@ void handle_monster_variants() {
 }
 
 void update_monsters() {
-    float delta_time = GetFrameTime();
-
     for (int i = 0; i < monsters_count; i++) {
         Monster *m = &monsters[i];
 
         if (!m->is_active) continue;
 
         if (m->invuln_timer > 0)
-            m->invuln_timer -= delta_time;
+            m->invuln_timer -= DELTA_TIME;
         else
             m->invulnerable = false;
 
@@ -84,9 +80,7 @@ void update_monsters() {
 }
 
 void handle_monster_horizontal_movement(Monster *m) {
-    float delta_time = GetFrameTime();
-
-    m->hitbox.x += m->speed.x * (m->direction == DIR_RIGHT ? delta_time : -delta_time);
+    m->hitbox.x += m->speed.x * (m->direction == DIR_RIGHT ? DELTA_TIME : -DELTA_TIME);
 
     Wall *hit_wall = handle_collision_with_walls(m->hitbox);
 

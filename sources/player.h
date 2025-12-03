@@ -12,6 +12,8 @@
 #define PLAYER_HOR_SPEED 600.0f
 #define PLAYER_INVULN_TIMER 1.0f
 #define PLAYER_HURT_TIMER 0.15f
+#define PLAYER_ATTACK_TIMER 0.12f
+#define PLAYER_ATTACK_COOLDOWN 0.4f
 
 typedef struct {
     float speed;

@@ -102,7 +102,6 @@ void soul_projectile_ability() {
 
     Player *player = &game_state.player;
     Ability *soul_projectile = player->abilities.soul_projectile;
-    float delta_time = GetFrameTime();
 
     if (soul_projectile == NULL || !soul_projectile->is_acquired) return;
 
@@ -132,7 +131,7 @@ void soul_projectile_ability() {
 
     // Update soul projectile
     if (soul_projectile->is_active) {
-        soul_projectile->hitbox.x += soul_projectile->speed.x * delta_time;
+        soul_projectile->hitbox.x += soul_projectile->speed.x * DELTA_TIME;
 
         // Pass through
         handle_collision_with_monster(soul_projectile->hitbox, SOUL_PROJECTILE_DAMAGE);
@@ -142,7 +141,7 @@ void soul_projectile_ability() {
             soul_projectile->is_active = false;
 
         if (soul_projectile->cooldown > 0)
-            soul_projectile->cooldown -= delta_time;
+            soul_projectile->cooldown -= DELTA_TIME;
         else
             soul_projectile->is_active = false;
     }
@@ -151,12 +150,11 @@ void soul_projectile_ability() {
 void dash_ability() {
     Player *player = &game_state.player;
     Ability *dash = player->abilities.dash;
-    float delta_time = GetFrameTime();
 
     if (dash == NULL || !dash->is_acquired) return;
 
     if (dash->cooldown > 0.0f)
-        dash->cooldown -= delta_time;
+        dash->cooldown -= DELTA_TIME;
     else if (IsKeyPressed(KEY_C) && !dash->is_active) {
         dash->is_active = true;
         dash->timer = DASH_DURATION;
@@ -171,7 +169,7 @@ void dash_ability() {
     player->speed.y = 0.0f;
 
     // Pixel Movement
-    float dx = dash_speed * delta_time;
+    float dx = dash_speed * DELTA_TIME;
     int step = (dx > 0) ? 1 : -1;
     float moved = 0;
 
@@ -188,7 +186,7 @@ void dash_ability() {
     }
 
     if (dash->timer > 0)
-        dash->timer -= delta_time;
+        dash->timer -= DELTA_TIME;
     else
         dash->is_active = false;
 }
@@ -199,7 +197,6 @@ void heal_ability() {
 
     Player *player = &game_state.player;
     Ability *heal = player->abilities.heal;
-    float delta_time = GetFrameTime();
 
     if (heal == NULL || !heal->is_acquired) return;
 
@@ -207,7 +204,7 @@ void heal_ability() {
 
     // Atualiza cooldown
     if (heal->cooldown > 0.0f) {
-        heal->cooldown -= delta_time;
+        heal->cooldown -= DELTA_TIME;
 
         if (heal->cooldown < 0.0f) {
             heal->cooldown = 0.0f;
@@ -223,7 +220,7 @@ void heal_ability() {
         heal->is_active = true;
 
         if (heal->timer > 0.0f) {
-            heal->timer -= delta_time;
+            heal->timer -= DELTA_TIME;
 
             if (heal->timer < 0.0f)
                 heal->timer = 0.0f;

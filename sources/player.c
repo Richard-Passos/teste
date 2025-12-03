@@ -62,11 +62,10 @@ void update_player() {
 
 void handle_player_horizontal_movement() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     // Smooth movement to knockback
     if (player->speed.x < -PLAYER_HOR_SPEED || player->speed.x > PLAYER_HOR_SPEED)
-        player->speed.x += PLAYER_HOR_SPEED * (player->speed.x > 0 ? -delta_time : delta_time);
+        player->speed.x += PLAYER_HOR_SPEED * (player->speed.x > 0 ? -DELTA_TIME : DELTA_TIME);
     else
         player->speed.x = 0;
 
@@ -80,7 +79,7 @@ void handle_player_horizontal_movement() {
         }
     }
 
-    player->hitbox.x += player->speed.x * player->multipliers.speed * delta_time;
+    player->hitbox.x += player->speed.x * player->multipliers.speed * DELTA_TIME;
 
     // Collision
     Wall *hit_wall = handle_collision_with_walls(player->hitbox);
@@ -98,10 +97,9 @@ void handle_player_horizontal_movement() {
 
 void handle_player_vertical_movement() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     // Movement
-    player->speed.y += player->is_sitting ? 0 : GRAVITY * delta_time;
+    player->speed.y += player->is_sitting ? 0 : GRAVITY * DELTA_TIME;
 
     if ((IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z)) && player->jump_count == 0 && player->on_ground) {
         player->speed.y = -PLAYER_JUMP_SPEED;
@@ -109,7 +107,7 @@ void handle_player_vertical_movement() {
         player->on_ground = false;
     }
 
-    player->hitbox.y += player->speed.y * delta_time;
+    player->hitbox.y += player->speed.y * DELTA_TIME;
 
     // Collision
     Wall *hit_wall = handle_collision_with_walls(player->hitbox);
@@ -130,15 +128,11 @@ void handle_player_vertical_movement() {
 }
 
 void handle_player_attack() {
-    const float PLAYER_ATTACK_TIMER = 0.12f;
-    const float PLAYER_ATTACK_COOLDOWN = 0.4f;
-
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     // Init attack
     if (player->combat.attack_cooldown > 0)
-        player->combat.attack_cooldown -= delta_time;
+        player->combat.attack_cooldown -= DELTA_TIME;
     else if (IsKeyPressed(KEY_X) && !(player->direction == DIR_DOWN && player->on_ground)) {
         player->combat.is_attacking = true;
         player->combat.attack_timer = PLAYER_ATTACK_TIMER;
@@ -184,22 +178,21 @@ void handle_player_attack() {
     }
 
     if (player->combat.attack_timer > 0)
-        player->combat.attack_timer -= delta_time;
+        player->combat.attack_timer -= DELTA_TIME;
     else
         player->combat.is_attacking = false;
 }
 
 void handle_player_monsters_collision() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     if (player->combat.invuln_timer > 0.0f)
-        player->combat.invuln_timer -= delta_time;
+        player->combat.invuln_timer -= DELTA_TIME;
     else
         player->combat.invulnerable = false;
 
     if (player->combat.hurt_timer > 0.0f)
-        player->combat.hurt_timer -= delta_time;
+        player->combat.hurt_timer -= DELTA_TIME;
 
     if (player->combat.invulnerable) return;
 

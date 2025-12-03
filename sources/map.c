@@ -13,6 +13,7 @@
 #include "teleport.h"
 #include "shop.h"
 #include "boss.h"
+#include "screen.h"
 
 char map_path[100];
 char last_map_path[100];
@@ -137,8 +138,11 @@ void unload_map() {
 }
 
 void handle_map() {
-    update_map();
     draw_map();
+    update_map();
+    handle_benches_interaction();
+    if (handle_shop_interaction())
+        set_screen(SCREEN_SHOP);
 }
 
 void draw_map() {
@@ -152,8 +156,8 @@ void draw_map() {
     draw_teleports();
     draw_shop();
     draw_shop_npc();
-    draw_monsters();
     draw_boss();
+    draw_monsters();
     draw_abilities();
     draw_player();
     draw_healing_effect();
@@ -164,10 +168,10 @@ void draw_map() {
 }
 
 void update_map() {
-    update_player();
-    update_camera_center((Vector2){game_state.player.hitbox.x, game_state.player.hitbox.y});
     update_monsters();
     update_boss();
+    update_player();
+    update_camera_center((Vector2){game_state.player.hitbox.x, game_state.player.hitbox.y});
 }
 
 void set_map_path(int level) {

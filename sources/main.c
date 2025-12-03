@@ -12,6 +12,8 @@
 // Program main entry point
 //------------------------------------------------------------------------------------
 
+float DELTA_TIME;
+
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, NAME);
   SetExitKey(KEY_NULL);
@@ -23,6 +25,8 @@ int main() {
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
+    DELTA_TIME = GetFrameTime();
+
     if (handle_screens() == 0) {
       if (!load_map(map_path)) {
         CloseWindow();

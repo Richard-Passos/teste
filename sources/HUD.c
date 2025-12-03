@@ -14,7 +14,6 @@ char level_text[10];
 
 void draw_hud() {
     Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
 
     char moneyText[64];
     sprintf(moneyText, "Moedas: %d", player->money);
@@ -22,7 +21,7 @@ void draw_hud() {
 
     // Desenha o ganho
     if (player->money_gain_timer > 0.0f) {
-        player->money_gain_timer -= delta_time;
+        player->money_gain_timer -= DELTA_TIME;
 
         // Fazer sumir depois de um tempo
         float alpha = player->money_gain_timer / 1.5f;
