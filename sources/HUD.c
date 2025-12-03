@@ -19,6 +19,8 @@ void draw_hud() {
     sprintf(moneyText, "Moedas: %d", player->money);
     DrawText(moneyText, 16, SCREEN_HEIGHT - 40, 30, BLACK);
 
+    draw_ability_popup();
+
     // Desenha o ganho
     if (player->money_gain_timer > 0.0f) {
         player->money_gain_timer -= DELTA_TIME;

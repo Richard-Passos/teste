@@ -18,6 +18,9 @@ typedef struct {
     int abilities_count;
     Item items[MAX_ITEMS];
     int items_count;
+
+    char recent_ability_text[200];
+    float recent_ability_timer;
 } Game_state;
 
 bool save_game_state();

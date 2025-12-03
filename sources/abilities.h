@@ -13,7 +13,9 @@
 #define DASH_COOLDOWN 1.0f
 
 typedef struct {
+    char label[100];
     char texture_path[100];
+    char description[200];
     bool is_acquired;
     bool is_active;
     bool hit_confirmed;
@@ -28,6 +30,8 @@ typedef struct {
 void add_ability(int, int);
 
 void draw_abilities();
+
+void draw_ability_popup();
 
 void unload_abilities();
 

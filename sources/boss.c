@@ -126,7 +126,8 @@ void boss_idle() {
     else {
         int attack = GetRandomValue(BOSS_CHASE_ATTACK, BOSS_JUMP_ATTACK);
 
-        if (attack == BOSS_CHASE_ATTACK) start_chase_attack();
+        if (attack == BOSS_CHASE_ATTACK)
+            start_chase_attack();
         else start_jump_attack();
 
         boss.state_timer = 1.5f;

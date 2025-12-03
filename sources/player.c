@@ -150,7 +150,7 @@ void handle_player_attack() {
     attack_box->x = player->hitbox.x;
     attack_box->y = player->hitbox.y;
 
-    float sword_width = TILE_SIZE * 1.0f,
+    float sword_width = TILE_SIZE * 1.5f,
             sword_height = TILE_SIZE / 3.5f;
 
     if (player->direction == DIR_LEFT || player->direction == DIR_RIGHT) {

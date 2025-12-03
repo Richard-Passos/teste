@@ -212,6 +212,41 @@ void handle_inventory_screen() {
 
     draw_actions();
 
+    Vector2 mouse = GetMousePosition();
+
+    for (int i = 0; i < screen_actions_count - 1; i++) {
+        Action action = screen_actions[i];
+
+        if (CheckCollisionPointRec(mouse, action.hitbox)) {
+
+            // Encontrar item correspondente
+            for (int j = 0; j < *items_count; j++) {
+                Item *item = &items[j];
+
+                if (item->is_acquired && strcmp(item->label, action.label) == 0) {
+
+                        const char *name = item->label;
+                        const char *desc = item->description;
+
+
+                        int w = 400;
+                        int h = 60;
+
+                        int x = mouse.x + 16;
+                        int y = mouse.y + 16;
+
+                        DrawRectangle(x, y, w, h, (Color){0, 0, 0, 200});
+                        DrawRectangleLines(x, y, w, h, WHITE);
+
+                        DrawText(name, x + 10, y + 5, 20, YELLOW);
+                        DrawText(desc, x + 10, y + 30, 18, WHITE);
+
+                        break;
+                    }
+            }
+        }
+    }
+
     DrawText("INVENTORY", 16, 16, 32, WHITE);
     EndDrawing();
 
