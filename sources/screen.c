@@ -267,10 +267,15 @@ void handle_inventory_screen() {
             draw_action(action, true);
             if (CheckCollisionPointRec(mouse, action.hitbox))
                 draw_popover(item->label, item->description, mouse);
-            if (game_state.player.is_sitting && is_action_pressed(action)) {
-                // Toggle item
-                item->is_active = active_items_count >= MAX_ITEMS_ACTIVATED ? false : !item->is_active;
-                set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
+            if (is_action_pressed(action)) {
+                if (game_state.player.is_sitting) {
+                    // Toggle item
+                    item->is_active = active_items_count >= MAX_ITEMS_ACTIVATED ? false : !item->is_active;
+                    set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
+                } else {
+                    sprintf(game_state.recent_text, "Só é possível equipar amuletos enquanto estiver em um banco.");
+                    game_state.recent_text_timer = RECENT_TEXT_TIMER;
+                }
             }
         }
     }
@@ -280,9 +285,7 @@ void handle_inventory_screen() {
 
     DrawText("INVENTORY", 16, 16, 32, WHITE);
 
-    DrawText("Só é possível equipar amuletos enquanto estiver em um banco.",
-             32, SCREEN_HEIGHT - 80, 20, WHITE);
-
+    draw_popup();
     EndDrawing();
 
     // Actions
@@ -519,10 +522,15 @@ void handle_shop_npc_screen() {
         if (item == NULL) continue;
 
         // Buy item
-        if (is_action_pressed(action) && player->money >= item->cost) {
-            add_player_money(-item->cost);
-            item->is_acquired = true;
-            set_screen(SCREEN_SHOP_NPC); // Reset screen to reload actions
+        if (is_action_pressed(action)) {
+            if (player->money >= item->cost) {
+                add_player_money(-item->cost);
+                item->is_acquired = true;
+                set_screen(SCREEN_SHOP_NPC); // Reset screen to reload actions
+            } else {
+                sprintf(game_state.recent_text, "Dinheiro insuficiente! Elimine monstros para conseguir mais.");
+                game_state.recent_text_timer = RECENT_TEXT_TIMER;
+            }
         }
         if (CheckCollisionPointRec(mouse, action.hitbox))
             draw_popover(item->label, item->description, mouse);
@@ -550,6 +558,8 @@ void handle_shop_npc_screen() {
         //----------------------------------------------------------------------------------
     }
     //----------------------------------------------------------------------------------
+
+    draw_popup();
     EndDrawing();
 
     // Actions
@@ -647,7 +657,8 @@ void draw_action(Action action, bool draw_as_texture) {
 
 bool is_action_pressed(Action action) {
     return (IsKeyPressed(KEY_X) && action_active_index == action.index)
-           || (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), action.hitbox));
+           || (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
+               CheckCollisionPointRec(GetMousePosition(), action.hitbox));
 }
 
 float center_on_screen(float size, Axis axis) {
@@ -662,4 +673,20 @@ void draw_popover(char label[], char description[], Vector2 mouse) {
 
     DrawText(label, mouse.x + 26, mouse.y + 21, 20, YELLOW);
     DrawText(description, mouse.x + 26, mouse.y + 46, 18, WHITE);
+}
+
+void draw_popup() {
+    if (game_state.recent_text_timer <= 0.0f) return;
+
+    game_state.recent_text_timer -= DELTA_TIME;
+
+    // Fundo
+    int w = MeasureText(game_state.recent_text, 22) + 40;
+    int h = 40;
+    int x = SCREEN_WIDTH / 2 - w / 2;
+    int y = 100;
+
+    DrawRectangle(x, y, w, h, (Color){0, 0, 0, 180});
+    DrawRectangleLines(x, y, w, h, WHITE);
+    DrawText(game_state.recent_text, x + 20, y + 10, 22, YELLOW);
 }

@@ -8,7 +8,7 @@
 
 #define MAX_ABILITIES 99
 
-#define RECENT_ABILITY_TIMER 3.0f
+#define RECENT_ABILITY_TIMER 3.5f
 
 #define SOUL_PROJECTILE_COOLDOWN 3.0f
 #define SOUL_PROJECTILE_DAMAGE 3
@@ -38,8 +38,6 @@ typedef struct {
 void add_ability(int, int);
 
 void draw_abilities();
-
-void draw_ability_popup();
 
 void unload_abilities();
 

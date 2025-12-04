@@ -7,6 +7,7 @@
 #include "raylib.h"
 
 #define MAX_LABEL_SIZE 51
+#define RECENT_TEXT_TIMER 3.0f
 
 typedef enum { AXIS_X, AXIS_Y } Axis;
 
@@ -82,6 +83,8 @@ bool is_action_pressed(Action);
 float center_on_screen(float, Axis);
 
 void draw_popover(char [], char [], Vector2);
+
+void draw_popup();
 
 extern Screen screen;
 extern Screen_name last_screen;

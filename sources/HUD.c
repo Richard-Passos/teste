@@ -8,14 +8,14 @@
 #include "raylib.h"
 #include "stdio.h"
 #include "player.h"
+#include "screen.h"
 
 char level_text[10];
 
 void draw_hud() {
     Player *player = &game_state.player;
 
-    draw_ability_popup();
-    draw_item_popup();
+    draw_popup();
 
     // ==============================
     // Life Bar

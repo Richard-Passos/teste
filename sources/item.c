@@ -88,24 +88,8 @@ void update_item_acquisition() {
             items[i].is_acquired = true;
             items[i].is_active = false;
 
-            sprintf(game_state.charm_text, "Amuleto adicionado ao inventário");
+            sprintf(game_state.recent_text, "Amuleto adicionado ao inventário");
             game_state.recent_text_timer = RECENT_ITEM_TIMER;
         }
     }
-}
-
-void draw_item_popup() {
-    if (game_state.recent_text_timer <= 0.0f) return;
-
-    game_state.recent_text_timer -= DELTA_TIME;
-
-    // Fundo
-    int w = MeasureText(game_state.charm_text, 22) + 40;
-    int h = 40;
-    int x = SCREEN_WIDTH / 2 - w / 2;
-    int y = 100;
-
-    DrawRectangle(x, y, w, h, (Color){0, 0, 0, 180});
-    DrawRectangleLines(x, y, w, h, WHITE);
-    DrawText(game_state.charm_text, x + 20, y + 10, 22, YELLOW);
 }
