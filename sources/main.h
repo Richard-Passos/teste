@@ -17,7 +17,7 @@ typedef enum {
 #define GRAVITY 800
 
 #define SCREEN_WIDTH 1200
-#define SCREEN_HEIGHT 700
+#define SCREEN_HEIGHT 800
 #define TILE_SIZE 96
 
 #define MAP_DEFAULT_PATH "../tunel"
