@@ -389,6 +389,10 @@ void handle_game_over_screen() {
     if (is_action_pressed(restart_action) || IsKeyPressed(KEY_ESCAPE)) {
         game_state.player.combat.life = game_state.player.combat.max_life;
         game_state.player.combat.souls = game_state.player.combat.max_souls;
+        game_state.player.speed.x = 0;
+        game_state.player.speed.y = 0;
+        game_state.player.combat.hurt_timer = 0;
+        game_state.player.combat.invuln_timer = 0;
         spawn_player_on_bench();
 
         set_screen(SCREEN_VILLAGE);

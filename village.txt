@@ -1,20 +1,15 @@
-p                                 p
-p                                 p
-p                                 p
-p                                 p
-p                                 p
-p                                 p
-p                                 p
-p                                 p
-p    j                             p
-p                                 p
-p                                p
-p                                 p
-p                                 p
-p  aaaaa hhh   b        s     b  p
-pppppppppppppppppppppppppppp   pppp
-                           p   p
-                           p   p
-                           p   p
-                           ptttp
-                           ppppp
+P                                 P
+P                                 P
+P                                 P
+P                                 P
+P                                 P
+P    J                            P
+P                                 P
+P                                 P
+P                                 P
+P                                 P
+P                  S            B P
+PPPPPPPPPPPPPPPPPPPPPPPPPPPP   PPPP
+                           P   P
+                           PTTTP
+                           PPPPP

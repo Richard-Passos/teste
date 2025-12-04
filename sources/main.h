@@ -14,7 +14,7 @@ typedef enum {
 
 #define NAME "Hollow"
 
-#define GRAVITY 500
+#define GRAVITY 800
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 800
