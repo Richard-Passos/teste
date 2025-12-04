@@ -64,17 +64,17 @@ void handle_player_horizontal_movement() {
     Player *player = &game_state.player;
 
     // Smooth movement to knockback
-    if (player->speed.x < -PLAYER_HOR_SPEED || player->speed.x > PLAYER_HOR_SPEED)
-        player->speed.x += PLAYER_HOR_SPEED * (player->speed.x > 0 ? -DELTA_TIME : DELTA_TIME);
+    if (player->speed.x < -PLAYER_SPEED || player->speed.x > PLAYER_SPEED)
+        player->speed.x += PLAYER_SPEED * (player->speed.x > 0 ? -DELTA_TIME : DELTA_TIME);
     else
         player->speed.x = 0;
 
     if (!is_ability_active(player->abilities.heal) && player->combat.hurt_timer <= 0) {
         if (IsKeyDown(KEY_LEFT)) {
-            player->speed.x = -PLAYER_HOR_SPEED;
+            player->speed.x = -PLAYER_SPEED;
             player->direction = DIR_LEFT;
         } else if (IsKeyDown(KEY_RIGHT)) {
-            player->speed.x = PLAYER_HOR_SPEED;
+            player->speed.x = PLAYER_SPEED;
             player->direction = DIR_RIGHT;
         }
     }
@@ -207,7 +207,7 @@ void handle_player_monsters_collision() {
         player->combat.hurt_timer = PLAYER_HURT_TIMER;
 
         // Knockback
-        player->speed.x = 1.15f * (player->direction == DIR_LEFT ? PLAYER_HOR_SPEED : -PLAYER_HOR_SPEED);
+        player->speed.x = 1.15f * (player->direction == DIR_LEFT ? PLAYER_SPEED : -PLAYER_SPEED);
         player->speed.y = -PLAYER_JUMP_SPEED;
         if (player->on_ground) {
             player->speed.y /= 2;

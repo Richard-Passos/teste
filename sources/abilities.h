@@ -8,9 +8,17 @@
 
 #define MAX_ABILITIES 99
 
+#define RECENT_ABILITY_TIMER 3.0f
+
+#define SOUL_PROJECTILE_COOLDOWN 3.0f
+#define SOUL_PROJECTILE_DAMAGE 3
+
 #define DASH_SPEED 1000.0f
 #define DASH_DURATION 0.15f
 #define DASH_COOLDOWN 1.0f
+
+#define HEAL_COOLDOWN 0.5f
+#define HEAL_TIMER 1.0f
 
 typedef struct {
     char label[100];

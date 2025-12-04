@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "config.h"
 #include "raylib.h"
 #include "player.h"
 #include "camera.h"

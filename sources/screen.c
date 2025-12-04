@@ -6,9 +6,6 @@
 #include "raylib.h"
 #include "screen.h"
 #include "game_state.h"
-#include "config.h"
-#include "camera.h"
-#include "bench.h"
 #include "item.h"
 #include "map.h"
 #include "shop.h"
@@ -37,6 +34,8 @@ int handle_screens() {
         handle_help_screen();
     else if (screen.name == SCREEN_PAUSED)
         handle_paused_screen();
+    else if (screen.name == SCREEN_CONFIRM_MENU)
+        handle_confirm_menu_screen();
     else if (screen.name == SCREEN_INVENTORY)
         handle_inventory_screen();
     else if (screen.name == SCREEN_WIN)
@@ -79,10 +78,12 @@ void handle_menu_screen() {
             (Rectangle){center_on_screen(639, AXIS_X), 25, 639, 241}
         );
 
-        add_action("Jogar", (Rectangle){center_on_screen(600, AXIS_X), 250, 600, 60}, "");
-        add_action("Carregar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 320, 600, 60}, "");
-        add_action("Ajuda", (Rectangle){center_on_screen(600, AXIS_X), 390, 600, 60}, "");
-        add_action("Sair", (Rectangle){center_on_screen(600, AXIS_X), 460, 600, 60}, "");
+        float center_x = center_on_screen(600, AXIS_X);
+
+        add_action("Jogar", (Rectangle){center_x, 250, 600, 60}, "");
+        add_action("Carregar Jogo", (Rectangle){center_x, 320, 600, 60}, "");
+        add_action("Ajuda", (Rectangle){center_x, 390, 600, 60}, "");
+        add_action("Sair", (Rectangle){center_x, 460, 600, 60}, "");
 
 
         screen.is_loaded = true;
@@ -117,13 +118,15 @@ void handle_menu_screen() {
 }
 
 void handle_paused_screen() {
+    float center_x = center_on_screen(600, AXIS_X);
+
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Continuar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60}, "");
-        add_action("Inventario", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60}, "");
-        add_action("Salvar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 290, 600, 60}, "");
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 360, 600, 60}, "");
+        add_action("Continuar Jogo", (Rectangle){center_x, 150, 600, 60}, "");
+        add_action("Inventario", (Rectangle){center_x, 220, 600, 60}, "");
+        add_action("Salvar Jogo", (Rectangle){center_x, 290, 600, 60}, "");
+        add_action("Voltar ao Menu", (Rectangle){center_x, 360, 600, 60}, "");
 
         screen.is_loaded = true;
     }
@@ -150,18 +153,57 @@ void handle_paused_screen() {
     } else if (is_action_pressed(save_action)) {
         save_game_state();
     } else if (is_action_pressed(back_menu_action)) {
-        save_game_state();
-        set_screen(SCREEN_MENU);
+        set_screen(SCREEN_CONFIRM_MENU);
     }
     //----------------------------------------------------------------------------------
 }
 
+void handle_confirm_menu_screen() {
+    // Load
+    //----------------------------------------------------------------------------------
+    if (!screen.is_loaded) {
+        float center_x = center_on_screen(600, AXIS_X);
+
+        add_action("Sim, Voltar ao Menu", (Rectangle){center_x, 150, 600, 60}, "");
+        add_action("Cancelar", (Rectangle){center_x, 220, 600, 60}, "");
+
+        screen.is_loaded = true;
+    }
+    //----------------------------------------------------------------------------------
+
+    Action confirm_action = screen_actions[0],
+            cancel_action = screen_actions[1];
+
+    BeginDrawing();
+    ClearBackground(GREEN);
+    draw_actions();
+
+    DrawText("TEM CERTEZA QUE DESEJA VOLTAR AO MENU?", 16, 16, 32, WHITE);
+    DrawText("O jogo será salvo automaticamente, mas você retornará no último banco descansado.", 16, 56, 24, WHITE);
+    EndDrawing();
+
+    // Actions
+    //----------------------------------------------------------------------------------
+    if (is_action_pressed(confirm_action)) {
+        save_game_state();
+        set_screen(SCREEN_MENU);
+    } else if (is_action_pressed(cancel_action) || IsKeyPressed(KEY_ESCAPE)) {
+        set_screen(SCREEN_PAUSED);
+    }
+    //----------------------------------------------------------------------------------
+}
+
+
 void handle_inventory_screen() {
-    const int MAX_CHARMS_ACTIVATED = 3;
-    int active_charms_count = 0;
+    int active_items_count = 0;
 
     Item *items = game_state.items;
     int *items_count = &game_state.items_count;
+
+    for (int i = 0; i < screen_actions_count; i++)
+        if (is_item_active(&items[i])) active_items_count++;
+
+    Vector2 mouse = GetMousePosition();
 
     // Load
     //----------------------------------------------------------------------------------
@@ -186,91 +228,61 @@ void handle_inventory_screen() {
     BeginDrawing();
     ClearBackground(RED);
     DrawText("Amuletos ativos:", 32, 110, 24, WHITE);
-    for (int i = 0; i < MAX_CHARMS_ACTIVATED; i++)
+    for (int i = 0; i < MAX_ITEMS_ACTIVATED; i++)
         DrawRectangle(32 + i * 74, 150, 64, 64, (Color){0, 0, 0, 100});
-
-    for (int i = 0; i < *items_count; i++) {
-        Item *item = &items[i];
-
-        if (!item->is_acquired || !item->is_active) continue;
-
-        for (int j = 0; j < screen_actions_count - 1; j++) {
-            Action action = screen_actions[j];
-
-            if (strcmp(item->label, action.label) != 0) continue;
-
-            action.hitbox.x = 32 + active_charms_count++ * 74;
-            action.hitbox.y = 150;
-
-            draw_action(action);
-        }
-    }
 
     DrawText("Amuletos adiquiridos:", 32, 310, 24, WHITE);
     for (int i = 0; i < *items_count; i++)
         DrawRectangle(32 + i * 74, 350, 64, 64, (Color){0, 0, 0, 100});
 
-    draw_actions();
+    // Charms
+    int active_items_iterator = 0;
+    for (int i = *items_count - 1; i >= 0; i--) {
+        Item *item = &items[i];
 
-    Vector2 mouse = GetMousePosition();
+        if (!item->is_acquired) continue;
 
-    for (int i = 0; i < screen_actions_count - 1; i++) {
-        Action action = screen_actions[i];
+        for (int j = 0; j < screen_actions_count; j++) {
+            Action action = screen_actions[j];
 
-        if (CheckCollisionPointRec(mouse, action.hitbox)) {
+            if (strcmp(item->texture_path, action.texture_path) != 0) continue;
 
-            // Encontrar item correspondente
-            for (int j = 0; j < *items_count; j++) {
-                Item *item = &items[j];
+            if (item->is_active) {
+                // Active charms
+                Action active_action = action;
+                active_action.hitbox.x = 32 + (MAX_ITEMS_ACTIVATED - 1 - active_items_iterator++) * 74;
+                active_action.hitbox.y = 150;
 
-                if (item->is_acquired && strcmp(item->label, action.label) == 0) {
+                draw_action(active_action, true);
+                if (CheckCollisionPointRec(mouse, active_action.hitbox))
+                    draw_popover(item->label, item->description, mouse);
+                if (game_state.player.is_sitting && is_action_pressed(active_action)) {
+                    // Toggle item
+                    item->is_active = false;
+                    set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
+                }
+            }
 
-                        const char *name = item->label;
-                        const char *desc = item->description;
-
-
-                        int w = 400;
-                        int h = 60;
-
-                        int x = mouse.x + 16;
-                        int y = mouse.y + 16;
-
-                        DrawRectangle(x, y, w, h, (Color){0, 0, 0, 200});
-                        DrawRectangleLines(x, y, w, h, WHITE);
-
-                        DrawText(name, x + 10, y + 5, 20, YELLOW);
-                        DrawText(desc, x + 10, y + 30, 18, WHITE);
-
-                        break;
-                    }
+            // Acquired charms
+            draw_action(action, true);
+            if (CheckCollisionPointRec(mouse, action.hitbox))
+                draw_popover(item->label, item->description, mouse);
+            if (game_state.player.is_sitting && is_action_pressed(action)) {
+                // Toggle item
+                item->is_active = active_items_count >= MAX_ITEMS_ACTIVATED ? false : !item->is_active;
+                set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
             }
         }
     }
+
+    // Go back action
+    draw_action(screen_actions[screen_actions_count - 1], false);
 
     DrawText("INVENTORY", 16, 16, 32, WHITE);
     EndDrawing();
 
     // Actions
     //----------------------------------------------------------------------------------
-    for (int i = 0; i < *items_count; i++) {
-        Item *item = &items[i];
-
-        if (!item->is_acquired) continue;
-
-        for (int j = 0; j < screen_actions_count - 1; j++) {
-            Action action = screen_actions[i],
-                    active_action = action;
-
-            if (strcmp(item->label, action.label) != 0) continue;
-
-            if (game_state.player.is_sitting && is_action_pressed(action)) {
-                // Toggle item
-                item->is_active = active_charms_count >= MAX_CHARMS_ACTIVATED ? false : !item->is_active;
-                set_screen(SCREEN_INVENTORY); // Reset screen to reload actions
-            }
-        }
-    }
-
     if (is_action_pressed(go_back) || IsKeyPressed(KEY_ESCAPE))
         set_screen(last_screen);
     //----------------------------------------------------------------------------------
@@ -313,9 +325,11 @@ void handle_win_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Recomecar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60}, "");
-        add_action("Carregar Jogo", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60}, "");
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 290, 600, 60}, "");
+        float center_x = center_on_screen(600, AXIS_X);
+
+        add_action("Recomecar Jogo", (Rectangle){center_x, 150, 600, 60}, "");
+        add_action("Carregar Jogo", (Rectangle){center_x, 220, 600, 60}, "");
+        add_action("Voltar ao Menu", (Rectangle){center_x, 290, 600, 60}, "");
 
         screen.is_loaded = true;
     }
@@ -351,8 +365,10 @@ void handle_game_over_screen() {
     // Load
     //----------------------------------------------------------------------------------
     if (!screen.is_loaded) {
-        add_action("Tentar de Novo", (Rectangle){center_on_screen(600, AXIS_X), 150, 600, 60}, "");
-        add_action("Voltar ao Menu", (Rectangle){center_on_screen(600, AXIS_X), 220, 600, 60}, "");
+        float center_x = center_on_screen(600, AXIS_X);
+
+        add_action("Tentar de Novo", (Rectangle){center_x, 150, 600, 60}, "");
+        add_action("Voltar ao Menu", (Rectangle){center_x, 220, 600, 60}, "");
 
         screen.is_loaded = true;
     }
@@ -424,7 +440,7 @@ void handle_shop_screen() {
         };
         player->should_keep_pos = true;
 
-        set_screen(last_screen);
+        set_screen(SCREEN_VILLAGE);
     } else if (handle_shop_npc_interaction())
         set_screen(SCREEN_SHOP_NPC);
     //----------------------------------------------------------------------------------
@@ -432,6 +448,9 @@ void handle_shop_screen() {
 
 void handle_shop_npc_screen() {
     Player *player = &game_state.player;
+    Item *items = game_state.items;
+    int *items_count = &game_state.items_count;
+    Vector2 mouse = GetMousePosition();
 
     // Load
     //----------------------------------------------------------------------------------
@@ -441,8 +460,7 @@ void handle_shop_npc_screen() {
             (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}
         );
 
-        Item *items = game_state.items;
-        int *items_count = &game_state.items_count;
+        float center_x = center_on_screen(600, AXIS_X);
 
         int buyable_items_count = 0;
         for (int i = 0; i < *items_count; i++)
@@ -453,8 +471,9 @@ void handle_shop_npc_screen() {
                 add_action(
                     label,
                     (Rectangle){
-                        center_on_screen(600, AXIS_X), 150 + (buyable_items_count * 70), 600, 60
-                    }, ""
+                        center_x, 150 + (buyable_items_count * 70), 600, 60
+                    },
+                    items[i].texture_path
                 );
 
                 buyable_items_count++;
@@ -463,7 +482,7 @@ void handle_shop_npc_screen() {
         add_action(
             "<- Voltar",
             (Rectangle){
-                center_on_screen(600, AXIS_X), 150 + (buyable_items_count * 80), 600, 60
+                center_x, 150 + (buyable_items_count * 80), 600, 60
             }, "");
 
         screen.is_loaded = true;
@@ -474,7 +493,32 @@ void handle_shop_npc_screen() {
 
     BeginDrawing();
     draw_assets();
-    draw_actions();
+    for (int i = screen_actions_count - 1; i >= 0; i--) {
+        Action action = screen_actions[i];
+        Item *item = NULL;
+
+        draw_action(action, false);
+
+        // Get item
+        for (int j = 0; j < *items_count; j++)
+            if (items[j].is_buyable && !items[j].is_acquired) {
+                if (strcmp(items[j].texture_path, action.texture_path) == 0) {
+                    item = &items[j];
+                    break;
+                }
+            }
+
+        if (item == NULL) continue;
+
+        // Buy item
+        if (is_action_pressed(action) && player->money >= item->cost) {
+            add_player_money(-item->cost);
+            item->is_acquired = true;
+            set_screen(SCREEN_SHOP_NPC); // Reset screen to reload actions
+        }
+        if (CheckCollisionPointRec(mouse, action.hitbox))
+            draw_popover(item->label, item->description, mouse);
+    }
 
     DrawText("SHOP OWNER", 16, 16, 32, WHITE);
 
@@ -504,34 +548,6 @@ void handle_shop_npc_screen() {
 
     // Actions
     //----------------------------------------------------------------------------------
-    for (int i = 0; i < (screen_actions_count - 1); i++) {
-        Action action = screen_actions[i];
-        Item *item = NULL;
-
-        if (is_action_pressed(action)) {
-            // Get item
-            //----------------------------------------------------------------------------------
-            int buyable_items_count = 0;
-            for (int j = 0; j < game_state.items_count; j++)
-                if (game_state.items[j].is_buyable && !game_state.items[j].is_acquired) {
-                    if (buyable_items_count++ == action.index) {
-                        item = &game_state.items[j];
-                        break;
-                    }
-                }
-            //----------------------------------------------------------------------------------
-
-            // Buy item
-            //----------------------------------------------------------------------------------
-            if (item != NULL && player->money >= item->cost) {
-                add_player_money(item->cost);
-                item->is_acquired = true;
-                set_screen(SCREEN_SHOP_NPC); // Reset screen to reload actions
-            }
-            //----------------------------------------------------------------------------------
-        }
-    }
-
     if (is_action_pressed(go_back) || IsKeyPressed(KEY_ESCAPE))
         set_screen(last_screen);
     //----------------------------------------------------------------------------------
@@ -590,10 +606,10 @@ void add_action(char label[], Rectangle hitbox, char texture_path[]) {
 
 void draw_actions() {
     for (int i = 0; i < screen_actions_count; i++)
-        draw_action(screen_actions[i]);
+        draw_action(screen_actions[i], strcmp(screen_actions[i].texture_path, "") != 0);
 }
 
-void draw_action(Action action) {
+void draw_action(Action action, bool draw_as_texture) {
     bool is_hovered = CheckCollisionPointRec(GetMousePosition(), action.hitbox),
             is_active = action_active_index == action.index;
 
@@ -604,7 +620,7 @@ void draw_action(Action action) {
     int text_x = action.hitbox.x + action.hitbox.width * .1;
     int text_y = action.hitbox.y + (action.hitbox.height - font_count) / 2;
 
-    if (strcmp(action.texture_path, "") == 0) {
+    if (!draw_as_texture) {
         DrawText(action.label, text_x, text_y, font_count, WHITE);
     } else {
         DrawTexturePro(
@@ -632,4 +648,12 @@ float center_on_screen(float size, Axis axis) {
     return (axis == AXIS_X ? SCREEN_WIDTH : SCREEN_HEIGHT) / 2.0f - size / 2.0f;
 }
 
+void draw_popover(char label[], char description[], Vector2 mouse) {
+    int width = 400, height = 60;
 
+    DrawRectangle(mouse.x + 16, mouse.y + 16, width, height, (Color){0, 0, 0, 200});
+    DrawRectangleLines(mouse.x + 16, mouse.y + 16, width, height, WHITE);
+
+    DrawText(label, mouse.x + 26, mouse.y + 21, 20, YELLOW);
+    DrawText(description, mouse.x + 26, mouse.y + 46, 18, WHITE);
+}

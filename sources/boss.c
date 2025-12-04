@@ -4,7 +4,6 @@
 
 #include "boss.h"
 #include "raylib.h"
-#include "config.h"
 #include <math.h>
 #include <minwindef.h>
 #include <stdio.h>
@@ -194,6 +193,8 @@ void handle_boss_death() {
 
     boss.life = 0;
     boss.is_active = false;
+    game_state.level++;
+    set_screen(SCREEN_VILLAGE);
 
     add_player_money(GetRandomValue(150, 250));
 }

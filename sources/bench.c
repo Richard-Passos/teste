@@ -31,7 +31,7 @@ void draw_benches() {
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, benches[i].hitbox)) {
             DrawText("Descansar",
-                     benches[i].hitbox.x - 50,
+                     benches[i].hitbox.x - 25,
                      benches[i].hitbox.y - 50,
                      32, WHITE);
 

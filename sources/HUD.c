@@ -4,7 +4,6 @@
 
 #include <math.h>
 
-#include "config.h"
 #include "game_state.h"
 #include "raylib.h"
 #include "stdio.h"

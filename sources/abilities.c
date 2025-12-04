@@ -28,16 +28,15 @@ void draw_abilities() {
     for (int i = 0; i < *abilities_count; i++) {
         Ability ability = abilities[i];
 
-        if (!ability.is_acquired)
-        {
+        if (!ability.is_acquired) {
             DrawTexturePro
             (
-            ability.texture,
-            (Rectangle){0, 0, ability.texture.width, ability.texture.height},
-            ability.hitbox,
-            (Vector2){0, 0},
-            0.0f,
-            BLUE
+                ability.texture,
+                (Rectangle){0, 0, ability.texture.width, ability.texture.height},
+                ability.hitbox,
+                (Vector2){0, 0},
+                0.0f,
+                BLUE
             );
 
             if (CheckCollisionRecs(game_state.player.hitbox, ability.hitbox)) {
@@ -86,21 +85,20 @@ void update_ability_acquisition() {
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++) {
-        if (!abilities[i].is_acquired)
-        {
+        if (!abilities[i].is_acquired) {
             if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
                 abilities[i].is_acquired = true;
                 abilities[i].is_active = false;
 
                 snprintf(
-                game_state.recent_ability_text,
-                sizeof(game_state.recent_ability_text),
-                "%s: %s",
-                abilities[i].label,
-                abilities[i].description
+                    game_state.recent_ability_text,
+                    sizeof(game_state.recent_ability_text),
+                    "%s: %s",
+                    abilities[i].label,
+                    abilities[i].description
                 );
 
-                game_state.recent_ability_timer = 2.5f;
+                game_state.recent_ability_timer = RECENT_ABILITY_TIMER;
             }
         }
     }
@@ -109,13 +107,12 @@ void update_ability_acquisition() {
 void draw_ability_popup() {
     if (game_state.recent_ability_timer <= 0.0f) return;
 
-    float dt = GetFrameTime();
-    game_state.recent_ability_timer -= dt;
+    game_state.recent_ability_timer -= DELTA_TIME;
 
     // Fundo
     int w = MeasureText(game_state.recent_ability_text, 22) + 40;
     int h = 40;
-    int x = GetScreenWidth() / 2 - w / 2;
+    int x = SCREEN_WIDTH / 2 - w / 2;
     int y = 100;
 
     DrawRectangle(x, y, w, h, (Color){0, 0, 0, 180});
@@ -125,9 +122,6 @@ void draw_ability_popup() {
 
 
 void soul_projectile_ability() {
-    const float SOUL_PROJECTILE_COOLDOWN = 3.0f;
-    const int SOUL_PROJECTILE_DAMAGE = 3;
-
     Player *player = &game_state.player;
     Ability *soul_projectile = player->abilities.soul_projectile;
 
@@ -143,7 +137,7 @@ void soul_projectile_ability() {
 
             int proj_width = TILE_SIZE * 1.25;
             int proj_height = TILE_SIZE;
-            float proj_speed = (player->direction == DIR_LEFT ? -PLAYER_HOR_SPEED : PLAYER_HOR_SPEED) * 1.5;
+            float proj_speed = (player->direction == DIR_LEFT ? -PLAYER_SPEED : PLAYER_SPEED) * 1.5;
 
             soul_projectile->is_active = true;
             soul_projectile->cooldown = SOUL_PROJECTILE_COOLDOWN;
@@ -220,9 +214,6 @@ void dash_ability() {
 }
 
 void heal_ability() {
-    const float HEAL_COOLDOWN = 1.0f;
-    const float HEAL_TIMER = 1.0f;
-
     Player *player = &game_state.player;
     Ability *heal = player->abilities.heal;
 
@@ -271,8 +262,6 @@ void heal_ability() {
 }
 
 void draw_healing_effect() {
-    const float HEAL_TIMER = 1.0f;
-
     Player *player = &game_state.player;
     Ability *heal = player->abilities.heal;
 

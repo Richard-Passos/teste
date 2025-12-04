@@ -10,7 +10,7 @@ int monsters_count = 0;
 void add_monster(int x, int y) {
     if (monsters_count < MAX_MONSTERS) {
         monsters[monsters_count++] = (Monster){
-            .speed = {LAND_MONSTER_HOR_SPEED, 0},
+            .speed = {LAND_MONSTER_SPEED, 0},
             .hitbox = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE},
             .direction = DIR_RIGHT,
             .is_active = true,

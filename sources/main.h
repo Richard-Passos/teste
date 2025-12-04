@@ -14,11 +14,11 @@ typedef enum {
 
 #define NAME "Hollow"
 
-#define GRAVITY 600
+#define GRAVITY 500
 
 #define SCREEN_WIDTH 1200
 #define SCREEN_HEIGHT 800
-#define TILE_SIZE 64
+#define TILE_SIZE 96
 
 #define MAP_DEFAULT_PATH "../map"
 #define VILLAGE_FILE_PATH "../village.txt"
