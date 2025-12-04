@@ -6,7 +6,7 @@
 #include "raylib.h"
 #include "enemies.h"
 #include "math.h"
-#include "config.h"
+#include "main.h"
 #include "game_state.h"
 #include "boss.h"
 
@@ -24,30 +24,30 @@ void draw_abilities() {
     Ability *abilities = game_state.abilities;
     int *abilities_count = &game_state.abilities_count;
 
-    bool is_colliding = false;
 
     for (int i = 0; i < *abilities_count; i++) {
-        if (abilities[i].is_acquired || !abilities[i].is_active) continue;
+        Ability ability = abilities[i];
 
-        DrawTexturePro(
-            abilities[i].texture,
-            (Rectangle){0, 0, abilities[i].texture.width, abilities[i].texture.height},
-            abilities[i].hitbox,
-            (Vector2){0, 0},
-            0.0f,
-            BLUE
-        );
-
-        if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox)) {
-            DrawText(
-                "Inspecionar",
-                abilities[i].hitbox.x - 50,
-                abilities[i].hitbox.y - 50,
-                30,
-                WHITE
+        if (!ability.is_acquired) {
+            DrawTexturePro
+            (
+                ability.texture,
+                (Rectangle){0, 0, ability.texture.width, ability.texture.height},
+                ability.hitbox,
+                (Vector2){0, 0},
+                0.0f,
+                BLUE
             );
 
-            is_colliding = true;
+            if (CheckCollisionRecs(game_state.player.hitbox, ability.hitbox)) {
+                DrawText(
+                    "Inspecionar",
+                    ability.hitbox.x - 50,
+                    ability.hitbox.y - 50,
+                    30,
+                    WHITE
+                );
+            }
         }
     }
 }
@@ -76,213 +76,146 @@ Ability *get_available_ability() {
     return NULL;
 }
 
+bool is_ability_active(Ability *ability) {
+    return ability != NULL && ability->is_acquired && ability->is_active;
+}
+
 void update_ability_acquisition() {
     Ability *abilities = game_state.abilities;
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++) {
-        if (abilities[i].is_acquired) continue;
+        if (!abilities[i].is_acquired) {
+            if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
+                abilities[i].is_acquired = true;
+                abilities[i].is_active = false;
 
-        if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
-            abilities[i].is_acquired = true;
-            abilities[i].is_active = false;
+                snprintf(
+                    game_state.recent_ability_text,
+                    sizeof(game_state.recent_ability_text),
+                    "%s: %s",
+                    abilities[i].label,
+                    abilities[i].description
+                );
+
+                game_state.recent_ability_timer = RECENT_ABILITY_TIMER;
+            }
         }
     }
 }
 
+void draw_ability_popup() {
+    if (game_state.recent_ability_timer <= 0.0f) return;
+
+    game_state.recent_ability_timer -= DELTA_TIME;
+
+    // Fundo
+    int w = MeasureText(game_state.recent_ability_text, 22) + 40;
+    int h = 40;
+    int x = SCREEN_WIDTH / 2 - w / 2;
+    int y = 100;
+
+    DrawRectangle(x, y, w, h, (Color){0, 0, 0, 180});
+    DrawRectangleLines(x, y, w, h, WHITE);
+    DrawText(game_state.recent_ability_text, x + 20, y + 10, 22, YELLOW);
+}
+
+
 void soul_projectile_ability() {
     Player *player = &game_state.player;
     Ability *soul_projectile = player->abilities.soul_projectile;
-    float delta_time = GetFrameTime();
 
     if (soul_projectile == NULL || !soul_projectile->is_acquired) return;
 
-    // ===========================================
-    // HABILIDADE (F) - Projétil de almas
-    // ===========================================
+    // Init soul projectile
+    if (IsKeyPressed(KEY_F) && !soul_projectile->is_active) {
+        int souls_cost = player->combat.max_souls / 3;
 
-    if (!soul_projectile->is_active && IsKeyPressed(KEY_F)) {
-        if (player->souls >= player->max_souls / 3.0) {
-            player->souls -= player->max_souls / 3.0; // gasta souls
-            if (player->souls < 0) player->souls = 0;
+        if (player->combat.souls >= souls_cost) {
+            player->combat.souls -= souls_cost;
+            if (player->combat.souls < 0) player->combat.souls = 0;
+
+            int proj_width = TILE_SIZE * 1.25;
+            int proj_height = TILE_SIZE;
+            float proj_speed = (player->direction == DIR_LEFT ? -PLAYER_SPEED : PLAYER_SPEED) * 1.5;
 
             soul_projectile->is_active = true;
-            soul_projectile->lifetime = 3.0f;
-
-            int projWidth = TILE_SIZE * 1.25;
-            int projHeight = TILE_SIZE;
-            float projSpeed = PLAYER_HOR_SPEED * 1.5;
-
-            if (player->facing_right) {
-                soul_projectile->hitbox = (Rectangle){
-                    player->hitbox.x + player->hitbox.width,
-                    player->hitbox.y + player->hitbox.height / 2 - projHeight / 2,
-                    projWidth,
-                    projHeight
-                };
-                soul_projectile->speed = (Vector2){projSpeed, 0};
-            } else {
-                soul_projectile->hitbox = (Rectangle){
-                    player->hitbox.x - projWidth,
-                    player->hitbox.y + player->hitbox.height / 2 - projHeight / 2,
-                    projWidth,
-                    projHeight
-                };
-                soul_projectile->speed = (Vector2){-projSpeed, 0};
-            }
+            soul_projectile->cooldown = SOUL_PROJECTILE_COOLDOWN;
+            soul_projectile->hitbox = (Rectangle){
+                player->hitbox.x + (player->direction == DIR_RIGHT ? player->hitbox.width : proj_width * -1),
+                player->hitbox.y + player->hitbox.height / 2.0 - proj_height / 2.0,
+                proj_width,
+                proj_height
+            };
+            soul_projectile->speed = (Vector2){proj_speed, 0};
         }
     }
 
-    // Atualiza o projétil se estiver ativo
+    // Update soul projectile
     if (soul_projectile->is_active) {
-        // Desativa depois de 3s
-        soul_projectile->lifetime -= delta_time;
-        if (soul_projectile->lifetime <= 0) {
+        soul_projectile->hitbox.x += soul_projectile->speed.x * DELTA_TIME;
+
+        // Pass through
+        handle_collision_with_monster(soul_projectile->hitbox, SOUL_PROJECTILE_DAMAGE);
+        handle_collision_with_boss(soul_projectile->hitbox, SOUL_PROJECTILE_DAMAGE);
+
+        if (handle_collision_with_walls(soul_projectile->hitbox))
             soul_projectile->is_active = false;
-            return;
-        }
 
-        soul_projectile->hitbox.x += soul_projectile->speed.x * delta_time;
-
-        bool hitSomething = false;
-
-        // Checa colisão com parede
-        for (int i = 0; i < walls_count; i++) {
-            if (CheckCollisionRecs(soul_projectile->hitbox, walls[i].hitbox)) {
-                hitSomething = true;
-                break;
-            }
-        }
-
-        // Checa colisão com monstros
-        for (int j = 0; j < monsters_count; j++) {
-            if (CheckCollisionRecs(soul_projectile->hitbox, monsters[j].hitbox)) {
-                monsters[j].life -= 3; // 3 de dano fixo
-                monsters[j].hurt_timer = 0.1f;
-                monsters[j].invulnerable = true;
-                monsters[j].invuln_time = 0.3f;
-
-                if (monsters[j].life <= 0) {
-                    monsters[j].hitbox.width = 0;
-                    monsters[j].hitbox.height = 0;
-
-                    int gained = GetRandomValue(35, 45);
-                    player->money += gained;
-
-                    player->last_money_gain = gained;
-                    player->money_gain_timer = 1.5f;
-                }
-
-                hitSomething = true;
-                break; // projétil some após acertar
-            }
-        }
-
-
-        if (boss.active && soul_projectile->is_active &&
-            CheckCollisionRecs(soul_projectile->hitbox, boss.hitbox)) {
-            if (!boss.invulnerable) {
-                boss.life -= 3;
-
-                boss.hurt_timer = 0.12f;
-                boss.invulnerable = true;
-                boss.invuln_time = 0.25f;
-
-                if (boss.life <= 0) {
-                    boss.active = false;
-                }
-            }
-
-            soul_projectile->is_active = false;
-            return;
-        }
-
-
-        if (hitSomething)
+        if (soul_projectile->cooldown > 0)
+            soul_projectile->cooldown -= DELTA_TIME;
+        else
             soul_projectile->is_active = false;
     }
 }
 
 void dash_ability() {
-    const float DASH_SPEED = 1000.0f;
-    const float DASH_DURATION = 0.15f;
-    const float DASH_COOLDOWN = 1.0f;
-
     Player *player = &game_state.player;
     Ability *dash = player->abilities.dash;
-    float delta_time = GetFrameTime();
 
     if (dash == NULL || !dash->is_acquired) return;
 
-    // Atualiza cooldown
     if (dash->cooldown > 0.0f)
-        dash->cooldown -= delta_time;
-
-    // Inicia o dash
-    if (IsKeyPressed(KEY_C) &&
-        dash->cooldown <= 0.0f &&
-        !dash->is_active) {
+        dash->cooldown -= DELTA_TIME;
+    else if (IsKeyPressed(KEY_C) && !dash->is_active) {
         dash->is_active = true;
         dash->timer = DASH_DURATION;
         dash->cooldown = DASH_COOLDOWN;
         dash->hit_confirmed = false;
     }
 
-    // Se estiver em dash
-    if (dash->is_active) {
-        dash->timer -= delta_time;
+    if (!dash->is_active) return;
 
-        float dir = player->facing_right ? 1.0f : -1.0f;
-        float dash_speed = dir * DASH_SPEED;
+    float dash_speed = DASH_SPEED * (player->direction == DIR_RIGHT ? 1.0f : -1.0f);
 
-        player->speed.y = 0.0f;
-        player->speed.x = dash_speed;
+    player->speed.y = 0.0f;
 
-        // Movimentação pixel-a-pixel
-        float dx = dash_speed * delta_time;
-        int step = (dx > 0) ? 1 : -1;
-        float moved = 0;
+    // Pixel Movement
+    float dx = dash_speed * DELTA_TIME;
+    int step = (dx > 0) ? 1 : -1;
+    float moved = 0;
 
-        while (fabsf(moved) < fabsf(dx)) {
-            player->hitbox.x += step;
-            moved += step;
+    while (fabsf(moved) < fabsf(dx)) {
+        player->hitbox.x += step;
+        moved += step;
 
-            // Colisão com paredes
-            bool collided = false;
-            for (int w = 0; w < walls_count; w++) {
-                if (CheckCollisionRecs(player->hitbox, walls[w].hitbox)) {
-                    collided = true;
-                    break;
-                }
-            }
-
-            if (collided) {
-                // Volta 1 pixel
-                player->hitbox.x -= step;
-
-                // Cancela dash
-                dash->is_active = false;
-                dash->timer = 0.0f;
-                player->speed.x = 0;
-                break;
-            }
-        }
-
-        // Se esgotou o tempo, cancela
-        if (dash->timer <= 0.0f) {
-            dash->is_active = false;
-            player->speed.x = 0;
+        if (handle_collision_with_walls(player->hitbox) || handle_collision_with_monster(player->hitbox, 0)) {
+            player->hitbox.x -= step;
+            dash->timer = 0.0f;
+            // Knockback
+            break;
         }
     }
+
+    if (dash->timer > 0)
+        dash->timer -= DELTA_TIME;
+    else
+        dash->is_active = false;
 }
 
 void heal_ability() {
-    const float HEAL_COOLDOWN = 1.0f;
-    const float HEAL_TIMER = 1.0f;
-
     Player *player = &game_state.player;
     Ability *heal = player->abilities.heal;
-    float delta_time = GetFrameTime();
 
     if (heal == NULL || !heal->is_acquired) return;
 
@@ -290,7 +223,7 @@ void heal_ability() {
 
     // Atualiza cooldown
     if (heal->cooldown > 0.0f) {
-        heal->cooldown -= delta_time;
+        heal->cooldown -= DELTA_TIME;
 
         if (heal->cooldown < 0.0f) {
             heal->cooldown = 0.0f;
@@ -298,7 +231,7 @@ void heal_ability() {
     }
 
     // Só pode curar se estiver PARADO e no CHÃO
-    if (player->souls >= 33 &&
+    if (player->combat.souls >= 33 &&
         heal->cooldown == 0.0f &&
         is_player_stopped &&
         player->on_ground &&
@@ -306,7 +239,7 @@ void heal_ability() {
         heal->is_active = true;
 
         if (heal->timer > 0.0f) {
-            heal->timer -= delta_time;
+            heal->timer -= DELTA_TIME;
 
             if (heal->timer < 0.0f)
                 heal->timer = 0.0f;
@@ -317,7 +250,7 @@ void heal_ability() {
                                        ? 0
                                        : 1;
 
-            player->souls -= 33;
+            player->combat.souls -= 33;
             heal->cooldown = HEAL_COOLDOWN;
             heal->timer = HEAL_TIMER;
             heal->is_active = false;
@@ -329,8 +262,6 @@ void heal_ability() {
 }
 
 void draw_healing_effect() {
-    const float HEAL_TIMER = 1.0f;
-
     Player *player = &game_state.player;
     Ability *heal = player->abilities.heal;
 
@@ -361,10 +292,9 @@ void double_jump_ability() {
 
     if (double_jump == NULL || !double_jump->is_acquired) return;
 
-    bool is_falling = (player->speed.y > 0 && !player->on_ground);
-
-    if ((IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z)) && player->combat.push_timer <= 0.0f) {
-        if (!player->on_ground && player->jump_count == 1 || (player->jump_count == 0 && is_falling)) {
+    if ((IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z))) {
+        if (!player->on_ground
+            && (player->jump_count == 1 || (player->jump_count == 0 && player->speed.y > 0))) {
             player->speed.y = -PLAYER_JUMP_SPEED;
             player->jump_count = 2;
         }

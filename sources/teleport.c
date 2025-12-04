@@ -2,7 +2,6 @@
 // Created by richa on 16/11/2025.
 //
 
-#include "config.h"
 #include "teleport.h"
 #include "game_state.h"
 

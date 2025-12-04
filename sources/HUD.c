@@ -4,7 +4,6 @@
 
 #include <math.h>
 
-#include "config.h"
 #include "game_state.h"
 #include "raylib.h"
 #include "stdio.h"
@@ -19,8 +18,12 @@ void draw_hud() {
     sprintf(moneyText, "Moedas: %d", player->money);
     DrawText(moneyText, 16, SCREEN_HEIGHT - 40, 30, BLACK);
 
+    draw_ability_popup();
+
     // Desenha o ganho
     if (player->money_gain_timer > 0.0f) {
+        player->money_gain_timer -= DELTA_TIME;
+
         // Fazer sumir depois de um tempo
         float alpha = player->money_gain_timer / 1.5f;
         int transparency = (int) (255 * alpha);
@@ -36,8 +39,8 @@ void draw_hud() {
     // ==============================
     // Barra de Almas
     // ==============================
-    float maxSouls = player->max_souls;
-    float souls = player->souls;
+    float maxSouls = player->combat.max_souls;
+    float souls = player->combat.souls;
 
     float barWidth = 200;
 

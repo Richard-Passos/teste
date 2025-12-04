@@ -18,13 +18,14 @@ typedef struct {
     int abilities_count;
     Item items[MAX_ITEMS];
     int items_count;
+
+    char recent_ability_text[200];
+    float recent_ability_timer;
 } Game_state;
 
 bool save_game_state();
 
 bool load_game_state();
-
-void set_game_state(Game_state);
 
 void reset_game_state();
 

@@ -26,7 +26,6 @@ endif ()
 
 add_executable(${PROJECT_NAME} sources/main.c
         sources/player.h
-        sources/config.h
         sources/player.c
         sources/camera.c
         sources/camera.h
@@ -54,6 +53,7 @@ add_executable(${PROJECT_NAME} sources/main.c
         sources/shop.h
         sources/boss.h
         sources/boss.c
+        sources/main.h
 )
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib)

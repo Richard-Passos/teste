@@ -16,14 +16,18 @@ typedef struct {
 } Asset;
 
 typedef struct {
-    char label[150];
-    Rectangle hitbox;
     int index;
+    char id[50];
+    char label[150];
+    char texture_path[150];
+    Rectangle hitbox;
+    Texture2D texture;
 } Action;
 
 typedef enum {
     SCREEN_MENU,
     SCREEN_PAUSED,
+    SCREEN_CONFIRM_MENU,
     SCREEN_INVENTORY,
     SCREEN_START,
     SCREEN_WIN,
@@ -45,6 +49,8 @@ void handle_menu_screen();
 
 void handle_paused_screen();
 
+void handle_confirm_menu_screen();
+
 void handle_inventory_screen();
 
 void handle_help_screen();
@@ -65,15 +71,17 @@ void add_asset(char [], Rectangle);
 
 void draw_assets();
 
-void add_action(char [], Rectangle);
+void add_action(char [], Rectangle, char []);
 
 void draw_actions();
 
-void draw_action(Action);
+void draw_action(Action, bool);
 
 bool is_action_pressed(Action);
 
 float center_on_screen(float, Axis);
+
+void draw_popover(char [], char [], Vector2);
 
 extern Screen screen;
 extern Screen_name last_screen;

@@ -8,8 +8,22 @@
 
 #define MAX_ABILITIES 99
 
+#define RECENT_ABILITY_TIMER 3.0f
+
+#define SOUL_PROJECTILE_COOLDOWN 3.0f
+#define SOUL_PROJECTILE_DAMAGE 3
+
+#define DASH_SPEED 1000.0f
+#define DASH_DURATION 0.15f
+#define DASH_COOLDOWN 1.0f
+
+#define HEAL_COOLDOWN 0.5f
+#define HEAL_TIMER 1.0f
+
 typedef struct {
+    char label[100];
     char texture_path[100];
+    char description[200];
     bool is_acquired;
     bool is_active;
     bool hit_confirmed;
@@ -25,9 +39,13 @@ void add_ability(int, int);
 
 void draw_abilities();
 
+void draw_ability_popup();
+
 void unload_abilities();
 
 Ability *get_available_ability();
+
+bool is_ability_active(Ability *);
 
 void soul_projectile_ability();
 

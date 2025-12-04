@@ -2,8 +2,9 @@
 // Created by richa on 16/11/2025.
 //
 
+#include <minwindef.h>
 #include "wall.h"
-#include "config.h"
+#include "main.h"
 
 Wall walls[MAX_WALLS];
 int walls_count = 0;
@@ -26,4 +27,14 @@ void draw_walls() {
             0.0f,
             BROWN
         );
+}
+
+Wall *handle_collision_with_walls(Rectangle hitbox) {
+    Wall *hit_wall = NULL;
+
+    for (int i = 0; i < walls_count && hit_wall == NULL; i++)
+        if (CheckCollisionRecs(hitbox, walls[i].hitbox))
+            hit_wall = &walls[i];
+
+    return hit_wall;
 }

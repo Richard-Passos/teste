@@ -13,6 +13,7 @@
 #include "teleport.h"
 #include "shop.h"
 #include "boss.h"
+#include "screen.h"
 
 char map_path[100];
 char last_map_path[100];
@@ -54,7 +55,7 @@ bool load_map(char path[]) {
     unload_abilities();
 
     boss.hitbox = (Rectangle){-1, -1, 0, 0};
-    boss.active = false;
+    boss.is_active = false;
     boss.life = boss.max_life;
     //----------------------------------------------------------------------------------
 
@@ -82,7 +83,7 @@ bool load_map(char path[]) {
                     break;
                 case 'M':
                 case 'm':
-                    add_monster(col, row, LAND_MONSTER_HOR_SPEED, 0.0f);
+                    add_monster(col, row);
                     break;
                 case 'A':
                 case 'a':
@@ -122,16 +123,7 @@ bool load_map(char path[]) {
 
     fclose(file);
 
-    // ==========================================================
-    //     SOMENTE SPAWNAR SE REALMENTE HOUVER UM CHEFE NO MAPA
-    // ==========================================================
-    if (boss.hitbox.x != -1 && boss.hitbox.y != -1) {
-        spawn_boss();
-    } else {
-        boss.active = false;
-    }
-
-    flying(); // monstros voadores ou terrestres
+    handle_monster_variants(); // monstros voadores ou terrestres
 
     return true;
 }
@@ -146,8 +138,11 @@ void unload_map() {
 }
 
 void handle_map() {
-    update_map();
     draw_map();
+    update_map();
+    handle_benches_interaction();
+    if (handle_shop_interaction())
+        set_screen(SCREEN_SHOP);
 }
 
 void draw_map() {
@@ -161,8 +156,8 @@ void draw_map() {
     draw_teleports();
     draw_shop();
     draw_shop_npc();
-    draw_monsters();
     draw_boss();
+    draw_monsters();
     draw_abilities();
     draw_player();
     draw_healing_effect();
@@ -173,13 +168,10 @@ void draw_map() {
 }
 
 void update_map() {
-    Player *player = &game_state.player;
-    float delta_time = GetFrameTime();
-
-    update_player();
-    update_camera_center((Vector2){player->hitbox.x, player->hitbox.y});
     update_monsters();
-    update_boss(&game_state.player, delta_time, walls, walls_count);
+    update_boss();
+    update_player();
+    update_camera_center((Vector2){game_state.player.hitbox.x, game_state.player.hitbox.y});
 }
 
 void set_map_path(int level) {

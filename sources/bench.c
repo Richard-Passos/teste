@@ -3,7 +3,6 @@
 //
 
 #include "bench.h"
-#include "config.h"
 #include "game_state.h"
 
 Bench benches[MAX_BENCHES];
@@ -32,7 +31,7 @@ void draw_benches() {
 
         if (!is_colliding && CheckCollisionRecs(game_state.player.hitbox, benches[i].hitbox)) {
             DrawText("Descansar",
-                     benches[i].hitbox.x - 50,
+                     benches[i].hitbox.x - 25,
                      benches[i].hitbox.y - 50,
                      32, WHITE);
 
@@ -54,24 +53,24 @@ void handle_benches_interaction() {
             player->is_sitting = false;
         }
 
+        player->combat.life = player->combat.max_life;
+        player->combat.souls = player->combat.max_souls;
+
         return; // quando sentado, não precisa checar novos bancos
     }
     //----------------------------------------------------------------------------------
 
     // Sit
     //----------------------------------------------------------------------------------
-    for (int i = 0; i < benches_count; i++) {
+    for (int i = 0; i < benches_count && !player->is_sitting; i++) {
         if (CheckCollisionRecs(player->hitbox, benches[i].hitbox) && IsKeyPressed(KEY_UP)) {
             player->is_sitting = true;
-            player->speed.y = 0;
+            player->speed.y -= 0;
+            player->speed.x -= 0;
             player->hitbox.y = benches[i].hitbox.y - benches[i].hitbox.height / 2;
             player->hitbox.x = benches[i].hitbox.x;
-            player->combat.life = player->combat.max_life;
-            player->souls = player->max_souls;
             player->spawn_pos = (Vector2){benches[i].hitbox.x, benches[i].hitbox.y - benches[i].hitbox.height / 2};
             player->has_spawn = true;
-
-            break; // já achou um banco com o qual colidiu; não precisa checar os outros
         }
     }
     //----------------------------------------------------------------------------------

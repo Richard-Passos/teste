@@ -3,11 +3,7 @@
 //
 
 #include "raylib.h"
-#include "config.h"
 #include "shop.h"
-
-#include <stdio.h>
-
 #include "game_state.h"
 
 Shop shop = {0};
@@ -35,7 +31,7 @@ void draw_shop() {
 
     if (CheckCollisionRecs(game_state.player.hitbox, shop.hitbox)) {
         DrawText("Entrar",
-                 shop.hitbox.x + 40,
+                 shop.hitbox.x + 80,
                  shop.hitbox.y - 50,
                  32,
                  WHITE);

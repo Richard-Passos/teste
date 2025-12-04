@@ -8,32 +8,33 @@
 #include "abilities.h"
 #include "item.h"
 
+#define PLAYER_JUMP_SPEED 700.0f
+#define PLAYER_SPEED 700.0f
+#define PLAYER_INVULN_TIMER 1.0f
+#define PLAYER_HURT_TIMER 0.15f
+#define PLAYER_ATTACK_TIMER 0.12f
+#define PLAYER_ATTACK_COOLDOWN 0.4f
+
 typedef struct {
     float speed;
     float money;
 } Multipliers;
 
 typedef struct {
-    bool active;
-    float timer;
-    float cooldown;
-    bool hit_confirmed;
-    float recovery;
-} Dash_state;
-
-typedef struct {
+    Rectangle attack_box;
     int life;
     int max_life;
     int damage;
-
-    bool invulnerable;
+    int souls;
+    int max_souls;
     float invuln_timer;
     float hurt_timer;
-
-    float push_timer;
-    float push_dir;
-    float push_speed;
-} PlayerCombat;
+    float attack_timer;
+    float attack_cooldown;
+    bool is_attacking;
+    bool monsters_hit[MAX_MONSTERS];
+    bool invulnerable;
+} Player_combat;
 
 typedef struct {
     Ability *soul_projectile;
@@ -53,54 +54,38 @@ typedef struct {
 typedef struct {
     Rectangle hitbox;
     Vector2 speed;
-    bool can_jump;
-    bool on_ground;
-    int jump_count;
-    bool is_attacking;
-    float attack_timer;
-    Rectangle attack_box;
-    bool facing_right;
-    bool monsters_hit[MAX_MONSTERS];
-    int attack_dir; // 1 = cima, 0 = frente, -1 = baixo
-    float attack_cooldown;
-    int money;
-    float money_gain_timer;
-    int last_money_gain;
-    int souls;
-    int max_souls;
-    PlayerCombat combat;
-    bool ignore_next_monster_hit;
-    bool is_sitting;
-    bool boss_hit;
-
+    Direction direction;
+    Player_combat combat;
     Abilities abilities;
     Items items;
     Multipliers multipliers;
-
-    bool should_keep_pos;
     Vector2 spawn_pos;
+    int jump_count;
+    int money;
+    int last_money_gain;
+    float money_gain_timer;
+    bool ignore_next_monster_hit;
+    bool on_ground;
+    bool should_keep_pos;
     bool has_spawn;
+    bool is_sitting;
 } Player;
 
 void add_player(int, int);
 
 void draw_player();
 
-bool has_collided(Player *, Wall *);
-
 void update_player_items();
 
 void update_player();
 
-void handle_timers();
+void handle_player_horizontal_movement();
 
-void handle_horizontal_movement();
+void handle_player_vertical_movement();
 
-void handle_vertical_movement();
+void handle_player_attack();
 
-void handle_attack();
-
-void handle_monsters_collision();
+void handle_player_monsters_collision();
 
 void spawn_player_on_bench();
 
