@@ -21,6 +21,9 @@ typedef struct {
 
     char recent_ability_text[200];
     float recent_ability_timer;
+
+    float recent_text_timer;
+    char charm_text[200];
 } Game_state;
 
 bool save_game_state();

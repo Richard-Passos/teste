@@ -53,6 +53,7 @@ void reset_game_state() {
     player.abilities.heal = &game_state.abilities[3];
     game_state.recent_ability_timer = 0.0f;
     game_state.recent_ability_text[0] = '\0';
+    game_state.recent_text_timer = 0.0f;
 
     game_state.items[0] = (Item){
         "Josevaldo", "../assets/life_charm.png", "Vida máxima aumentada em 1",false, false, false

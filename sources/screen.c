@@ -279,6 +279,10 @@ void handle_inventory_screen() {
     draw_action(screen_actions[screen_actions_count - 1], false);
 
     DrawText("INVENTORY", 16, 16, 32, WHITE);
+
+    DrawText("Só é possível equipar amuletos enquanto estiver em um banco.",
+             32, SCREEN_HEIGHT - 80, 20, WHITE);
+
     EndDrawing();
 
     // Actions

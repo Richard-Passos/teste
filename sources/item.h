@@ -28,6 +28,8 @@ void draw_items();
 
 void unload_items();
 
+void draw_item_popup();
+
 Item *get_available_item();
 
 bool is_item_active(Item *);
