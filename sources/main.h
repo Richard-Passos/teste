@@ -20,7 +20,7 @@ typedef enum {
 #define SCREEN_HEIGHT 800
 #define TILE_SIZE 96
 
-#define MAP_DEFAULT_PATH "../map"
+#define MAP_DEFAULT_PATH "../tunel"
 #define VILLAGE_FILE_PATH "../village.txt"
 #define SHOP_FILE_PATH "../shop.txt"
 #define GAME_STATE_FILE_PATH "../game_state.bin"
