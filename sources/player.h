@@ -8,16 +8,18 @@
 #include "abilities.h"
 #include "item.h"
 
+#define PLAYER_DAMAGE 1
 #define PLAYER_JUMP_SPEED 700.0f
 #define PLAYER_SPEED 700.0f
 #define PLAYER_INVULN_TIMER 1.0f
 #define PLAYER_HURT_TIMER 0.15f
-#define PLAYER_ATTACK_TIMER 0.12f
+#define PLAYER_ATTACK_TIMER 0.1f
 #define PLAYER_ATTACK_COOLDOWN 0.4f
 
 typedef struct {
     float speed;
     float money;
+    float damage;
 } Multipliers;
 
 typedef struct {

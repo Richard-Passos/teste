@@ -7,13 +7,14 @@
 #define MAX_MONSTERS 10
 #define LAND_MONSTER_SPEED 25.0f
 #define LAND_MONSTER_LIFE 5
+#define FLYING_MONSTER_SPEED 50.0f
 #define FLYING_MONSTER_LIFE 3
 #define MONSTER_DAMAGE 1
-#define MONSTER_HURT_TIMER 0.15f
-#define MONSTER_INVULN_TIMER 0.3f
+#define MONSTER_HURT_TIMER 0.1f
+#define MONSTER_INVULN_TIMER 0.15f
 
 typedef struct {
-    Vector2 speed;
+    float speed;
     Rectangle hitbox;
     Direction direction;
     int life;

@@ -9,6 +9,8 @@
 #define MAX_ITEMS 99
 
 #define MAX_ITEMS_ACTIVATED 3
+#define RECENT_ITEM_TIMER 3.0f
+
 
 typedef struct {
     char label[100];
@@ -27,6 +29,8 @@ void add_item(int, int);
 void draw_items();
 
 void unload_items();
+
+void draw_item_popup();
 
 Item *get_available_item();
 

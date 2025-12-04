@@ -155,17 +155,17 @@ void soul_projectile_ability() {
     if (soul_projectile->is_active) {
         soul_projectile->hitbox.x += soul_projectile->speed.x * DELTA_TIME;
 
+        float ability_damage = SOUL_PROJECTILE_DAMAGE * player->multipliers.damage;
+
         // Pass through
-        handle_collision_with_monster(soul_projectile->hitbox, SOUL_PROJECTILE_DAMAGE);
-        handle_collision_with_boss(soul_projectile->hitbox, SOUL_PROJECTILE_DAMAGE);
+        handle_collision_with_monster(soul_projectile->hitbox, ability_damage);
+        handle_collision_with_boss(soul_projectile->hitbox, ability_damage);
 
-        if (handle_collision_with_walls(soul_projectile->hitbox))
+        // Deactivate on collision or when times over
+        if (handle_collision_with_walls(soul_projectile->hitbox) || soul_projectile->cooldown <= 0)
             soul_projectile->is_active = false;
-
-        if (soul_projectile->cooldown > 0)
-            soul_projectile->cooldown -= DELTA_TIME;
         else
-            soul_projectile->is_active = false;
+            soul_projectile->cooldown -= DELTA_TIME;
     }
 }
 

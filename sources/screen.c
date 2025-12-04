@@ -279,6 +279,10 @@ void handle_inventory_screen() {
     draw_action(screen_actions[screen_actions_count - 1], false);
 
     DrawText("INVENTORY", 16, 16, 32, WHITE);
+
+    DrawText("Só é possível equipar amuletos enquanto estiver em um banco.",
+             32, SCREEN_HEIGHT - 80, 20, WHITE);
+
     EndDrawing();
 
     // Actions
@@ -530,7 +534,7 @@ void handle_shop_npc_screen() {
     //----------------------------------------------------------------------------------
     char money_text[64];
     sprintf(money_text, "Moedas: %d", player->money);
-    DrawText(money_text, 10, 750, 30, WHITE);
+    DrawText(money_text, 16, SCREEN_HEIGHT - 40, 30, WHITE);
 
     if (player->money_gain_timer > 0.0f) {
         player->money_gain_timer -= GetFrameTime();
@@ -540,11 +544,9 @@ void handle_shop_npc_screen() {
         float alpha = player->money_gain_timer / 1.5f;
         int transparency = (int) (255 * alpha);
 
-        Color cost_color = (Color){255, 255, 255, transparency};
-
         char cost_text[32];
         sprintf(cost_text, "-%d", player->last_money_gain);
-        DrawText(cost_text, 140, 720, 20, cost_color);
+        DrawText(cost_text, 140, 720, 20, (Color){255, 255, 255, transparency});
         //----------------------------------------------------------------------------------
     }
     //----------------------------------------------------------------------------------

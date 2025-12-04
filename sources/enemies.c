@@ -10,7 +10,6 @@ int monsters_count = 0;
 void add_monster(int x, int y) {
     if (monsters_count < MAX_MONSTERS) {
         monsters[monsters_count++] = (Monster){
-            .speed = {LAND_MONSTER_SPEED, 0},
             .hitbox = {x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE},
             .direction = DIR_RIGHT,
             .is_active = true,
@@ -56,9 +55,11 @@ void handle_monster_variants() {
         if (handle_collision_with_walls(below_wall_check)) {
             m->is_flying = false;
             m->life = LAND_MONSTER_LIFE;
+            m->speed = LAND_MONSTER_LIFE;
         } else {
             m->is_flying = true;
             m->life = FLYING_MONSTER_LIFE;
+            m->speed = FLYING_MONSTER_SPEED;
         }
     }
 }
@@ -80,7 +81,7 @@ void update_monsters() {
 }
 
 void handle_monster_horizontal_movement(Monster *m) {
-    m->hitbox.x += m->speed.x * (m->direction == DIR_RIGHT ? DELTA_TIME : -DELTA_TIME);
+    m->hitbox.x += m->speed * (m->direction == DIR_RIGHT ? DELTA_TIME : -DELTA_TIME);
 
     Wall *hit_wall = handle_collision_with_walls(m->hitbox);
 

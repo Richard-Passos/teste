@@ -14,74 +14,57 @@ char level_text[10];
 void draw_hud() {
     Player *player = &game_state.player;
 
-    char moneyText[64];
-    sprintf(moneyText, "Moedas: %d", player->money);
-    DrawText(moneyText, 16, SCREEN_HEIGHT - 40, 30, BLACK);
-
     draw_ability_popup();
-
-    // Desenha o ganho
-    if (player->money_gain_timer > 0.0f) {
-        player->money_gain_timer -= DELTA_TIME;
-
-        // Fazer sumir depois de um tempo
-        float alpha = player->money_gain_timer / 1.5f;
-        int transparency = (int) (255 * alpha);
-
-        Color gainColor = (Color){0, 0, 0, transparency};
-
-        char gainText[32];
-        sprintf(gainText, "%c%d", player->last_money_gain >= 0 ? '+' : '-', abs(player->last_money_gain));
-        DrawText(gainText, 146, SCREEN_HEIGHT - 66, 20, gainColor);
-    }
-
+    draw_item_popup();
 
     // ==============================
-    // Barra de Almas
+    // Life Bar
     // ==============================
-    float maxSouls = player->combat.max_souls;
-    float souls = player->combat.souls;
-
-    float barWidth = 200;
-
-    // Calcula a proporção preenchida
-    float fillWidth = (souls / maxSouls) * barWidth;
-
-    // Cor de fundo da barra
-    DrawRectangle(16, 50, 200, 20, (Color){80, 80, 80, 255});
-
-    // Cor da barra conforme a quantidade
-    Color fillColor;
-    if (souls < 33) {
-        fillColor = GRAY;
-    } else {
-        fillColor = WHITE;
-    }
-
-    // Desenha o preenchimento
-    DrawRectangle(16, 50, fillWidth, 20, fillColor);
-
-    // Moldura
-    DrawRectangleLines(16, 50, barWidth, 20, BLACK);
-
-    // ==============================
-    // Barra de Vida
-    // ==============================
-    int squareSize = 30;
-    int spacing = 5;
-    int startX = 16;
-    int startY = 16;
+    int life_size = 30, life_spacing = 5, life_x = 16, life_y = 16;
 
     for (int i = 0; i < player->combat.max_life; i++) {
-        int x = startX + i * (squareSize + spacing);
+        int x = life_x + i * (life_size + life_spacing);
         Color color = (i < player->combat.life) ? WHITE : (Color){100, 100, 100, 255};
-        DrawRectangle(x, startY, squareSize, squareSize, color);
-        DrawRectangleLines(x, startY, squareSize, squareSize, BLACK);
+        DrawRectangle(x, life_y, life_size, life_size, color);
+        DrawRectangleLines(x, life_y, life_size, life_size, BLACK);
     }
+
+    // ==============================
+    // Souls Bar
+    // ==============================
+    float max_souls = player->combat.max_souls;
+    float souls = player->combat.souls;
+
+    float souls_width = 200, souls_fill_width = (souls / max_souls) * souls_width,
+            souls_x = 16, souls_y = life_size + life_y + 10;
+    Color souls_fill_color = souls < 33 ? GRAY : WHITE;
+
+    DrawRectangle(souls_x, souls_y, 200, 20, (Color){80, 80, 80, 255});
+    DrawRectangle(souls_x, souls_y, souls_fill_width, 20, souls_fill_color);
+    DrawRectangleLines(souls_x, souls_y, souls_width, 20, BLACK);
 
     // ==============================
     // Level
     // ==============================
     sprintf(level_text, "%02d/%02d", game_state.level, MAX_LEVEL);
     DrawText(level_text, SCREEN_WIDTH - 106, 16, 32, BLACK);
+
+    // ==============================
+    // Money
+    // ==============================
+    char money_text[64];
+    sprintf(money_text, "Moedas: %d", player->money);
+    DrawText(money_text, 16, SCREEN_HEIGHT - 40, 30, BLACK);
+
+    if (player->money_gain_timer > 0.0f) {
+        player->money_gain_timer -= DELTA_TIME;
+
+        // Fade effect
+        float alpha = player->money_gain_timer / 1.5f;
+        int transparency = (int) (255 * alpha);
+
+        char gain_text[32];
+        sprintf(gain_text, "%c%d", player->last_money_gain >= 0 ? '+' : '-', abs(player->last_money_gain));
+        DrawText(gain_text, 146, SCREEN_HEIGHT - 66, 20, (Color){0, 0, 0, transparency});
+    }
 }

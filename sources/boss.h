@@ -7,10 +7,10 @@
 
 #define BOSS_LIFE (LAND_MONSTER_LIFE * 4)
 #define BOSS_DAMAGE 2
-#define BOSS_SPEED 225
+#define BOSS_SPEED 250
 #define BOSS_JUMP_TIME 0.9f
 #define BOSS_INVULN_TIMER 0.3f
-#define BOSS_HURT_TIMER 0.15f
+#define BOSS_HURT_TIMER 0.1f
 #define BOSS_ENGAGE_RANGE 400
 
 typedef enum {
