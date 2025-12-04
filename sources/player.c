@@ -142,7 +142,7 @@ void handle_player_attack() {
     if (!player->combat.is_attacking) return;
 
     if (IsKeyDown(KEY_UP)) player->direction = DIR_UP;
-    else if (IsKeyDown(KEY_DOWN)) player->direction = DIR_DOWN;
+    else if (IsKeyDown(KEY_DOWN) && !player->on_ground) player->direction = DIR_DOWN;
     // else keep current direction
 
     // Sword hitbox
