@@ -51,12 +51,10 @@ bool load_map(char path[]) {
     teleports_count = 0;
     shop.is_active = false;
     shop_npc.is_active = false;
+    boss.is_active = false;
     unload_items();
     unload_abilities();
 
-    boss.hitbox = (Rectangle){-1, -1, 0, 0};
-    boss.is_active = false;
-    boss.life = boss.max_life;
     //----------------------------------------------------------------------------------
 
     Texture wall_texture = map_textures[0],

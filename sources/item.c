@@ -54,11 +54,9 @@ void unload_items() {
     int *items_count = &game_state.items_count;
 
     for (int i = 0; i < *items_count; i++)
-        if (items[i].is_active) {
+        if (!items[i].is_acquired && items[i].is_active) {
             UnloadTexture(items[i].texture);
-
-            if (!items[i].is_acquired)
-                items[i].is_active = false;
+            items[i].is_active = false;
         }
 }
 
@@ -82,9 +80,11 @@ void update_item_acquisition() {
     int *items_count = &game_state.items_count;
 
     for (int i = 0; i < *items_count; i++) {
-        if (items[i].is_acquired) continue;
+        if (items[i].is_acquired || !items[i].is_active) continue;
 
         if (CheckCollisionRecs(game_state.player.hitbox, items[i].hitbox) && IsKeyPressed(KEY_UP)) {
+            UnloadTexture(items[i].texture);
+
             items[i].is_acquired = true;
             items[i].is_active = false;
 

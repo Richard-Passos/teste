@@ -28,7 +28,7 @@ void draw_abilities() {
     for (int i = 0; i < *abilities_count; i++) {
         Ability ability = abilities[i];
 
-        if (!ability.is_acquired) {
+        if (!ability.is_acquired && ability.is_active) {
             DrawTexturePro
             (
                 ability.texture,
@@ -57,11 +57,9 @@ void unload_abilities() {
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++)
-        if (abilities[i].is_active) {
+        if (!abilities[i].is_acquired && abilities[i].is_active) {
             UnloadTexture(abilities[i].texture);
-
-            if (!abilities[i].is_acquired)
-                abilities[i].is_active = false;
+            abilities[i].is_active = false;
         }
 }
 
@@ -70,7 +68,7 @@ Ability *get_available_ability() {
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++)
-        if (!abilities[i].is_active && !abilities[i].is_acquired)
+        if (!abilities[i].is_acquired && !abilities[i].is_active)
             return &abilities[i];
 
     return NULL;
@@ -85,8 +83,10 @@ void update_ability_acquisition() {
     int *abilities_count = &game_state.abilities_count;
 
     for (int i = 0; i < *abilities_count; i++) {
-        if (!abilities[i].is_acquired) {
+        if (!abilities[i].is_acquired && abilities[i].is_active) {
             if (CheckCollisionRecs(game_state.player.hitbox, abilities[i].hitbox) && IsKeyPressed(KEY_UP)) {
+                UnloadTexture(abilities[i].texture);
+
                 abilities[i].is_acquired = true;
                 abilities[i].is_active = false;
 

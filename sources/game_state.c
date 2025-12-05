@@ -5,6 +5,7 @@
 #include <string.h>
 #include "raylib.h"
 #include "game_state.h"
+#include <stdio.h>
 
 Game_state game_state;
 int game_state_size = sizeof(Game_state);
@@ -16,19 +17,16 @@ bool save_game_state() {
 bool load_game_state() {
     bool is_ok = false;
 
-    unsigned char *file_data = LoadFileData(GAME_STATE_FILE_PATH, &game_state_size);
+    int file_size = 0;
+    unsigned char *file_data = LoadFileData(GAME_STATE_FILE_PATH, &file_size);
 
-    if (file_data != NULL) {
-        // Copy bytes into game_state
+    if (file_data != NULL && file_size == game_state_size) {
         memcpy(&game_state, file_data, game_state_size);
-
-        spawn_player_on_bench();
-
         UnloadFileData(file_data);
-
-        is_ok = true;
-    } else
+    } else {
         reset_game_state();
+        if (file_data) UnloadFileData(file_data);
+    }
 
     return is_ok;
 }
@@ -40,7 +38,7 @@ void reset_game_state() {
         "Dash", "../assets/dash.png", "Aperte C para dar um avanço rápido",false, false
     };
     game_state.abilities[1] = (Ability){
-        "Pulo Duplo", "../assets/double_jump.png", "Permite um segundo salto no ar", false, false
+        "Pulo Duplo", "../assets/double_jump.png", "Permite um segundo salto no ar", true, false
     };
     game_state.abilities[2] = (Ability){
         "Projétil de Alma", "../assets/soul_projectile.png",
