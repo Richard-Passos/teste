@@ -64,14 +64,12 @@ void unload_abilities() {
 }
 
 Ability *get_available_ability() {
-    Ability *abilities = game_state.abilities;
-    int *abilities_count = &game_state.abilities_count;
+    Ability *ability = &game_state.abilities[game_state.level - 1];
 
-    for (int i = 0; i < *abilities_count; i++)
-        if (!abilities[i].is_acquired && !abilities[i].is_active)
-            return &abilities[i];
+    // One ability per level
+    if (ability->is_acquired) ability = NULL;
 
-    return NULL;
+    return ability;
 }
 
 bool is_ability_active(Ability *ability) {

@@ -61,12 +61,10 @@ void unload_items() {
 }
 
 Item *get_available_item() {
-    Item *items = game_state.items;
-    int *items_count = &game_state.items_count;
+    Item *item = &game_state.items[game_state.level - 1];
 
-    for (int i = 0; i < *items_count; i++)
-        if (!items[i].is_active && !items[i].is_acquired && !items[i].is_buyable)
-            return &items[i];
+    // One item per level
+    if (item->is_acquired) item = NULL;
 
     return NULL;
 }

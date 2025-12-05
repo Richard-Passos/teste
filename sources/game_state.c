@@ -56,13 +56,14 @@ void reset_game_state() {
         "Josevaldo", "../assets/life_charm.png", "Vida máxima aumentada em 1",false, false, false
     };
     game_state.items[1] = (Item){
-        "Waldomiro", "../assets/dmg_charm.png", "Dano da espada aumentado em 100%",true, false, false, .cost = 150
-    };
-    game_state.items[2] = (Item){
         "Cristovao", "../assets/speed_charm.png", "Aumento na velocidade base em 50%",false, false, false
     };
-    game_state.items[3] = (Item){
+    game_state.items[2] = (Item){
         "Cleber", "../assets/money_charm.png", "Aumento do ganho de dinheiro em 50%",false, false, false
+    };
+    game_state.items[3] = (Item){
+        "Waldomiro", "../assets/dmg_charm.png", "Dano da espada aumentado em 100%",true, false, false,
+        .cost = 150
     };
     game_state.items[4] = (Item){
         "Birubiru", "../assets/dash_charm.png", "Quando usar o dash irá ficar invulnerável", true, false, false,
