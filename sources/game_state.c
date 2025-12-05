@@ -27,7 +27,8 @@ bool load_game_state() {
         UnloadFileData(file_data);
 
         is_ok = true;
-    }
+    } else
+        reset_game_state();
 
     return is_ok;
 }
