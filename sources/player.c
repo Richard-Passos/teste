@@ -37,7 +37,7 @@ void update_player_items() {
     player->combat.max_life = is_item_active(player->items.add_life) ? 7 : 5;
     player->multipliers.damage = is_item_active(player->items.add_damage) ? 2 : 1;
     player->combat.damage = PLAYER_DAMAGE * player->multipliers.damage;
-    player->multipliers.speed = is_item_active(player->items.add_speed) ? 1.5f : 2;
+    player->multipliers.speed = is_item_active(player->items.add_speed) ? 1.5f : 1;
     player->multipliers.money = is_item_active(player->items.add_money) ? 1.5f : 1;
     if (is_item_active(player->items.add_invuln_dash) && is_ability_active(player->abilities.dash)) {
         player->combat.invulnerable = true;
