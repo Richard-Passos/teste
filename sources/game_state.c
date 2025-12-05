@@ -38,7 +38,7 @@ void reset_game_state() {
         "Dash", "../assets/dash.png", "Aperte C para dar um avanço rápido",false, false
     };
     game_state.abilities[1] = (Ability){
-        "Pulo Duplo", "../assets/double_jump.png", "Permite um segundo salto no ar", true, false
+        "Pulo Duplo", "../assets/double_jump.png", "Permite um segundo salto no ar", false, false
     };
     game_state.abilities[2] = (Ability){
         "Projétil de Alma", "../assets/soul_projectile.png",
@@ -80,16 +80,16 @@ void reset_game_state() {
     player.on_ground = false;
     player.money = 0;
 
-    player.combat.life = 5;
-    player.combat.max_life = 5;
-    player.combat.damage = 1;
+    player.combat.life = PLAYER_LIFE;
+    player.combat.max_life = PLAYER_LIFE;
+    player.combat.damage = PLAYER_DAMAGE;
     player.combat.invulnerable = false;
     player.combat.invuln_timer = 0;
     player.combat.hurt_timer = 0;
     player.combat.is_attacking = false;
     player.combat.attack_timer = 0.0f;
     player.combat.souls = 0;
-    player.combat.max_souls = 100;
+    player.combat.max_souls = PLAYER_SOULS;
 
     player.is_sitting = false;
     player.has_spawn = false;

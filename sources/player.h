@@ -9,6 +9,8 @@
 #include "item.h"
 
 #define PLAYER_DAMAGE 1
+#define PLAYER_LIFE 5
+#define PLAYER_SOULS 100
 #define PLAYER_JUMP_SPEED 700.0f
 #define PLAYER_SPEED 700.0f
 #define PLAYER_INVULN_TIMER 1.0f
