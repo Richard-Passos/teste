@@ -66,7 +66,7 @@ Item *get_available_item() {
     // One item per level
     if (item->is_acquired) item = NULL;
 
-    return NULL;
+    return item;
 }
 
 bool is_item_active(Item *item) {
